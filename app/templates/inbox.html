@@ -456,6 +456,119 @@
         background: #10b981;
         border-color: #10b981;
     }
+
+    /* Advanced Professional Features */
+    .inbox-analytics {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+    }
+
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .analytics-item h3 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .analytics-item p {
+        font-size: 0.75rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .thread-view {
+        background: #f8f9fa;
+        border-left: 3px solid #3b82f6;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .thread-view.collapsed {
+        border-left-color: #9ca3af;
+    }
+
+    .message-thread {
+        display: none;
+        margin-left: 2rem;
+        padding-left: 1rem;
+        border-left: 2px solid #e5e7eb;
+    }
+
+    .message-thread.show {
+        display: block;
+    }
+
+    .snooze-options {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        display: none;
+        min-width: 200px;
+    }
+
+    .snooze-options.show {
+        display: block;
+    }
+
+    .snooze-option {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f3f4f6;
+        transition: background 0.2s;
+    }
+
+    .snooze-option:hover {
+        background: #f9fafb;
+    }
+
+    .snooze-option:last-child {
+        border-bottom: none;
+    }
+
+    .keyboard-shortcuts {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        display: none;
+        z-index: 10000;
+    }
+
+    .keyboard-shortcuts.show {
+        display: block;
+    }
+
+    .shortcut-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+
+    .shortcut-key {
+        background: rgba(255, 255, 255, 0.2);
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-family: monospace;
+    }
 </style>
 
 <div class="inbox-wrapper">
@@ -606,6 +719,28 @@
 
         <!-- List -->
         <div class="message-list">
+            <!-- Analytics Dashboard -->
+            <div class="inbox-analytics mb-3">
+                <div class="analytics-grid">
+                    <div class="analytics-item">
+                        <h3 id="totalMessages">{{ items|length }}</h3>
+                        <p>Total Messages</p>
+                    </div>
+                    <div class="analytics-item">
+                        <h3 id="pendingCount">{{ items|selectattr('status', 'equalto', 'PENDING')|list|length }}</h3>
+                        <p>Pending Action</p>
+                    </div>
+                    <div class="analytics-item">
+                        <h3 id="urgentCount">{{ items|selectattr('priority', 'equalto', 'HIGH')|list|length if items|selectattr('priority', 'equalto', 'HIGH') else 0 }}</h3>
+                        <p>Urgent Items</p>
+                    </div>
+                    <div class="analytics-item">
+                        <h3 id="todayCount">{{ items|selectattr('date', 'equalto', now.date())|list|length }}</h3>
+                        <p>Today</p>
+                    </div>
+                </div>
+            </div>
+
             {% if items %}
             {% for item in items %}
             <div class="message-row {% if item.status == 'PENDING' %}unread{% endif %}" data-type="{{ item.type }}"

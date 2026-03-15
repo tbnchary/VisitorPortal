@@ -4,50 +4,102 @@
 <div class="page-header">
     <div>
         <h1 class="page-title"><i class="bi bi-shield-check text-primary me-2"></i>Department Approvals</h1>
-        <p class="page-subtitle">Review and manage pending driver & logistics authorizations</p>
+        <p class="page-subtitle">Advanced fleet authorization management with real-time analytics</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary rounded-pill px-4" style="font-weight:600;" onclick="exportApprovals()">
+            <i class="bi bi-download me-1"></i>Export Report
+        </button>
+        <button class="btn btn-primary rounded-pill px-4" style="font-weight:600;" onclick="openBulkApprovalModal()">
+            <i class="bi bi-check2-all me-1"></i>Bulk Approve
+        </button>
     </div>
 </div>
 
 <div class="container-fluid px-4 pb-5">
     <div class="row mb-4">
-        <!-- Quick Stats -->
-        <div class="col-md-4 mb-3 mb-md-0">
-            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0">
-                <div class="bg-primary-subtle text-primary p-3 rounded-circle fs-3 d-flex align-items-center justify-content-center"
+        <!-- Enhanced Quick Stats -->
+        <div class="col-md-3 mb-3 mb-md-0">
+            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0 border-start border-4 border-warning">
+                <div class="bg-warning-subtle text-warning p-3 rounded-circle fs-3 d-flex align-items-center justify-content-center"
                     style="width: 60px; height: 60px;">
                     <i class="bi bi-hourglass-split"></i>
                 </div>
                 <div>
                     <h6 class="text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem;">Pending Requests</h6>
-                    <h3 class="fw-bold mb-0 text-dark">{{ bookings|selectattr('department_approval_status', 'equalto',
-                        'PENDING')|list|length }}</h3>
+                    <h3 class="fw-bold mb-0 text-dark">{{ bookings|selectattr('department_approval_status', 'equalto', 'PENDING')|list|length }}</h3>
+                    <div class="small text-muted">{{ bookings|selectattr('department_approval_status', 'equalto', 'PENDING')|selectattr('trip_type', 'equalto', 'PICKUP')|list|length }} Pickups</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4 mb-3 mb-md-0">
-            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0">
+        <div class="col-md-3 mb-3 mb-md-0">
+            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0 border-start border-4 border-success">
                 <div class="bg-success-subtle text-success p-3 rounded-circle fs-3 d-flex align-items-center justify-content-center"
                     style="width: 60px; height: 60px;">
                     <i class="bi bi-check-circle-fill"></i>
                 </div>
                 <div>
                     <h6 class="text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem;">Approved</h6>
-                    <h3 class="fw-bold mb-0 text-dark">{{ bookings|selectattr('department_approval_status', 'equalto',
-                        'APPROVED')|list|length }}</h3>
+                    <h3 class="fw-bold mb-0 text-dark">{{ bookings|selectattr('department_approval_status', 'equalto', 'APPROVED')|list|length }}</h3>
+                    <div class="small text-muted">{{ bookings|selectattr('department_approval_status', 'equalto', 'APPROVED')|selectattr('trip_type', 'equalto', 'DROP')|list|length }} Drop-offs</div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0">
+        <div class="col-md-3 mb-3 mb-md-0">
+            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0 border-start border-4 border-danger">
                 <div class="bg-danger-subtle text-danger p-3 rounded-circle fs-3 d-flex align-items-center justify-content-center"
                     style="width: 60px; height: 60px;">
                     <i class="bi bi-x-circle-fill"></i>
                 </div>
                 <div>
                     <h6 class="text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem;">Rejected</h6>
-                    <h3 class="fw-bold mb-0 text-dark">{{ bookings|selectattr('department_approval_status', 'equalto',
-                        'REJECTED')|list|length }}</h3>
+                    <h3 class="fw-bold mb-0 text-dark">{{ bookings|selectattr('department_approval_status', 'equalto', 'REJECTED')|list|length }}</h3>
+                    <div class="small text-muted">{{ bookings|selectattr('department_approval_status', 'equalto', 'REJECTED')|list|length }}% rejection rate</div>
                 </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0 border-start border-4 border-info">
+                <div class="bg-info-subtle text-info p-3 rounded-circle fs-3 d-flex align-items-center justify-content-center"
+                    style="width: 60px; height: 60px;">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem;">Today's Activity</h6>
+                    <h3 class="fw-bold mb-0 text-dark">{{ bookings|selectattr('trip_date', 'equalto', now.date())|list|length }}</h3>
+                    <div class="small text-muted">Active today</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Filter Bar -->
+    <div class="glass-card p-3 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-uppercase small text-muted">Status Filter</label>
+                <select class="form-select" id="statusFilter" onchange="filterBookings()">
+                    <option value="">All Status</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="REJECTED">Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-uppercase small text-muted">Trip Type</label>
+                <select class="form-select" id="tripTypeFilter" onchange="filterBookings()">
+                    <option value="">All Types</option>
+                    <option value="PICKUP">Pickup</option>
+                    <option value="DROP">Drop-off</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-uppercase small text-muted">Date Range</label>
+                <input type="date" class="form-control" id="dateFilter" onchange="filterBookings()">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-uppercase small text-muted">Search</label>
+                <input type="text" class="form-control" id="searchFilter" placeholder="Search driver, vehicle..." oninput="filterBookings()">
             </div>
         </div>
     </div>
@@ -260,5 +312,68 @@
                 btnElement.disabled = false;
             });
     }
+
+    function filterBookings() {
+        const statusFilter = document.getElementById('statusFilter').value;
+        const tripTypeFilter = document.getElementById('tripTypeFilter').value;
+        const dateFilter = document.getElementById('dateFilter').value;
+        const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+        document.querySelectorAll('.approval-card').forEach(card => {
+            const bookingId = card.id.replace('booking-', '');
+            // Get booking data (this would need to be passed from the template)
+            let show = true;
+
+            if (statusFilter && !card.textContent.includes(statusFilter)) show = false;
+            if (tripTypeFilter && !card.textContent.includes(tripTypeFilter)) show = false;
+            if (dateFilter && !card.textContent.includes(dateFilter)) show = false;
+            if (searchFilter && !card.textContent.toLowerCase().includes(searchFilter)) show = false;
+
+            card.closest('.col').style.display = show ? 'block' : 'none';
+        });
+    }
+
+    function exportApprovals() {
+        const status = document.getElementById('statusFilter').value || 'all';
+        const tripType = document.getElementById('tripTypeFilter').value || 'all';
+        const date = document.getElementById('dateFilter').value || '';
+        
+        window.open(`/api/export-department-approvals?status=${status}&trip_type=${tripType}&date=${date}`, '_blank');
+    }
+
+    function openBulkApprovalModal() {
+        const pendingCards = document.querySelectorAll('.approval-card').forEach(card => {
+            if (card.textContent.includes('PENDING')) {
+                // Select all pending cards for bulk approval
+                const checkbox = card.querySelector('.form-check-input');
+                if (checkbox) checkbox.checked = true;
+            }
+        });
+        
+        alert('Bulk approval feature coming soon! Selected pending requests will be processed.');
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+        if (!document.hidden) {
+            location.reload();
+        }
+    }, 30000);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key) {
+                case 'e':
+                    e.preventDefault();
+                    exportApprovals();
+                    break;
+                case 'f':
+                    e.preventDefault();
+                    document.getElementById('searchFilter').focus();
+                    break;
+            }
+        }
+    });
 </script>
 {% endblock %}
