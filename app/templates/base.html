@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#2563eb">
+    <title>{% block title %}Visitor Portal{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Premium Visitor Management System{% endblock %}">
+    <!-- Professional Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- MOBILE SUITE V7 - NATIVE PRO -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile-suite-v7.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/drawer.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/stunning-features.css') }}">
+
+    <style id="global-premium-styles">
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --primary-light: #eef2ff;
+            --secondary: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --surface-1: #ffffff;
+            --surface-2: #f8fafc;
+            --surface-3: #f1f5f9;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --radius: 16px;
+            --shadow-soft: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            --sidebar-width: 260px;
+        }
+
+        html,
+        body {
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            padding: 0;
+            background-color: var(--surface-2);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            overflow: hidden;
+        }
+
+        .app-wrapper {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: relative;
+        }
+
+
+
+
+
+        /* SIDEBAR PREMIUM LITE (MATCHING IMAGE PRECISELY) */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #ffffff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            border-right: 1px solid #f1f5f9;
+            position: relative;
+            padding: 0 !important;
+        }
+
+        /* Initial pre-flight state for zero-flicker */
+        .sidebar-is-collapsed .sidebar {
+            width: 72px !important;
+            transition: none !important;
+        }
+
+        .sidebar.collapsed {
+            width: 72px;
+        }
+
+        .sidebar-brand {
+            padding: 1.5rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: padding 0.3s ease;
+        }
+
+        .sidebar-brand-icon {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            background: #1e293b;
+            /* Dark Navy/Black like image */
+            color: white;
+            border-radius: 10px;
+            /* Rounded hex-ish look */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            border: none;
+        }
+
+        .sidebar-brand-text {
+            color: #1e293b;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            overflow-y: auto;
+            overflow-x: hidden;
+            list-style: none;
+            margin: 0;
+        }
+
+        /* Section Headers (e.g. "Apps") */
+        .sidebar-section-title {
+            padding: 1.5rem 1rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .sidebar.collapsed .sidebar-section-title {
+            display: none;
+        }
+
+        .sidebar-nav-item {
+            margin-bottom: 2px;
+            position: relative;
+        }
+
+        .sidebar-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.75rem 1rem;
+            color: #475569;
+            text-decoration: none !important;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .sidebar-nav-link:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        .sidebar-nav-link.active {
+            background: #f0f9ff;
+            /* Light sky blue like image active state */
+            color: #0369a1;
+        }
+
+        .sidebar-nav-link.has-submenu::after {
+            content: '\F282';
+            /* bi-chevron-down */
+            font-family: 'bootstrap-icons';
+            margin-left: auto;
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+            opacity: 0.6;
+        }
+
+        .sidebar-nav-link.has-submenu[aria-expanded="true"]::after {
+            transform: rotate(180deg);
+        }
+
+        .sidebar-nav-link i {
+            font-size: 1.15rem;
+            min-width: 24px;
+            display: inline-flex;
+            justify-content: center;
+        }
+
+        /* SUB-NAVIGATION (Matching image 'Route' approach) */
+        .sidebar-subnav {
+            list-style: none;
+            padding: 0.25rem 0 0.5rem 2.85rem;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            position: relative;
+        }
+
+        /* Vertical tree line precisely placed */
+        .sidebar-subnav::before {
+            content: '';
+            position: absolute;
+            left: 1.85rem;
+            top: 0;
+            bottom: 0.75rem;
+            width: 1.5px;
+            background: #e2e8f0;
+        }
+
+        .sidebar-sublink {
+            display: flex;
+            align-items: center;
+            color: #64748b;
+            text-decoration: none !important;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .sidebar-sublink:hover {
+            color: #0f172a;
+            background: #f8fafc;
+        }
+
+        .sidebar-sublink.active {
+            color: #0369a1;
+            background: #e0f2fe;
+            font-weight: 700;
+        }
+
+        /* NAVIGATION BADGE */
+        .nav-badge {
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 1px 6px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            margin-left: auto;
+            font-weight: 700;
+        }
+
+        /* COLLAPSED MODIFIERS */
+        .sidebar.collapsed .sidebar-brand-text,
+        .sidebar.collapsed .sidebar-nav-link span,
+        .sidebar.collapsed .sidebar-nav-link .nav-badge,
+        .sidebar.collapsed .sidebar-nav-link::after,
+        .sidebar.collapsed .sidebar-subnav,
+        .sidebar.collapsed .sidebar-stats,
+        .sidebar.collapsed .sidebar-user-info {
+            display: none !important;
+        }
+
+        .sidebar.collapsed .sidebar-brand {
+            justify-content: center;
+            padding: 1.25rem 0;
+        }
+
+        .sidebar.collapsed .sidebar-footer {
+            padding: 1rem 0;
+            align-items: center;
+        }
+
+        .sidebar.collapsed .sidebar-nav-link {
+            padding: 0;
+            justify-content: center;
+            width: 42px;
+            height: 42px;
+            margin: 0 auto 8px;
+            border-radius: 10px;
+        }
+
+        /* SEARCH IN SIDEBAR */
+        .sidebar-search {
+            margin: 0 0.75rem 1rem;
+            padding: 0.5rem 0.75rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .sidebar.collapsed .sidebar-search {
+            display: none;
+        }
+
+        /* FOOTER (Bottom Icons Like Image) */
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 1rem 0.75rem 1.5rem;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* TOP NAV REFINEMENT */
+        .top-nav-pill {
+            display: flex;
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 100px;
+            padding: 2px 4px 2px 14px;
+            height: 44px;
+            gap: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .pill-bell-trigger {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-right: 12px;
+            border-right: 1.5px solid #f1f5f9;
+            position: relative;
+            cursor: pointer;
+            height: 24px;
+        }
+
+        .pill-bell-trigger:hover i {
+            color: #0284c7;
+        }
+
+        .pill-profile-trigger {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 10px;
+            cursor: pointer;
+            border-radius: 100px;
+            transition: background 0.2s;
+        }
+
+        .pill-profile-trigger:hover {
+            background: #f8fafc;
+        }
+
+        /* MAIN CONTENT AREA */
+        .main-content {
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 0;
+            background-color: var(--surface-2);
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .main-content::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+            background-color: var(--border);
+            border-radius: 10px;
+        }
+
+        /* MOBILE BACKDROP */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            backdrop-filter: blur(4px);
+        }
+
+        /* PREMIUM COMPONENTS */
+        .glass-card {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-soft);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-header {
+            padding: 2rem 2.5rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, var(--surface-1), transparent);
+        }
+
+        .page-title {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -1px;
+            margin: 0;
+        }
+
+        .page-subtitle {
+            color: var(--text-sub);
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* TABLE PREMIUM */
+        .table-container {
+            margin: 0 2.5rem 3rem;
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--surface-2);
+            padding: 1.25rem 1.5rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-sub);
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--surface-3);
+            vertical-align: middle;
+            color: var(--text-main);
+        }
+
+        .data-table tr:hover td {
+            background-color: var(--surface-2);
+        }
+
+        /* ALERTS */
+        .alert {
+            border-radius: 14px;
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-soft);
+        }
+
+        /* BADGES */
+        .badge-status {
+            padding: 0.4rem 0.8rem;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.025em;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .status-in {
+            background: #ecfdf5;
+            color: #059669;
+            border: 1px solid #10b98120;
+        }
+
+        .status-out {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* BUTTONS */
+        .btn-premium {
+            padding: 0.6rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            text-decoration: none !important;
+            border: none;
+        }
+
+        .btn-premium-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-premium-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+            color: white;
+        }
+
+        .btn-premium-secondary {
+            background: white;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .btn-premium-secondary:hover {
+            background: var(--surface-2);
+            transform: translateY(-2px);
+        }
+
+        /* Global Side Drawer - Premium Styles */
+        .drawer-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.3);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .drawer-backdrop.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .universal-drawer {
+            position: fixed;
+            top: 0;
+            right: -450px;
+            width: 450px;
+            height: 100vh;
+            background: white;
+            z-index: 2001;
+            box-shadow: -10px 0 50px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .universal-drawer.open {
+            right: 0;
+        }
+
+        .drawer-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+        }
+
+        .drawer-title {
+            margin: 0;
+            font-weight: 800;
+            color: #1e293b;
+            font-size: 1.25rem;
+        }
+
+        .drawer-subtitle {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+
+        .drawer-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex-grow: 1;
+            scrollbar-width: thin;
+        }
+
+        @media (max-width: 576px) {
+            .universal-drawer {
+                width: 100%;
+                right: -100%;
+            }
+        }
+
+        /* PREMIUM TOAST NOTIFICATIONS */
+        .toast-container {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            pointer-events: none;
+        }
+
+        .premium-toast {
+            min-width: 320px;
+            max-width: 450px;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            padding: 1.25rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transform: translateX(120%);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: auto;
+            animation: toastEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .premium-toast.hide {
+            animation: toastExit 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes toastEnter {
+            from {
+                transform: translateX(120%) scale(0.9);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes toastExit {
+            from {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(120%) scale(0.9);
+                opacity: 0;
+            }
+        }
+
+        .toast-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .toast-success .toast-icon {
+            background: #ecfdf5;
+            color: #10b981;
+        }
+
+        .toast-danger .toast-icon {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .toast-warning .toast-icon {
+            background: #fffbeb;
+            color: #f59e0b;
+        }
+
+        .toast-info .toast-icon {
+            background: #eff6ff;
+            color: #3b82f6;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .toast-message {
+            margin: 4px 0 0;
+            font-size: 0.875rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            padding: 4px;
+            cursor: pointer;
+            transition: color 0.2s;
+            font-size: 1.2rem;
+        }
+
+        .toast-close:hover {
+            color: #1e293b;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+    <div class="app-wrapper">
+        <div class="sidebar-backdrop"></div>
+
+        <!-- Mobile Header V2 is injected via JS -->
+        <script>
+            // PRE-FLIGHT SIDEBAR CHECK: Prevents the "Flash of Expanded Sidebar" on page load
+            if (localStorage.getItem('sidebar_collapsed') === 'true' && window.innerWidth > 992) {
+                document.documentElement.classList.add('sidebar-is-collapsed');
+            }
+        </script>
+
+        {% if session.get('user_id') %}
+        <!-- Dynamic Sidebar -->
+        <aside class="sidebar" id="mainSidebar">
+            <a href="{{ url_for('main.index') }}" class="sidebar-brand">
+                <div class="sidebar-brand-icon">
+                    <i class="bi bi-grid-fill"></i>
+                </div>
+                <span class="sidebar-brand-text">Visitor Intelligence</span>
+            </a>
+
+            <!-- Quick Search in Sidebar -->
+            <div class="sidebar-search mb-4">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-transparent border-0 text-muted"><i
+                            class="bi bi-search"></i></span>
+                    <input type="text" id="sidebarSearch" class="form-control bg-transparent border-0 text-main"
+                        placeholder="Jump to..." onkeyup="sidebarSearchHandler(event)">
+                </div>
+            </div>
+
+            <ul class="sidebar-nav">
+                <div class="sidebar-section-title">Main</div>
+                {% for item in sidebar_menu_items %}
+                {% if item.enabled %}
+
+                {# Dashboard with badge #}
+                {% if item.name == 'dashboard' %}
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('main.index') }}"
+                        class="sidebar-nav-link {% if request.endpoint == 'main.index' %}active{% endif %}"
+                        data-page="dashboard" title="{{ item.label }}">
+                        <i class="{{ item.icon }}"></i>
+                        <span>{{ item.label }}</span>
+                        <span class="nav-badge">{{ session.get('active_count', 0) }}</span>
+                    </a>
+                </li>
+
+                {# Visitor Logs with subnav #}
+                {% elif item.name == 'logs' %}
+                <li class="sidebar-nav-item">
+                    <a href="#submenuLogs"
+                        class="sidebar-nav-link has-submenu {% if request.endpoint == 'main.logs' %}active{% endif %}"
+                        data-page="logs" data-bs-toggle="collapse" role="button"
+                        aria-expanded="{% if request.endpoint == 'main.logs' %}true{% else %}false{% endif %}"
+                        aria-controls="submenuLogs" title="{{ item.label }}">
+                        <i class="{{ item.icon }}"></i>
+                        <span>{{ item.label }}</span>
+                    </a>
+                    <ul class="sidebar-subnav collapse {% if request.endpoint == 'main.logs' %}show{% endif %}"
+                        id="submenuLogs">
+                        <li><a href="{{ url_for('main.logs') }}?status=IN"
+                                class="sidebar-sublink {% if request.args.get('status') == 'IN' %}active{% endif %}">
+                                On-Site</a></li>
+                        <li><a href="{{ url_for('main.logs') }}?status=OUT"
+                                class="sidebar-sublink {% if request.args.get('status') == 'OUT' %}active{% endif %}">
+                                Departed</a></li>
+                    </ul>
+                </li>
+
+                {# Groups #}
+                {% elif item.name == 'groups' %}
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('main.groups') }}"
+                        class="sidebar-nav-link {% if request.endpoint == 'main.groups' %}active{% endif %}"
+                        data-page="groups" title="{{ item.label }}">
+                        <i class="{{ item.icon }}"></i>
+                        <span>{{ item.label }}</span>
+                    </a>
+                </li>
+
+                {# DMT #}
+                {% elif item.name == 'dmt' %}
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('main.dmt') }}"
+                        class="sidebar-nav-link {% if request.endpoint == 'main.dmt' %}active{% endif %}"
+                        data-page="dmt" title="{{ item.label }}">
+                        <i class="{{ item.icon }}"></i>
+                        <span>{{ item.label }}</span>
+                    </a>
+                </li>
+
+                {# Governance Section #}
+                {% if item.name == 'menu_maintenance' %}
+                <div class="sidebar-section-title">Governance</div>
+                {% endif %}
+
+                {# Menu Maintenance #}
+                {% elif item.name == 'menu_maintenance' %}
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('main.menu_maintenance') }}"
+                        class="sidebar-nav-link {% if request.endpoint == 'main.menu_maintenance' %}active{% endif %}"
+                        data-page="menu-maintenance">
+                        <i class="{{ item.icon }}"></i>
+                        <span>{{ item.label }}</span>
+                    </a>
+                </li>
+
+                {# Admin-only items #}
+                {# User Management - ADMIN ONLY #}
+                {% elif item.name == 'user_management' %}
+                {% if session.get('role') == 'ADMIN' %}
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('main.user_management') }}"
+                        class="sidebar-nav-link {% if request.endpoint == 'main.user_management' %}active{% endif %}"
+                        data-page="user-management" title="{{ item.label }}">
+                        <i class="{{ item.icon }}"></i>
+                        <span>{{ item.label }}</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {# Center of Excellence (CoE) - ADMIN ONLY #}
+                {% elif item.name == 'coe' %}
+                {% if session.get('role') == 'ADMIN' %}
+                <li class="sidebar-nav-item">
+                    <a href="{{ url_for('main.coe') }}"
+                        class="sidebar-nav-link {% if request.endpoint == 'main.coe' %}active{% endif %}"
+                        data-page="coe" title="{{ item.label }}">
+                        <i class="{{ item.icon }}"></i>
+                        <span>{{ item.label }}</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {# Fallback for other items (use raw URL) #}
+                {% else %}
+                <li class="sidebar-nav-item">
+                    <a href="{{ item.url }}" class="sidebar-nav-link {% if request.path == item.url %}active{% endif %}"
+                        title="{{ item.label }}">
+                        <i class="{{ item.icon }}"></i>
+                        <span>{{ item.label }}</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% endif %}
+                {% endfor %}
+            </ul>
+
+            <!-- Quick Stats in Sidebar -->
+            <div class="sidebar-stats">
+                <div class="sidebar-stat">
+                    <span class="sidebar-stat-label">On-Site</span>
+                    <span class="sidebar-stat-value text-success" id="sidebarActiveCount">-</span>
+                </div>
+                <div class="sidebar-stat">
+                    <span class="sidebar-stat-label">Today</span>
+                    <span class="sidebar-stat-value" id="sidebarTodayCount">-</span>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <a href="#" class="sidebar-nav-link" title="Settings">
+                    <i class="bi bi-gear"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="sidebar-nav-link" title="Info">
+                    <i class="bi bi-info-circle"></i>
+                    <span>Info</span>
+                </a>
+                <a href="{{ url_for('main.logout') }}" class="sidebar-nav-link logout-link mt-auto pt-4"
+                    title="Log Out">
+                    <i class="bi bi-arrow-bar-left"></i>
+                    <span class="d-none">Logout</span>
+                </a>
+            </div>
+        </aside>
+        {% endif %}
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Breadcrumb Navigation -->
+            {% if session.get('user_id') %}
+            <nav class="breadcrumb-nav mb-4 d-none d-md-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-3">
+                    <button id="desktopSidebarToggle"
+                        class="btn btn-sm btn-light border shadow-sm rounded-circle d-flex align-items-center justify-content-center"
+                        style="width: 32px; height: 32px; color: var(--text-main); transition: transform 0.2s;"
+                        onmousedown="this.style.transform='scale(0.9)';" onmouseup="this.style.transform='scale(1)';"
+                        onmouseleave="this.style.transform='scale(1)';" title="Toggle Sidebar">
+                        <i class="bi bi-layout-sidebar text-primary"></i>
+                    </button>
+                    <a href="{{ url_for('main.index') }}" class="breadcrumb-link"><i class="bi bi-house-door"></i></a>
+                    <span class="breadcrumb-separator">/</span>
+                    {% if request.endpoint == 'main.index' %}
+                    <span class="breadcrumb-current">Dashboard</span>
+                    {% elif request.endpoint == 'main.groups' %}
+                    <span class="breadcrumb-current">Visitor Groups</span>
+                    {% elif request.endpoint == 'main.logs' %}
+                    <span class="breadcrumb-current">Visitor Logs</span>
+                    {% elif request.endpoint == 'main.add_visitor' %}
+                    <span class="breadcrumb-current">Add Visitor</span>
+                    {% elif request.endpoint == 'main.settings' %}
+                    <span class="breadcrumb-current">Email Settings</span>
+                    {% endif %}
+                </div>
+                <div class="ms-auto d-flex align-items-center gap-3">
+                    {% if session.get('unit') %}
+                    <span
+                        class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle px-3 py-2 rounded-pill shadow-sm"
+                        style="font-size: 0.85rem; font-weight: 600;">
+                        <i class="bi bi-geo-alt-fill me-1"></i> {{ session.get('unit') }}
+                    </span>
+                    {% endif %}
+
+                    <!-- Top Nav Interactive Profile Pill -->
+                    <div class="top-nav-pill">
+                        <!-- Notification Trigger -->
+                        <div class="pill-bell-trigger">
+                            <i class="bi bi-bell text-muted" style="font-size: 1.1rem;"></i>
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary"
+                                style="font-size: 0.5rem; margin-top: 6px; margin-left: -12px;">4</span>
+                        </div>
+
+                        <!-- Profile Dropdown -->
+                        <div class="dropdown">
+                            <div class="pill-profile-trigger" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span style="font-size: 0.85rem; font-weight: 700; color: #334155;">{{
+                                    session.get('username', 'Admin')|title }}</span>
+                                <i class="bi bi-chevron-down text-muted" style="font-size: 0.7rem;"></i>
+                                <div class="avatar shadow-sm border border-light"
+                                    style="width: 32px; height: 32px; background: #f1f5f9; color: #1e293b; font-size: 0.8rem; font-weight: 800;">
+                                    {{ session.get('username', 'A')[0].upper() }}
+                                </div>
+                            </div>
+
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3 p-2"
+                                style="border-radius: 16px; width: 230px; animation: fadeIn 0.15s ease-out;">
+                                <li><a class="dropdown-item py-2 px-3 fw-600 text-muted rounded-3 mb-1"
+                                        style="font-size:0.875rem;" href="#"><i class="bi bi-building me-2"></i> My
+                                        Organization</a></li>
+                                <li><a class="dropdown-item py-2 px-3 fw-600 text-muted rounded-3 mb-1"
+                                        style="font-size:0.875rem;" href="{{ url_for('main.profile') }}"><i
+                                            class="bi bi-person me-2"></i> My Profile</a></li>
+                                <li><a class="dropdown-item py-2 px-3 fw-600 text-muted rounded-3 mb-1"
+                                        style="font-size:0.875rem;" href="#"><i class="bi bi-gear me-2"></i>
+                                        Settings</a></li>
+                                <li>
+                                    <hr class="dropdown-divider mx-2">
+                                </li>
+                                <li><a class="dropdown-item py-2 px-3 fw-600 text-danger rounded-3 mt-1"
+                                        style="font-size:0.875rem;" href="{{ url_for('main.logout') }}"><i
+                                            class="bi bi-box-arrow-right me-2"></i> Log Out</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            {% endif %}
+
+            <!-- Floating Toast Container -->
+            <div class="toast-container" id="globalToastContainer">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="premium-toast toast-{{ 'danger' if category == 'error' else category if category in ['success', 'warning', 'info', 'danger'] else 'info' }}"
+                    role="alert">
+                    <div class="toast-icon">
+                        <i
+                            class="bi {{ 'bi-check-circle-fill' if category == 'success' else 'bi-exclamation-triangle-fill' if category == 'warning' else 'bi-x-circle-fill' if category == 'error' or category == 'danger' else 'bi-info-circle-fill' }}"></i>
+                    </div>
+                    <div class="toast-content">
+                        <h4 class="toast-title">{{ category|upper if category in ['success', 'warning', 'info', 'error',
+                            'danger'] else 'NOTIFICATION' }}</h4>
+                        <p class="toast-message">{{ message }}</p>
+                    </div>
+                    <button type="button" class="toast-close"
+                        onclick="this.parentElement.classList.add('hide'); setTimeout(() => this.parentElement.remove(), 600)">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Mobile Bottom Nav V2 is injected via JS -->
+
+        <!-- Global Side Drawer -->
+        <div class="drawer-backdrop" id="globalDrawerBackdrop"></div>
+        <div class="universal-drawer" id="globalDrawer">
+            <div class="drawer-header">
+                <div>
+                    <h5 class="drawer-title" id="globalDrawerTitle">Details</h5>
+                    <div class="drawer-subtitle" id="globalDrawerSubtitle"></div>
+                </div>
+                <button type="button" class="btn-close" onclick="closeGlobalDrawer()"></button>
+            </div>
+            <div class="drawer-body" id="globalDrawerBody">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+
+
+    </div>
+
+
+    {% if session.get('user_id') %}
+    <!-- Core Scripts (Deferred) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ url_for('static', filename='js/auto-logout.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/mobile-suite-v7.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}" defer></script>
+    {% endif %}
+    <script>
+        // Global Drawer Logic
+        const globalDrawer = document.getElementById('globalDrawer');
+        const globalBackdrop = document.getElementById('globalDrawerBackdrop');
+        const globalDrawerTitle = document.getElementById('globalDrawerTitle');
+        const globalDrawerSubtitle = document.getElementById('globalDrawerSubtitle');
+        const globalDrawerBody = document.getElementById('globalDrawerBody');
+
+        function toggleGlobalDrawer(show) {
+            if (globalDrawer && globalBackdrop) {
+                if (show) {
+                    globalDrawer.classList.add('open');
+                    globalBackdrop.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    globalDrawer.classList.remove('open');
+                    globalBackdrop.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+
+        window.closeGlobalDrawer = function () {
+            toggleGlobalDrawer(false);
+        };
+
+        if (globalBackdrop) {
+            globalBackdrop.addEventListener('click', window.closeGlobalDrawer);
+        }
+
+        // Global Toast Notification Auto-Dismiss
+        document.addEventListener('DOMContentLoaded', () => {
+            const toasts = document.querySelectorAll('.premium-toast');
+            toasts.forEach((toast, index) => {
+                // Auto-dismiss after 6 seconds + 1s stagger per toast
+                setTimeout(() => {
+                    if (toast && !toast.classList.contains('hide')) {
+                        toast.classList.add('hide');
+                        setTimeout(() => toast.remove(), 600);
+                    }
+                }, 6000 + (index * 1000));
+            });
+        });
+
+        window.openGlobalDrawer = function (title, content, subtitle = '') {
+            if (globalDrawerTitle) globalDrawerTitle.textContent = title;
+            if (globalDrawerSubtitle) globalDrawerSubtitle.textContent = subtitle;
+            if (globalDrawerBody) globalDrawerBody.innerHTML = content;
+            toggleGlobalDrawer(true);
+        };
+
+
+
+        // Sidebar Search Handler
+        function sidebarSearchHandler(event) {
+            if (event.key === 'Enter') {
+                const query = document.getElementById('sidebarSearch').value.trim();
+                if (query) {
+                    window.location.href = `{{ url_for('main.logs') }}?search=${encodeURIComponent(query)}`;
+                }
+            }
+        }
+
+        // Dynamic sidebar stats (would be loaded via AJAX in production)
+        // Dynamic sidebar stats & Auto-Refresh
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initial Load
+            updateStats();
+
+            // Auto-Refresh Interval (Fast 15s refresh for "faster refresh rate" request)
+            setInterval(updateStats, 15000);
+
+            function updateStats() {
+                // In a real app, fetch via AJAX. Here we sync with DOM if available or keep static.
+                // We'll add a visual indicator that refresh is happening
+                const activeEl = document.getElementById('sidebarActiveCount');
+                if (activeEl) {
+                    activeEl.style.opacity = '0.5';
+                    setTimeout(() => activeEl.style.opacity = '1', 300);
+                }
+
+                // Simulate fetching new numbers
+                const activeVal = document.querySelector('.stat-value.text-success')?.textContent || '0';
+                const todayVal = document.querySelectorAll('.stat-value')[2]?.textContent || '0';
+
+                if (activeEl) activeEl.textContent = activeVal;
+                const todayEl = document.getElementById('sidebarTodayCount');
+                if (todayEl) todayEl.textContent = todayVal;
+            }
+        });
+
+        // Global Pull-to-Refresh Logic - REMOVED per user request
+        // The pull-to-refresh usage was found to be disturbing and triggering multiple refreshes.
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function (e) {
+            // Ctrl+K for quick search
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                const searchInput = document.getElementById('sidebarSearch') || document.getElementById('globalSearch');
+                if (searchInput) searchInput.focus();
+            }
+
+            // Escape to close modals/panels or go to dashboard
+            if (e.key === 'Escape') {
+                let hasClosedAnything = false;
+
+                // Close Global Drawer
+                const globalDrawer = document.getElementById('globalDrawer');
+                if (globalDrawer && globalDrawer.classList.contains('open')) {
+                    if (typeof window.closeGlobalDrawer === 'function') {
+                        window.closeGlobalDrawer();
+                        hasClosedAnything = true;
+                    }
+                }
+
+                // Close Detail Panel (Old)
+                const detailPanel = document.getElementById('detailPanel');
+                if (detailPanel && detailPanel.classList.contains('open')) {
+                    if (typeof closeDetailPanel === 'function') {
+                        closeDetailPanel();
+                        hasClosedAnything = true;
+                    }
+                }
+
+                // Close local modals (like policy modal on add visitor)
+                const policyModal = document.getElementById('policyModal');
+                if (policyModal && policyModal.classList.contains('active')) {
+                    if (typeof closePolicyModal === 'function') {
+                        closePolicyModal();
+                        hasClosedAnything = true;
+                    }
+                }
+
+                // If nothing was open to close, go to dashboard
+                if (!hasClosedAnything) {
+                    window.location.href = "{{ url_for('main.index') }}";
+                }
+            }
+        });
+
+        // Smooth page transitions
+        document.querySelectorAll('.sidebar-nav-link, .sidebar-sublink').forEach(link => {
+            link.addEventListener('click', function (e) {
+                if (this.getAttribute('href').startsWith('/') && !this.getAttribute('target')) {
+                    document.body.classList.add('page-transitioning');
+                }
+            });
+        });
+
+        // Mobile Sidebar Toggle
+        document.addEventListener('DOMContentLoaded', function () {
+            const desktopToggle = document.getElementById('desktopSidebarToggle');
+            const mobileToggle = document.getElementById('mobileSidebarToggle');
+            const sidebar = document.getElementById('mainSidebar');
+            const backdrop = document.querySelector('.sidebar-backdrop');
+
+            // Desktop Sidebar hide/unhide logic
+            if (desktopToggle && sidebar) {
+                // We handle the initial state via the pre-flight script above, 
+                // but we also sync the class here for consistency.
+                if (localStorage.getItem('sidebar_collapsed') === 'true') {
+                    sidebar.classList.add('collapsed');
+                }
+
+                desktopToggle.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    // Ensure the pre-flight class is removed so we use standard transition logic
+                    document.documentElement.classList.remove('sidebar-is-collapsed');
+                    sidebar.classList.toggle('collapsed');
+                    localStorage.setItem('sidebar_collapsed', sidebar.classList.contains('collapsed'));
+                });
+            }
+
+            if (mobileToggle && sidebar && backdrop) {
+                function toggleSidebar() {
+                    sidebar.classList.toggle('mobile-open');
+                    backdrop.classList.toggle('show');
+                    document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+                }
+
+                mobileToggle.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    toggleSidebar();
+                });
+
+                backdrop.addEventListener('click', toggleSidebar);
+            }
+
+            // FAB Toggle - Enhanced for Mobile
+            const fabButton = document.getElementById('fabButton');
+            const fabMenu = document.getElementById('fabMenu');
+            const fabBackdrop = document.getElementById('fabBackdrop');
+
+            if (fabButton && fabMenu && fabBackdrop) {
+                let fabOpen = false;
+
+                function toggleFAB(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+
+                    fabOpen = !fabOpen;
+                    fabButton.classList.toggle('open', fabOpen);
+                    fabMenu.classList.toggle('open', fabOpen);
+                    fabBackdrop.classList.toggle('show', fabOpen);
+
+                    // Prevent body scroll when FAB is open
+                    document.body.style.overflow = fabOpen ? 'hidden' : '';
+                }
+
+                // Touch events for better mobile response
+                fabButton.addEventListener('touchstart', function (e) {
+                    e.preventDefault();
+                    this.style.transform = 'scale(0.92)';
+                }, { passive: false });
+
+                fabButton.addEventListener('touchend', function (e) {
+                    e.preventDefault();
+                    this.style.transform = '';
+                    toggleFAB(e);
+                }, { passive: false });
+
+                // Click event for desktop/fallback
+                fabButton.addEventListener('click', function (e) {
+                    if (!e.isTrusted) return; // Prevent duplicate events
+                    toggleFAB(e);
+                });
+
+                // Close FAB when clicking backdrop
+                fabBackdrop.addEventListener('touchend', function (e) {
+                    e.preventDefault();
+                    if (fabOpen) toggleFAB(e);
+                }, { passive: false });
+
+                fabBackdrop.addEventListener('click', function (e) {
+                    if (fabOpen) toggleFAB(e);
+                });
+
+                // Close FAB when clicking menu items
+                const fabMenuItems = document.querySelectorAll('.fab-menu-item');
+                fabMenuItems.forEach(item => {
+                    item.addEventListener('touchstart', function () {
+                        this.style.transform = 'scale(0.96)';
+                    }, { passive: true });
+
+                    item.addEventListener('touchend', function () {
+                        this.style.transform = '';
+                    }, { passive: true });
+                });
+            }
+        });
+    </script>
+
+    <style>
+        /* MOBILE OVERRIDES & ADJUSTMENTS */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                padding: 1rem !important;
+            }
+
+            .mobile-bottom-nav {
+                display: flex !important;
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                background: white;
+                z-index: 1001;
+            }
+        }
+
+        @media print {
+
+            .sidebar,
+            .topbar,
+            .mobile-bottom-nav,
+            .fab-container,
+            .btn-print,
+            .no-print {
+                display: none !important;
+            }
+
+            .main-content {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+        }
+    </style>
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

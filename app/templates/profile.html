@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">User Profile</h1>
+        <p class="page-subtitle">Manage your account settings and preferences</p>
+    </div>
+</div>
+
+<div class="dashboard-container pt-0">
+    <div class="row g-4 mx-4">
+        <!-- Account Summary Sidebar -->
+        <div class="col-lg-4 order-lg-2">
+            <div class="glass-card text-center mb-4">
+                <div class="sidebar-brand-icon mx-auto mb-3"
+                    style="width: 80px; height: 80px; border-radius: 24px; font-size: 2rem;">
+                    {{ user.full_name[0].upper() }}
+                </div>
+                <h4 class="fw-800 text-main mb-1">{{ user.full_name }}</h4>
+                <p class="text-sub small mb-3">@{{ user.username }}</p>
+                <span class="badge-status status-in mb-4">{{ user.role }}</span>
+
+                <div class="text-start mt-4 pt-4 border-top">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="text-primary"><i class="bi bi-envelope"></i></div>
+                        <div>
+                            <div class="text-sub" style="font-size: 0.7rem;">Email Address</div>
+                            <div class="fw-600 text-main">{{ user.email or 'Not set' }}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="text-primary"><i class="bi bi-calendar-check"></i></div>
+                        <div>
+                            <div class="text-sub" style="font-size: 0.7rem;">Member Since</div>
+                            <div class="fw-600 text-main">{{ user.created_at.strftime('%b %d, %Y') if user.created_at
+                                else 'N/A' }}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="text-success"><i class="bi bi-shield-check"></i></div>
+                        <div>
+                            <div class="text-sub" style="font-size: 0.7rem;">Account Status</div>
+                            <div class="fw-600 text-success">Active</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Stats -->
+            <div class="glass-card">
+                <h6 class="fw-800 text-main mb-3">Security Overview</h6>
+                <div class="p-3 rounded-3 mb-3"
+                    style="background: var(--surface-2); border-left: 3px solid var(--warning);">
+                    <div class="fw-bold small text-main mb-1">Auto-Logout</div>
+                    <div class="text-sub small">Active (5 minutes inactivity)</div>
+                </div>
+                <div class="p-3 rounded-3" style="background: var(--surface-2); border-left: 3px solid var(--primary);">
+                    <div class="fw-bold small text-main mb-1">Password Strength</div>
+                    <div class="text-sub small">Secure (Encrypted)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Information Card -->
+        <div class="col-lg-8 order-lg-1">
+            <div class="glass-card mb-4">
+                <div class="d-flex align-items-center gap-4 mb-4">
+                    <div class="sidebar-brand-icon" style="width: 48px; height: 48px; border-radius: 14px;">
+                        <i class="bi bi-person-badge"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-800 text-main mb-0">Personal Details</h5>
+                        <p class="text-sub small mb-0">Update your basic information</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('main.profile') }}">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-sub">Full Name</label>
+                            <input type="text" class="form-control" name="full_name" value="{{ user.full_name }}"
+                                required style="height: 46px; border-radius: 10px; border: 1px solid var(--border);">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-sub">Username</label>
+                            <input type="text" class="form-control" value="{{ user.username }}" readonly
+                                style="height: 46px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2);">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-uppercase text-sub">Email Address</label>
+                            <input type="email" class="form-control" name="email" value="{{ user.email or '' }}"
+                                placeholder="your.email@example.com"
+                                style="height: 46px; border-radius: 10px; border: 1px solid var(--border);">
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-top text-end">
+                        <button type="submit" class="btn-premium btn-premium-primary px-5 ms-auto">
+                            Save Profile Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Change Password Card -->
+            <div class="glass-card">
+                <div class="d-flex align-items-center gap-4 mb-4">
+                    <div class="sidebar-brand-icon"
+                        style="width: 48px; height: 48px; border-radius: 14px; background: #fffbeb; color: #f59e0b;">
+                        <i class="bi bi-shield-lock"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-800 text-main mb-0">Security Credentials</h5>
+                        <p class="text-sub small mb-0">Update your account password</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('main.change_password') }}">
+                    <div class="row g-4">
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-uppercase text-sub">Current Password</label>
+                            <input type="password" class="form-control" name="current_password" required
+                                style="height: 46px; border-radius: 10px; border: 1px solid var(--border);">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-sub">New Password</label>
+                            <input type="password" class="form-control" name="new_password" required minlength="6"
+                                style="height: 46px; border-radius: 10px; border: 1px solid var(--border);">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase text-sub">Confirm New Password</label>
+                            <input type="password" class="form-control" name="confirm_password" required
+                                style="height: 46px; border-radius: 10px; border: 1px solid var(--border);">
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4 border-top text-end">
+                        <button type="submit"
+                            class="btn-premium btn-premium-secondary px-5 ms-auto text-warning border-warning">
+                            Update Space Credentials
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

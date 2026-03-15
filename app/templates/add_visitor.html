@@ -1,0 +1,1941 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Scoped Premium Styles */
+    .premium-wrapper {
+        font-family: 'Outfit', 'Inter', sans-serif;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: calc(100vh - 60px);
+        padding: 2rem;
+        color: #1f2937;
+        border-radius: 20px;
+        margin: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Glassmorphism Utilities */
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    }
+
+    /* Page Header */
+    .premium-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        color: #1f2937;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .premium-header h1 {
+        font-size: 3rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .premium-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+
+    /* Layout */
+    .registration-grid {
+        display: grid;
+        grid-template-columns: 1fr 420px;
+        gap: 2.5rem;
+        align-items: start;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* Form Card */
+    .form-card {
+        padding: 0;
+        overflow: hidden;
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-header {
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .form-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #1f2937;
+    }
+
+    .step-indicator {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .step-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
+    }
+
+    .step-dot.active {
+        width: 24px;
+        background: #6366f1;
+        border-radius: 4px;
+    }
+
+    .form-body {
+        padding: 2.5rem;
+    }
+
+    .form-step {
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .form-step.active {
+        display: block;
+        opacity: 1;
+        animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .step-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+    }
+
+    /* Inputs */
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+    }
+
+    .required {
+        color: #ec4899;
+        margin-left: 2px;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+        font-size: 1.2rem;
+        transition: color 0.3s;
+        z-index: 2;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3.5rem;
+        border: 2px solid transparent;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.6);
+        font-size: 1rem;
+        font-family: inherit;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .form-control:focus {
+        outline: none;
+        background: white;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-control:focus+.input-icon {
+        color: #6366f1;
+    }
+
+    /* Smart Features */
+    .smart-badge {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        transition: transform 0.2s;
+        z-index: 10;
+        display: none;
+    }
+
+    .smart-badge.vip {
+        background: linear-gradient(135deg, #fbbf24, #d97706);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        display: block;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            transform: translateY(-50%) scale(1);
+        }
+
+        50% {
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        100% {
+            transform: translateY(-50%) scale(1);
+        }
+    }
+
+    .autocomplete-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        left: 0;
+        right: 0;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+        max-height: 250px;
+        z-index: 100;
+        opacity: 0;
+        transform: translateY(-10px);
+        pointer-events: none;
+        transition: all 0.2s;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .autocomplete-dropdown.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .autocomplete-item {
+        padding: 0.75rem 1.25rem;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+
+    .autocomplete-item:hover {
+        background: #f3f4f6;
+    }
+
+    .autocomplete-item i {
+        color: #6b7280;
+        font-size: 0.9rem;
+    }
+
+    /* Quick Select Grid */
+    .quick-select {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+    }
+
+    .quick-btn {
+        padding: 1.25rem;
+        background: rgba(255, 255, 255, 0.6);
+        border: 2px solid transparent;
+        border-radius: 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .quick-btn:hover {
+        transform: translateY(-3px);
+        background: white;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .quick-btn.active {
+        background: white;
+        border-color: #6366f1;
+        color: #6366f1;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+    }
+
+    .quick-btn i {
+        font-size: 1.5rem;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Preview Card (3D Effect) */
+    .preview-card {
+        padding: 2.5rem;
+        position: sticky;
+        top: 2rem;
+        perspective: 1000px;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 24px;
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+    }
+
+    .badge-3d-wrapper {
+        transition: transform 0.1s;
+        transform-style: preserve-3d;
+    }
+
+    .preview-badge {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.4));
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        border-radius: 24px;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .preview-badge::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+        transform: rotate(45deg);
+        animation: shine 6s infinite;
+        pointer-events: none;
+    }
+
+    @keyframes shine {
+        0% {
+            transform: translateX(-100%) rotate(45deg);
+        }
+
+        20% {
+            transform: translateX(100%) rotate(45deg);
+        }
+
+        100% {
+            transform: translateX(100%) rotate(45deg);
+        }
+    }
+
+    .badge-photo {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        margin: 0 auto 1.5rem;
+        border: 4px solid white;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        background: #f3f4f6;
+        position: relative;
+    }
+
+    .badge-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .badge-name {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+    }
+
+    .badge-company {
+        font-size: 1.1rem;
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
+
+    .badge-pill {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .badge-detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .badge-detail-label {
+        color: #6b7280;
+    }
+
+    .badge-detail-val {
+        font-weight: 600;
+        color: #1f2937;
+    }
+
+    .badge-qr {
+        margin-top: 1.5rem;
+    }
+
+    .qr-code {
+        background: white;
+        padding: 0.5rem;
+        border-radius: 12px;
+        display: inline-block;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Buttons */
+    .form-navigation {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .btn {
+        flex: 1;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+        font-family: inherit;
+    }
+
+    .btn-secondary {
+        background: rgba(0, 0, 0, 0.05);
+        color: #1f2937;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(99, 102, 241, 0.4);
+    }
+
+    .btn-success {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Photo Section */
+    .photo-section {
+        text-align: center;
+        margin: 2rem 0;
+    }
+
+    .photo-preview-container {
+        width: 160px;
+        height: 160px;
+        margin: 0 auto 1.5rem;
+        border-radius: 50%;
+        border: 4px solid white;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        background: #f3f4f6;
+        position: relative;
+    }
+
+    .photo-preview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: none;
+    }
+
+    .photo-preview.show {
+        display: block;
+    }
+
+    .photo-placeholder {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+    }
+
+    .photo-placeholder i {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-photo {
+        background: white;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin: 0.5rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-photo:hover {
+        background: #f9fafb;
+        transform: translateY(-2px);
+    }
+
+    /* Camera Modal & HUD - GLOBAL OVERLAY */
+    .camera-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.9);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.3s ease;
+    }
+
+    .camera-modal.active {
+        display: flex;
+    }
+
+    .camera-container {
+        position: relative;
+        width: 100%;
+        max-width: 900px;
+        height: 95vh;
+        background: #111827;
+        border-radius: 24px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    }
+
+    .camera-viewport {
+        flex: 1;
+        position: relative;
+        background: #000;
+        overflow: hidden;
+    }
+
+    #cameraVideo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+        /* Mirror effect for front camera */
+    }
+
+    /* New Professional Features */
+    .camera-toolbox {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 8px 16px;
+        border-radius: 30px;
+        display: flex;
+        gap: 16px;
+        z-index: 50;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tool-btn {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 1.25rem;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tool-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: scale(1.1);
+    }
+
+    .tool-btn.active {
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    /* Filters Menu */
+    .filters-menu {
+        position: absolute;
+        bottom: 90px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: rgba(0, 0, 0, 0.8);
+        padding: 12px;
+        border-radius: 16px;
+        display: flex;
+        gap: 12px;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s;
+        z-index: 45;
+    }
+
+    .filters-menu.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+        pointer-events: auto;
+    }
+
+    .filter-option {
+        width: 60px;
+        height: 60px;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        overflow: hidden;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .filter-option img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .filter-option span {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        font-size: 8px;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        text-align: center;
+    }
+
+    .filter-option.selected {
+        border-color: #10b981;
+    }
+
+
+    /* HUD Elements */
+    .camera-hud-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+            linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px) 0 0 / 50px 50px,
+            linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px) 0 0 / 50px 50px;
+        opacity: 0.3;
+        z-index: 5;
+    }
+
+    .face-scanner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 280px;
+        height: 280px;
+        border: 2px solid rgba(16, 185, 129, 0.5);
+        border-radius: 50% / 40%;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+        z-index: 10;
+        display: none;
+        /* Hidden initially, shown by JS */
+    }
+
+    .scan-line {
+        width: 100%;
+        height: 2px;
+        background: #10b981;
+        box-shadow: 0 0 10px #10b981;
+        position: absolute;
+        top: 0;
+        animation: scan 2s linear infinite;
+    }
+
+    @keyframes scan {
+        0% {
+            top: 0%;
+            opacity: 0;
+        }
+
+        50% {
+            opacity: 1;
+        }
+
+        100% {
+            top: 100%;
+            opacity: 0;
+        }
+    }
+
+    .hud-metrics {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #10b981;
+        font-family: monospace;
+        font-size: 0.8rem;
+        z-index: 20;
+        display: none;
+        /* Hidden initially */
+    }
+
+    .camera-controls {
+        padding: 2rem;
+        background: #1f2937;
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 60;
+    }
+
+    .camera-btn {
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+
+    .camera-btn-capture {
+        background: white;
+        color: black;
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        padding: 0;
+        justify-content: center;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .camera-btn-capture:hover {
+        transform: scale(1.1);
+    }
+
+    .camera-btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .camera-btn-success {
+        background: #10b981;
+        color: white;
+    }
+
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .registration-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .preview-card {
+            position: static;
+            margin-top: 2rem;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
+<div class="premium-wrapper">
+    <!-- Page Header -->
+    <div class="premium-header">
+        <h1><i class="bi bi-person-plus-fill"></i> Add New Visitor</h1>
+        <p>Advanced Registration Portal</p>
+        <button type="button" class="btn btn-outline-dark mt-3 mx-auto"
+            onclick="document.getElementById('draftsModal').classList.add('active')"
+            style="display: flex; align-items: center; gap: 0.5rem; border-radius: 20px; font-weight: 600; padding: 0.5rem 1.5rem; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); margin: 0 auto;">
+            <i class="bi bi-file-earmark-text"></i> View Saved Drafts ({{ drafts|length if drafts else 0 }})
+        </button>
+    </div>
+
+    <!-- Registration Grid -->
+    <div class="registration-grid">
+        <!-- Form Card -->
+        <div class="form-card">
+            <div class="form-header">
+                <h2>
+                    <i class="bi bi-clipboard-check"></i>
+                    Visitor Details
+                </h2>
+                <div class="step-indicator">
+                    <div class="step-dot active" data-step="1"></div>
+                    <div class="step-dot" data-step="2"></div>
+                    <div class="step-dot" data-step="3"></div>
+                    <div class="step-dot" data-step="4"></div>
+                </div>
+            </div>
+
+            <form id="visitorForm" method="POST">
+                <div class="form-body">
+                    <!-- Step 1: Visitor Information -->
+                    <div class="form-step active" data-step="1">
+                        <div class="step-title">Step 1: Visitor Information</div>
+
+                        <div class="form-group">
+                            <label>Full Name <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-person input-icon"></i>
+                                <input type="text" name="visitor_name" id="visitorName" class="form-control"
+                                    placeholder="e.g., John Doe"
+                                    value="{{ draft_data.visitor_name if draft_data else prefill_name }}" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Phone Number <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-telephone input-icon"></i>
+                                <input type="tel" name="phone" id="phone" class="form-control"
+                                    placeholder="+91 98765 43210" value="{{ draft_data.phone if draft_data else '' }}"
+                                    required>
+                                <span id="vipBadge" class="smart-badge vip" style="display: none;">VIP</span>
+                            </div>
+
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-envelope input-icon"></i>
+                                <input type="email" name="email" id="email" class="form-control"
+                                    placeholder="john.doe@example.com"
+                                    value="{{ draft_data.email if draft_data else '' }}">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Company</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-building input-icon"></i>
+                                <input type="text" name="company" id="company" class="form-control"
+                                    placeholder="Company Name" autocomplete="off"
+                                    value="{{ draft_data.company if draft_data else '' }}">
+                                <div class="autocomplete-dropdown" id="companyDropdown"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Visitor Type</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-tag input-icon"></i>
+                                <select name="visitor_type" id="visitorType" class="form-control"
+                                    onchange="toggleCustomerFields()">
+                                    <option value="Guest">Guest</option>
+                                    <option value="Customer">Customer</option>
+                                    <option value="Vendor">Vendor</option>
+                                    <option value="Contractor">Contractor</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="customerFields"
+                            style="display: none; background: rgba(99, 102, 241, 0.05); padding: 1.5rem; border-radius: 12px; margin-top: 1rem; border: 1px solid rgba(99, 102, 241, 0.2);">
+                            <div class="step-title"
+                                style="font-size: 1rem; border-bottom: none; margin-bottom: 1rem; padding-bottom: 0;">
+                                <i class="bi bi-star"></i> Customer Services Required
+                            </div>
+
+                            <div class="form-group">
+                                <label>Assigned Department Email(s) for Alert <span
+                                        class="badge bg-primary text-white ms-1" style="font-size: 0.65rem;">Add+
+                                        Mails</span></label>
+                                <div class="input-wrapper">
+                                    <i class="bi bi-envelope-exclamation input-icon"></i>
+                                    <input type="text" name="assigned_department_email" id="assignedDeptEmail"
+                                        class="form-control" placeholder="dept1@example.com, dept2@example.com">
+                                </div>
+                                <small
+                                    style="display: block; color: #6b7280; margin-top: 0.5rem; margin-left: 0.5rem;">An
+                                    alert will be sent to this department upon check-in. Separate multiple emails with
+                                    commas.</small>
+                            </div>
+
+                            <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #1f2937; font-weight: 500;">
+                                    <input type="checkbox" name="pickup_required" id="pickupCheckbox"
+                                        style="width: 1.2rem; height: 1.2rem; cursor: pointer;"
+                                        onchange="toggleTransportFields()">
+                                    <span>Require Pickup?</span>
+                                </label>
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #1f2937; font-weight: 500;">
+                                    <input type="checkbox" name="drop_required" id="dropCheckbox"
+                                        style="width: 1.2rem; height: 1.2rem; cursor: pointer;"
+                                        onchange="toggleTransportFields()">
+                                    <span>Require Drop?</span>
+                                </label>
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #1f2937; font-weight: 500;">
+                                    <input type="checkbox" name="engage_driver"
+                                        style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+                                    <span>Engage Driver?</span>
+                                </label>
+                            </div>
+
+                            <!-- Extended Transport Details (Separate Panes) -->
+
+                            <!-- Pickup Details Pane -->
+                            <div id="pickupDetailsSection"
+                                style="display: none; background: rgba(59, 130, 246, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px dashed rgba(59, 130, 246, 0.4);">
+                                <h6 style="margin-bottom: 1rem; color: #3b82f6; font-weight: 600; font-size: 0.9rem;"><i
+                                        class="bi bi-geo-alt"></i> Pickup Details</h6>
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                                    <div>
+                                        <label style="font-size: 0.85rem;">Pickup From</label>
+                                        <input type="text" name="pickup_from_location" class="form-control"
+                                            placeholder="e.g. Airport/Hotel">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.85rem;">Drop To</label>
+                                        <input type="text" name="pickup_to_location" class="form-control"
+                                            placeholder="e.g. Office/Site">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.85rem;">Pickup Date & Time</label>
+                                        <input type="datetime-local" name="pickup_time" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Drop Details Pane -->
+                            <div id="dropDetailsSection"
+                                style="display: none; background: rgba(16, 185, 129, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px dashed rgba(16, 185, 129, 0.4);">
+                                <h6 style="margin-bottom: 1rem; color: #10b981; font-weight: 600; font-size: 0.9rem;"><i
+                                        class="bi bi-geo-alt"></i> Drop Details</h6>
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem;">
+                                    <div>
+                                        <label style="font-size: 0.85rem;">Pickup From</label>
+                                        <input type="text" name="drop_from_location" class="form-control"
+                                            placeholder="e.g. Office/Site">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.85rem;">Drop To</label>
+                                        <input type="text" name="drop_to_location" class="form-control"
+                                            placeholder="e.g. Airport/Hotel">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.85rem;">Drop Date & Time</label>
+                                        <input type="datetime-local" name="drop_time" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Accompanying Members Pane -->
+                            <div id="accompanyingMembersSection"
+                                style="display: none; background: rgba(139, 92, 246, 0.05); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px dashed rgba(139, 92, 246, 0.4);">
+                                <h6 style="margin-bottom: 1rem; color: #8b5cf6; font-weight: 600; font-size: 0.9rem;">
+                                    <i class="bi bi-people"></i> Accompanying Members
+                                </h6>
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-bottom: 0.5rem;">
+                                    <div>
+                                        <label style="font-size: 0.85rem;">Count (#)</label>
+                                        <input type="number" name="accompanying_members_count" id="memberCountInput"
+                                            onchange="generateMemberInputs()" class="form-control" placeholder="0"
+                                            min="0">
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 0.85rem;">Member Names (Legacy/Quick Reference)</label>
+                                        <input type="text" name="accompanying_members_names" class="form-control"
+                                            placeholder="e.g. Jane Doe, John Smith">
+                                    </div>
+                                </div>
+                                <div id="advancedMembersList" style="margin-top: 1rem;"></div>
+                                <label
+                                    style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #1f2937; font-weight: 500; margin-top: 1rem;">
+                                    <input type="checkbox" name="assign_badges_to_members" value="1"
+                                        style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+                                    <span>Assign Individual Badge/Pre-registration to Each Group Member</span>
+                                </label>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label>Order Food Details (Leave blank if none)</label>
+                                <div class="input-wrapper">
+                                    <i class="bi bi-cup-hot input-icon"></i>
+                                    <input type="text" name="food_order_details" class="form-control"
+                                        placeholder="e.g. Vegetarian Lunch for 2 people">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Step 2: Visit Details -->
+                    <div class="form-step" data-step="2">
+                        <div class="step-title">Step 2: Visit Details</div>
+
+                        <div class="form-group">
+                            <label>Purpose of Visit <span class="required">*</span></label>
+                            <div class="quick-select">
+                                <div class="quick-btn" onclick="selectPurpose(this, 'Meeting')">
+                                    <i class="bi bi-people"></i>
+                                    <div>Meeting</div>
+                                </div>
+                                <div class="quick-btn" onclick="selectPurpose(this, 'Interview')">
+                                    <i class="bi bi-briefcase"></i>
+                                    <div>Interview</div>
+                                </div>
+                                <div class="quick-btn" onclick="selectPurpose(this, 'Delivery')">
+                                    <i class="bi bi-box-seam"></i>
+                                    <div>Delivery</div>
+                                </div>
+                                <div class="quick-btn" onclick="selectPurpose(this, 'Maintenance')">
+                                    <i class="bi bi-tools"></i>
+                                    <div>Maintenance</div>
+                                </div>
+                                <div class="quick-btn" onclick="selectPurpose(this, 'Client Pitch')">
+                                    <i class="bi bi-graph-up"></i>
+                                    <div>Client Pitch</div>
+                                </div>
+                                <div class="quick-btn" onclick="selectPurpose(this, 'Facility Tour')">
+                                    <i class="bi bi-building"></i>
+                                    <div>Facility Tour</div>
+                                </div>
+                                <div class="quick-btn" onclick="selectPurpose(this, 'IT Support')">
+                                    <i class="bi bi-laptop"></i>
+                                    <div>IT Support</div>
+                                </div>
+                                <div class="quick-btn" onclick="selectPurpose(this, 'Other')">
+                                    <i class="bi bi-three-dots"></i>
+                                    <div>Other</div>
+                                </div>
+                            </div>
+                            <input type="text" name="purpose" id="purpose" class="form-control mt-3"
+                                style="display:none;" placeholder="Please specify if 'Other'">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Person to Meet <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-person-badge input-icon"></i>
+                                <input type="text" name="person_to_meet" id="personToMeet" class="form-control"
+                                    placeholder="Host Name" required autocomplete="off"
+                                    value="{{ draft_data.person_to_meet if draft_data else '' }}">
+                                <div class="autocomplete-dropdown" id="hostDropdown"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Expected Duration (Hours)</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-clock input-icon"></i>
+                                <input type="number" name="expected_duration" id="expectedDuration" class="form-control"
+                                    placeholder="e.g., 2" min="1" step="0.5">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Security -->
+                    <div class="form-step" data-step="3">
+                        <div class="step-title">Step 3: Security Information</div>
+
+                        <div class="form-group">
+                            <label>Vehicle Number</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-car-front input-icon"></i>
+                                <input type="text" name="vehicle_number" id="vehicleNumber" class="form-control"
+                                    placeholder="ABC-1234">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Target Shed Assignment</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-building-up input-icon"></i>
+                                <select name="shed_id" id="shedId" class="form-control">
+                                    <option value="">-- No Shed Assigned --</option>
+                                    {% for shed in all_sheds %}
+                                    <option value="{{ shed.id }}" {% if draft_data and draft_data.shed_id==shed.id
+                                        %}selected{% endif %}>
+                                        {{ shed.name }} ({{ shed.status }}) {% if shed.customer_name %}- {{
+                                        shed.customer_name }}{% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>ID Type</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-card-heading input-icon"></i>
+                                <select name="id_type" id="idType" class="form-control">
+                                    <option value="National ID">National ID</option>
+                                    <option value="Passport">Passport</option>
+                                    <option value="Driver License">Driver License</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Laptop Serial (if carrying)</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-laptop input-icon"></i>
+                                <input type="text" name="laptop_serial" id="laptopSerial" class="form-control"
+                                    placeholder="Serial Number">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Photo -->
+                    <div class="form-step" data-step="4">
+                        <div class="step-title">Step 4: Photo Capture</div>
+
+                        <div class="photo-section">
+                            <div class="photo-preview-container">
+                                <img id="photoPreview" class="photo-preview" alt="Visitor Photo">
+                                <div class="photo-placeholder">
+                                    <i class="bi bi-camera"></i>
+                                    <small>No Photo</small>
+                                </div>
+                                <div class="btn-delete-photo" onclick="deletePhoto()" title="Delete Photo">
+                                    <i class="bi bi-trash"></i>
+                                </div>
+                                <div class="add-photo-icon" onclick="openCamera()">
+                                    <i class="bi bi-plus-lg"></i>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn-photo" onclick="openCamera()">
+                                <i class="bi bi-camera-fill"></i>
+                                Take Live Photo
+                            </button>
+                            <button type="button" class="btn-photo"
+                                onclick="document.getElementById('fileInput').click()">
+                                <i class="bi bi-upload"></i>
+                                Upload Photo
+                            </button>
+                            <input type="file" id="fileInput" accept="image/*" style="display: none;"
+                                onchange="handleFileUpload(event)">
+                            <input type="hidden" name="photo" id="photoData">
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="form-navigation">
+                        <a href="/logs" class="btn btn-secondary" style="flex: 0.5;">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="button" class="btn btn-secondary" id="prevBtn" onclick="changeStep(-1)"
+                            style="display: none;">
+                            <i class="bi bi-arrow-left"></i>
+                            Previous
+                        </button>
+                        <button type="button" class="btn btn-primary" id="nextBtn" onclick="changeStep(1)">
+                            Next Step
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+
+                        <div id="submitBtns" style="display: none; gap: 1rem; flex: 2; flex-wrap: wrap;">
+                            {% if draft_data %}
+                            <input type="hidden" name="draft_id" id="editing_draft_id_val" value="{{ draft_data.id }}">
+                            <button type="button" onclick="confirmDeleteDraft(this.dataset.id)"
+                                data-id="{{ draft_data.id }}" class="btn btn-outline-danger" title="Discard this draft">
+                                <i class="bi bi-trash"></i> Discard
+                            </button>
+                            {% endif %}
+                            <button type="submit" name="action" value="draft" class="btn btn-secondary"
+                                title="Save details to complete later">
+                                <i class="bi bi-file-earmark-text"></i> {% if draft_data %}Update Draft{% else %}Save
+                                Draft{% endif %}
+                            </button>
+                            <button type="submit" name="action" value="pre_register" class="btn"
+                                style="background: var(--warning); color: #fff;" title="Send to Host for Approval">
+                                <i class="bi bi-shield-lock"></i> Pre-Register
+                            </button>
+                            <button type="submit" name="action"
+                                value="{% if draft_data %}activate{% else %}checkin{% endif %}" class="btn btn-success"
+                                title="Complete registration and check-in">
+                                <i class="bi bi-check-circle"></i> Check-In
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Preview Card -->
+        <div class="preview-card">
+            <div class="preview-header">
+                <h3>Live Badge Preview</h3>
+            </div>
+
+            <div class="preview-badge">
+                <div class="badge-photo">
+                    <img id="badgePhoto" style="display: none;" alt="Badge Photo">
+                    <i class="bi bi-person-circle"></i>
+                </div>
+
+                <div class="badge-info">
+                    <div class="badge-name" id="badgeName">John Doe</div>
+                    <div class="badge-company" id="badgeCompany">Company Name</div>
+                </div>
+
+                <div class="badge-details">
+                    <div class="badge-detail-row">
+                        <span class="badge-detail-label">Purpose:</span>
+                        <span id="badgePurpose">Meeting</span>
+                    </div>
+                    <div class="badge-detail-row">
+                        <span class="badge-detail-label">Host:</span>
+                        <span id="badgeHost">Jane Smith</span>
+                    </div>
+                    <div class="badge-detail-row">
+                        <span class="badge-detail-label">Date:</span>
+                        <span id="badgeDate">Today</span>
+                    </div>
+                </div>
+
+                <div class="badge-qr">
+                    <div class="qr-code" id="qrcode"></div>
+                </div>
+            </div>
+
+            <div class="quick-stats">
+                <div class="stat-box">
+                    <div class="stat-number">0</div>
+                    <div class="stat-label">Today's Visitors</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number" id="formProgress">0%</div>
+                    <div class="stat-label">Form Complete</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Professional Camera Modal -->
+<div class="camera-modal" id="cameraModal">
+    <div class="camera-container">
+        <!-- Close Button (Top Right) -->
+        <button type="button" class="btn-close-camera" onclick="closeCamera()"
+            style="position: absolute; top: 20px; right: 20px; z-index: 100; background: rgba(0,0,0,0.5); border: none; color: white; border-radius: 50%; width: 40px; height: 40px;">
+            <i class="bi bi-x-lg"></i>
+        </button>
+
+        <div class="camera-viewport">
+            <video id="cameraVideo" autoplay playsinline></video>
+            <canvas id="cameraCanvas"></canvas>
+
+            <!-- HUD Elements -->
+            <div class="camera-hud-overlay"></div>
+            <div class="face-scanner">
+                <div class="scan-line"></div>
+            </div>
+            <div class="hud-metrics" id="hudMetrics">
+                <div class="metric-item">FOCUS: <span id="focusVal">AUTO</span></div>
+                <div class="metric-item">ISO: <span id="isoVal">100</span></div>
+            </div>
+
+            <!-- Professional Toolbox -->
+            <div class="camera-toolbox">
+                <button class="tool-btn" onclick="toggleFilters()" title="Filters">
+                    <i class="bi bi-magic"></i>
+                </button>
+                <button class="tool-btn" id="aiEnhanceBtn" onclick="toggleAIEnhance()" title="AI Enhance (Off)">
+                    <i class="bi bi-stars"></i>
+                </button>
+                <button class="tool-btn" onclick="switchCamera()" title="Switch Camera">
+                    <i class="bi bi-arrow-repeat"></i>
+                </button>
+                <button class="tool-btn" onclick="toggleGrid()" title="Grid Lines">
+                    <i class="bi bi-grid-3x3"></i>
+                </button>
+            </div>
+
+            <!-- Filters Menu -->
+            <div class="filters-menu" id="filtersMenu">
+                <div class="filter-option selected" onclick="applyFilter('none')">
+                    <div style="background: #ccc; width: 100%; height: 100%;"></div>
+                    <span>Normal</span>
+                </div>
+                <div class="filter-option" onclick="applyFilter('grayscale(100%)')">
+                    <div style="background: #555; width: 100%; height: 100%;"></div>
+                    <span>B&W</span>
+                </div>
+                <div class="filter-option" onclick="applyFilter('sepia(50%) contrast(1.2)')">
+                    <div style="background: #a0522d; width: 100%; height: 100%;"></div>
+                    <span>Warm</span>
+                </div>
+                <div class="filter-option" onclick="applyFilter('contrast(1.5) saturate(0)')">
+                    <div style="background: #000; width: 100%; height: 100%;"></div>
+                    <span>Noir</span>
+                </div>
+            </div>
+
+            <!-- Flash Effect -->
+            <div class="camera-flash" id="cameraFlash"
+                style="position:absolute; inset:0; background:white; opacity:0; pointer-events:none; transition:opacity 0.1s;">
+            </div>
+        </div>
+
+        <div class="camera-controls">
+            <button type="button" class="camera-btn camera-btn-secondary" onclick="closeCamera()">
+                Cancel
+            </button>
+            <button type="button" class="camera-btn camera-btn-capture" id="captureBtn" onclick="capturePhoto()">
+                <i class="bi bi-camera-fill"></i>
+            </button>
+            <button type="button" class="camera-btn camera-btn-secondary" id="retakeBtn" style="display: none;"
+                onclick="retakePhoto()">
+                <i class="bi bi-arrow-clockwise"></i> Retake
+            </button>
+            <button type="button" class="camera-btn camera-btn-success" id="usePhotoBtn" style="display: none;"
+                onclick="usePhoto()">
+                <i class="bi bi-check-circle"></i> Use This Photo
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Drafts Modal -->
+<div class="camera-modal" id="draftsModal"
+    style="z-index: 10001; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);">
+    <div class="camera-container"
+        style="background: white; padding: 2rem; max-width: 800px; height: 80vh; overflow-y: auto;">
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f3f4f6; margin-bottom: 1.5rem; padding-bottom: 1rem;">
+            <h2 style="color: #1f2937; margin: 0; font-size: 1.5rem; font-weight: 700;"><i
+                    class="bi bi-file-earmark-text text-primary me-2"></i> Saved Drafts</h2>
+            <button type="button" class="btn-close"
+                onclick="document.getElementById('draftsModal').classList.remove('active')"
+                style="font-size: 1.2rem; background: none; border: none; cursor: pointer;"><i
+                    class="bi bi-x-lg"></i></button>
+        </div>
+
+        <div class="drafts-list" style="display: grid; gap: 1rem;">
+            {% for draft in drafts %}
+            <div
+                style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;">
+                <div style="flex: 1;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #1e293b; font-weight: 600; font-size: 1.1rem;">
+                        <i class="bi bi-person-circle text-primary me-2"></i>{{ draft.visitor_name or 'Unnamed Visitor'
+                        }}
+                    </h4>
+                    <div style="display: flex; gap: 1rem; color: #64748b; font-size: 0.9rem; margin-bottom: 0.5rem;">
+                        {% if draft.company %}<span><i class="bi bi-building"></i> {{ draft.company }}</span>{% endif %}
+                        {% if draft.purpose %}<span><i class="bi bi-journal-text"></i> {{ draft.purpose }}</span>{%
+                        endif %}
+                        {% if draft.person_to_meet %}<span><i class="bi bi-person-badge"></i> Host: {{
+                            draft.person_to_meet }}</span>{% endif %}
+                    </div>
+                    {% if draft.draft_notes %}
+                    <p
+                        style="margin: 0; font-size: 0.85rem; color: #475569; background: #f1f5f9; padding: 0.5rem; border-radius: 8px; display: inline-block;">
+                        <i class="bi bi-info-circle me-1"></i> {{ draft.draft_notes }}
+                    </p>
+                    {% endif %}
+                    <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.75rem;">
+                        <i class="bi bi-clock"></i> Saved on {{ draft.draft_created_at.strftime('%b %d, %Y %I:%M %p') if
+                        draft.draft_created_at else 'Unknown' }}
+                        {% if draft.created_by_name %} by {{ draft.created_by_name }}{% endif %}
+                    </div>
+                </div>
+                <div
+                    style="margin-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; align-items: stretch;">
+                    <a href="?draft_id={{ draft.id }}" class="btn btn-primary"
+                        style="border-radius: 12px; font-weight: 600; padding: 0.6rem 1.25rem; display: flex; align-items: center; justify-content: center; min-width: 120px;">
+                        <i class="bi bi-pencil-square me-2"></i> Resume
+                    </a>
+                    <form action="{{ url_for('main.delete_draft', draft_id=draft.id) }}" method="POST"
+                        onsubmit="return confirm('Permanently delete this draft? This action cannot be undone.');"
+                        style="margin: 0; width: 100%;">
+                        <button type="submit" class="btn btn-outline-danger"
+                            style="border-radius: 12px; font-weight: 600; padding: 0.6rem 1rem; width: 100%; display: flex; align-items: center; justify-content: center;"
+                            title="Delete Draft">
+                            <i class="bi bi-trash me-2"></i> Discard
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 3rem; color: #94a3b8;">
+                <i class="bi bi-inbox" style="font-size: 3rem; display: block; margin-bottom: 1rem;"></i>
+                <p style="font-size: 1.1rem;">No saved drafts found.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for JS-triggered draft deletion -->
+<form id="globalDeleteForm" method="POST" style="display: none;"></form>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    let currentStep = 1;
+
+    // Camera State
+    let stream = null;
+    let capturedPhoto = null;
+    let currentFacingMode = 'user'; // 'user' (front) or 'environment' (back)
+    let currentFilter = 'none';
+    let isAIEnhanced = false;
+    let hudInterval;
+
+    // Companies for autocomplete
+    const companies = ['Acme Corp', 'Tech Solutions', 'Global Innovations'];
+
+    document.addEventListener('DOMContentLoaded', function () {
+        updateFormProgress();
+        generateQRCode();
+        updateBadgeDate();
+
+        // Autocomplete Logic
+        setupAutocomplete('company', 'companyDropdown', '/api/companies');
+        setupAutocomplete('personToMeet', 'hostDropdown', '/api/hosts');
+
+        // Phone Lookup Logic
+        document.getElementById('phone')?.addEventListener('blur', checkPreviousVisits);
+
+        // Real-time badge updates
+        ['visitorName', 'company', 'personToMeet'].forEach(id => {
+            document.getElementById(id)?.addEventListener('input', updateBadgePreview);
+        });
+
+        // Initialize display of customer fields
+        toggleCustomerFields();
+        toggleTransportFields();
+    });
+
+    function toggleCustomerFields() {
+        const vt = document.getElementById('visitorType').value;
+        const cf = document.getElementById('customerFields');
+        if (vt === 'Customer') {
+            cf.style.display = 'block';
+        } else {
+            cf.style.display = 'none';
+        }
+    }
+
+    function toggleTransportFields() {
+        const pickupChecked = document.getElementById('pickupCheckbox')?.checked;
+        const dropChecked = document.getElementById('dropCheckbox')?.checked;
+
+        const pickupSection = document.getElementById('pickupDetailsSection');
+        const dropSection = document.getElementById('dropDetailsSection');
+        const membersSection = document.getElementById('accompanyingMembersSection');
+
+        if (pickupSection) {
+            pickupSection.style.display = pickupChecked ? 'block' : 'none';
+        }
+
+        if (dropSection) {
+            dropSection.style.display = dropChecked ? 'block' : 'none';
+        }
+
+        if (membersSection) {
+            membersSection.style.display = (pickupChecked || dropChecked) ? 'block' : 'none';
+        }
+    }
+
+    function updateBadgePreview() {
+        const name = document.getElementById('visitorName').value || '--';
+        const company = document.getElementById('company').value || '--';
+        const host = document.getElementById('personToMeet').value || '--';
+
+        document.getElementById('badgeName').textContent = name;
+        document.getElementById('badgeCompany').textContent = company;
+        document.getElementById('badgeHost').textContent = host;
+        updateFormProgress();
+    }
+
+    function updateBadgeDate() {
+        const today = new Date();
+        document.getElementById('badgeDate').textContent = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function confirmDeleteDraft(draftId) {
+        if (confirm('Are you sure you want to permanently delete this draft?')) {
+            const form = document.getElementById('globalDeleteForm');
+            form.action = `/draft/delete/${draftId}`;
+            form.submit();
+        }
+    }
+
+    // --- Navigation ---
+    function changeStep(direction) {
+        if (direction === 1 && !validateStep(currentStep)) return;
+
+        const steps = document.querySelectorAll('.form-step');
+        const dots = document.querySelectorAll('.step-dot');
+
+        steps[currentStep - 1].classList.remove('active');
+        dots[currentStep - 1].classList.remove('active');
+
+        currentStep += direction;
+
+        steps[currentStep - 1].classList.add('active');
+        dots[currentStep - 1].classList.add('active');
+
+        document.getElementById('prevBtn').style.display = currentStep === 1 ? 'none' : 'flex';
+        document.getElementById('nextBtn').style.display = currentStep === 4 ? 'none' : 'flex';
+        document.getElementById('submitBtns').style.display = currentStep === 4 ? 'flex' : 'none';
+
+        updateFormProgress();
+    }
+
+    function validateStep(step) {
+        if (step === 1) {
+            if (!document.getElementById('visitorName').value || !document.getElementById('phone').value) {
+                showToast('Name and Phone are required', 'error');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // --- Smart Features ---
+    function setupAutocomplete(inputId, dropdownId, apiUrl) {
+        const input = document.getElementById(inputId);
+        const dropdown = document.getElementById(dropdownId);
+        let debounce;
+
+        input.addEventListener('input', () => {
+            clearTimeout(debounce);
+            if (!input.value) { dropdown.classList.remove('show'); return; }
+
+            debounce = setTimeout(() => {
+                fetch(`${apiUrl}?term=${encodeURIComponent(input.value)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.length) {
+                            dropdown.innerHTML = data.map(item =>
+                                `<div class="autocomplete-item" onclick="selectItem('${inputId}', '${dropdownId}', '${item}')">
+                                    <i class="bi bi-search"></i> ${item}
+                                </div>`
+                            ).join('');
+                            dropdown.classList.add('show');
+                        } else {
+                            dropdown.classList.remove('show');
+                        }
+                    });
+            }, 300);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.remove('show');
+        });
+    }
+
+    function selectItem(inputId, dropdownId, value) {
+        document.getElementById(inputId).value = value;
+        document.getElementById(dropdownId).classList.remove('show');
+        updateBadgePreview();
+    }
+
+    function checkPreviousVisits() {
+        const phone = document.getElementById('phone').value;
+        if (phone.length < 3) return;
+
+        fetch(`/api/visitor-smart-lookup?phone=${encodeURIComponent(phone)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.found) {
+                    const v = data.visitor;
+                    document.getElementById('visitorName').value = v.visitor_name;
+                    document.getElementById('email').value = v.email || '';
+                    document.getElementById('company').value = v.company || '';
+
+                    if (v.is_vip) {
+                        document.getElementById('vipBadge').style.display = 'block';
+                        showToast('VIP Visitor Recognized!', 'success');
+                    }
+                    updateBadgePreview();
+                }
+            });
+    }
+
+    function selectPurpose(el, purpose) {
+        document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active');
+        const purposeInput = document.getElementById('purpose');
+        if (purpose === 'Other') {
+            purposeInput.style.display = 'block';
+            purposeInput.value = '';
+            purposeInput.focus();
+        } else {
+            purposeInput.style.display = 'none';
+            purposeInput.value = purpose;
+            document.getElementById('badgePurpose').textContent = purpose;
+        }
+    }
+
+    // Dynamic Member Inputs
+    function generateMemberInputs() {
+        const count = parseInt(document.getElementById('memberCountInput').value) || 0;
+        const container = document.getElementById('advancedMembersList');
+        if (!container) return;
+
+        // Save old values if possible
+        const oldValues = [];
+        for (let i = 0; i < container.children.length; i++) {
+            const inputs = container.children[i].querySelectorAll('input');
+            if (inputs.length >= 2) oldValues.push({ name: inputs[0].value, email: inputs[1].value });
+        }
+
+        container.innerHTML = '';
+        if (count > 0) {
+            container.innerHTML += '<h6 class="text-muted mt-3 mb-2 small fw-bold">Enter Individual Details for Badges & Alerts (Optional)</h6>';
+        }
+        for (let i = 0; i < count; i++) {
+            const nameVal = oldValues[i] ? oldValues[i].name : '';
+            const emailVal = oldValues[i] ? oldValues[i].email : '';
+            container.innerHTML += `
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 0.5rem; background: rgba(255,255,255,0.5); padding: 0.5rem; border-radius: 8px;">
+                    <input type="text" name="member_name_${i}" class="form-control" placeholder="Member ${i + 1} Name" value="${nameVal}">
+                    <input type="email" name="member_email_${i}" class="form-control" placeholder="Member ${i + 1} Email (for Alert/Badge)" value="${emailVal}">
+                </div>
+            `;
+        }
+    }
+
+
+    // --- Professional Camera ---
+
+    function openCamera() {
+        document.getElementById('cameraModal').classList.add('active');
+        initCamera();
+    }
+
+    function initCamera() {
+        if (stream) { stream.getTracks().forEach(track => track.stop()); }
+
+        const constraints = {
+            video: {
+                facingMode: currentFacingMode,
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
+            }
+        };
+
+        navigator.mediaDevices.getUserMedia(constraints)
+            .then(s => {
+                stream = s;
+                const video = document.getElementById('cameraVideo');
+                video.srcObject = s;
+                video.play();
+                startHUD();
+            })
+            .catch(err => {
+                showToast('Camera Error: ' + err.message, 'error');
+                closeCamera();
+            });
+    }
+
+    function closeCamera() {
+        if (stream) stream.getTracks().forEach(track => track.stop());
+        stream = null;
+        clearInterval(hudInterval);
+        document.getElementById('cameraModal').classList.remove('active');
+    }
+
+    function switchCamera() {
+        currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+        // Adjust mirroring
+        document.getElementById('cameraVideo').style.transform = (currentFacingMode === 'user') ? 'scaleX(-1)' : 'none';
+        initCamera();
+    }
+
+    function toggleFilters() {
+        document.getElementById('filtersMenu').classList.toggle('show');
+    }
+
+    function applyFilter(filter) {
+        currentFilter = filter;
+        document.getElementById('cameraVideo').style.filter = currentFilter;
+        // Highlight selection UI
+        document.querySelectorAll('.filter-option').forEach(el => el.classList.remove('selected'));
+        event.currentTarget.classList.add('selected');
+    }
+
+    function toggleAIEnhance() {
+        isAIEnhanced = !isAIEnhanced;
+        const btn = document.getElementById('aiEnhanceBtn');
+        if (isAIEnhanced) {
+            btn.classList.add('active');
+            btn.title = "AI Enhance (On)";
+            showToast("AI Vision Enhancer Active");
+            // Simulate effect
+            document.getElementById('cameraVideo').style.filter = "contrast(1.1) saturate(1.2)";
+        } else {
+            btn.classList.remove('active');
+            btn.title = "AI Enhance (Off)";
+            document.getElementById('cameraVideo').style.filter = currentFilter; // Revert to active filter
+        }
+    }
+
+    function toggleGrid() {
+        // Simple toggle class or element visibility logic
+        // For professional feel, overlay grid lines
+    }
+
+    function capturePhoto() {
+        // Flash effect
+        const flash = document.getElementById('cameraFlash');
+        flash.style.opacity = 1;
+        setTimeout(() => flash.style.opacity = 0, 100);
+
+        const video = document.getElementById('cameraVideo');
+        const canvas = document.getElementById('cameraCanvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext('2d');
+        // Handle mirroring if front camera
+        if (currentFacingMode === 'user') {
+            ctx.translate(canvas.width, 0);
+            ctx.scale(-1, 1);
+        }
+
+        // Apply filters too
+        ctx.filter = video.style.filter;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        capturedPhoto = canvas.toDataURL('image/jpeg', 0.9); // High quality
+
+        // Update UI
+        video.style.display = 'none';
+        canvas.style.display = 'block';
+        document.getElementById('captureBtn').style.display = 'none';
+        document.getElementById('retakeBtn').style.display = 'flex';
+        document.getElementById('usePhotoBtn').style.display = 'flex';
+    }
+
+    function retakePhoto() {
+        document.getElementById('cameraVideo').style.display = 'block';
+        document.getElementById('cameraCanvas').style.display = 'none';
+        document.getElementById('captureBtn').style.display = 'flex';
+        document.getElementById('retakeBtn').style.display = 'none';
+        document.getElementById('usePhotoBtn').style.display = 'none';
+    }
+
+    function usePhoto() {
+        document.getElementById('photoPreview').src = capturedPhoto;
+        document.getElementById('photoPreview').classList.add('show');
+        document.querySelector('.photo-placeholder').style.display = 'none';
+
+        // Add delete button logic visibility if needed
+
+        // Update Live Badge
+        document.getElementById('badgePhoto').src = capturedPhoto;
+        document.getElementById('badgePhoto').style.display = 'block';
+
+        document.getElementById('photoData').value = capturedPhoto;
+        closeCamera();
+        showToast('Photo Captured Successfully', 'success');
+        updateFormProgress();
+    }
+
+    function startHUD() {
+        const scanner = document.querySelector('.face-scanner');
+        scanner.style.display = 'block';
+
+        hudInterval = setInterval(() => {
+            // Random numbers for effect
+            const focus = Math.floor(Math.random() * 15) + 85;
+            document.getElementById('focusVal').textContent = focus + '%';
+        }, 800);
+    }
+
+    // --- Toast Utility ---
+    function showToast(msg, type = 'success') {
+        const container = document.getElementById('globalToastContainer');
+        if (!container) return;
+
+        const iconMap = {
+            'success': 'bi-check-circle-fill',
+            'error': 'bi-x-circle-fill',
+            'danger': 'bi-dash-circle-fill',
+            'warning': 'bi-exclamation-triangle-fill',
+            'info': 'bi-info-circle-fill'
+        };
+
+        const toast = document.createElement('div');
+        toast.className = `premium-toast toast-${type === 'error' ? 'danger' : type}`;
+        toast.role = 'alert';
+
+        toast.innerHTML = `
+            <div class="toast-icon">
+                <i class="bi ${iconMap[type] || 'bi-info-circle-fill'}"></i>
+            </div>
+            <div class="toast-content">
+                <h4 class="toast-title">${type.toUpperCase()}</h4>
+                <p class="toast-message">${msg}</p>
+            </div>
+            <button type="button" class="toast-close" onclick="this.parentElement.classList.add('hide'); setTimeout(() => this.parentElement.remove(), 600)">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        `;
+
+        container.appendChild(toast);
+
+        // Auto-dismiss
+        setTimeout(() => {
+            if (toast && toast.parentElement) {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 600);
+            }
+        }, 5000);
+    }
+
+    // --- Helpers ---
+    function generateQRCode() {
+        new QRCode(document.getElementById('qrcode'), {
+            text: "VMS-DEMO",
+            width: 100,
+            height: 100
+        });
+    }
+
+    function deletePhoto() {
+        capturedPhoto = null;
+        document.getElementById('photoData').value = '';
+        document.getElementById('photoPreview').src = '';
+        document.getElementById('photoPreview').classList.remove('show');
+        document.querySelector('.photo-placeholder').style.display = 'flex';
+        document.getElementById('badgePhoto').style.display = 'none';
+    }
+
+    function updateFormProgress() {
+        const fields = ['visitorName', 'phone', 'purpose', 'personToMeet', 'photoData'];
+        const filled = fields.filter(f => document.getElementById(f)?.value).length;
+        const pct = Math.round((filled / fields.length) * 100);
+        document.getElementById('formProgress').textContent = pct + '%';
+    }
+
+</script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+  <h2 class="mb-4">Data Migration Tool (DMT)</h2>
+  <div class="card p-4 mb-4">
+    <h5>Import Data</h5>
+    <div class="mb-3">
+      <strong>Download Templates:</strong>
+      <a href="{{ url_for('main.dmt_template', datatype='visitors') }}" class="btn btn-link btn-sm">Visitors Template</a>
+      <a href="{{ url_for('main.dmt_template', datatype='groups') }}" class="btn btn-link btn-sm">Groups Template</a>
+      <a href="{{ url_for('main.dmt_template', datatype='assets') }}" class="btn btn-link btn-sm">Assets Template</a>
+    </div>
+    <form id="importForm" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label for="importType" class="form-label">Data Type</label>
+        <select class="form-select" id="importType" name="import_type">
+          <option value="visitors">Visitors</option>
+          <option value="groups">Groups</option>
+          <option value="assets">Assets</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <input type="file" class="form-control" id="importFile" name="import_file" accept=".csv,.xlsx">
+      </div>
+      <button type="button" class="btn btn-primary" onclick="previewImport()">Preview & Validate</button>
+    </form>
+    <div id="importPreview" class="mt-4"></div>
+  </div>
+  <div class="card p-4 mb-4">
+    <h5>Export Data</h5>
+    <button class="btn btn-outline-success" onclick="exportData('visitors')">Export Visitors</button>
+    <button class="btn btn-outline-info" onclick="exportData('groups')">Export Groups</button>
+    <button class="btn btn-outline-secondary" onclick="exportData('assets')">Export Assets</button>
+  </div>
+  <div class="card p-4">
+    <h5>Migration Logs</h5>
+    <div id="migrationLogs"></div>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/dmt.js') }}"></script>
+{% endblock %}

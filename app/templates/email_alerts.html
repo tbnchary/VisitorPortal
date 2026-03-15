@@ -1,0 +1,832 @@
+{% extends "base.html" %}
+
+{% block title %}Communication Hub | Visitor Portal{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: var(--surface-2);
+        color: var(--text-main);
+    }
+
+    .hub-container {
+        width: 100%;
+        padding: 1.5rem 2.5rem;
+        max-width: 1800px;
+        margin: 0 auto;
+    }
+
+    /* Stats Grid Enhancements */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 24px;
+        padding: 1.5rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: var(--shadow-soft);
+        cursor: pointer;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        background: white;
+        border-color: var(--primary);
+    }
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1.1;
+        letter-spacing: -1px;
+    }
+
+    /* Bulk Actions Toolbar */
+    .bulk-toolbar {
+        background: white;
+        padding: 1rem 1.5rem;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        margin-bottom: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow-soft);
+        animation: slideInDown 0.5s ease;
+    }
+
+    .hub-navbar {
+        background: white;
+        padding: 0.75rem 1.25rem;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow-soft);
+    }
+
+    .nav-tabs-custom {
+        display: flex;
+        gap: 8px;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .nav-link-item {
+        padding: 0.6rem 1.1rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-sub);
+        text-decoration: none;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .nav-link-item.active {
+        background: var(--primary-light);
+        color: var(--primary);
+    }
+
+    /* Performance Section */
+    .performance-view {
+        background: white;
+        border-radius: 28px;
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .chart-container {
+        height: 200px;
+        width: 100%;
+    }
+
+    /* Protocol Cards */
+    .protocol-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+
+    .protocol-card {
+        background: white;
+        border-radius: 28px;
+        border: 1px solid var(--border);
+        padding: 0;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: var(--shadow-soft);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card-banner {
+        height: 80px;
+        padding: 1.25rem;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+    }
+
+    .card-banner.critical {
+        background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+    }
+
+    .card-banner.high {
+        background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+    }
+
+    .card-banner.low {
+        background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+    }
+
+    .card-banner.medium {
+        background: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
+    }
+
+    .card-avatar-wrap {
+        margin-top: -30px;
+        padding: 0 1.25rem;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+    }
+
+    .card-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 18px;
+        background: white;
+        border: 3px solid white;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+
+    .card-content {
+        padding: 1.25rem;
+    }
+
+    .info-strip {
+        background: var(--surface-2);
+        border-radius: 14px;
+        padding: 0.6rem 1rem;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+
+    /* History Pulse */
+    .pulse-online {
+        color: var(--success);
+        animation: pulse-green 2s infinite;
+    }
+
+    @keyframes pulse-green {
+        0% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.4;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    /* Animations */
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .protocol-card-wrap {
+        animation: slideUp 0.5s ease backwards;
+    }
+
+    /* Modal Styling */
+    .modal-content-premium {
+        border-radius: 28px;
+        border: none;
+        box-shadow: 0 25px 70px -10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Interactive Timeline */
+    .timeline-wrap {
+        background: white;
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        padding: 1.25rem;
+        overflow-y: auto;
+    }
+
+    .btn-action {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border);
+        background: white;
+        color: var(--text-sub);
+        transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+        background: var(--primary-light);
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+    .btn-action-danger:hover {
+        background: #fef2f2;
+        color: var(--danger);
+        border-color: var(--danger);
+    }
+</style>
+
+<div class="hub-container">
+    <div class="welcome-row d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-800 tracking-tight mb-1">Dispatch Intelligence Hub</h1>
+            <p class="text-sub fw-500">Autonomous notification system & operational protocols.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-premium btn-premium-secondary" onclick="exportProtocols()">
+                <i class="bi bi-download"></i> Export Reports
+            </button>
+            <button class="btn btn-premium btn-premium-primary" data-bs-toggle="modal" data-bs-target="#addAlertModal">
+                <i class="bi bi-plus-lg"></i> Establish New Protocol
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Hub -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-primary-subtle text-primary"><i class="bi bi-router"></i></div>
+            <div class="text-end">
+                <div class="stat-value">{{ settings|length }}</div>
+                <div class="small fw-700 text-sub uppercase">Total Routes</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-success-subtle text-success"><i class="bi bi-broadcast"></i></div>
+            <div class="text-end">
+                <div class="stat-value">{{ settings|selectattr('alerts_enabled', 'equalto', 1)|list|length }}</div>
+                <div class="small fw-700 text-sub uppercase">Active Channels</div>
+            </div>
+        </div>
+        <div class="stat-card" onclick="showAnalyticsModal()">
+            <div class="stat-icon bg-warning-subtle text-warning"><i class="bi bi-activity"></i></div>
+            <div class="text-end">
+                <div class="stat-value" id="totalDispatches">{{ settings|sum(attribute='trigger_count') }}</div>
+                <div class="small fw-700 text-sub uppercase">System Pings</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-danger-subtle text-danger"><i class="bi bi-shield-fire"></i></div>
+            <div class="text-end">
+                <div class="stat-value">{{ settings|selectattr('priority', 'equalto', 'CRITICAL')|list|length }}</div>
+                <div class="small fw-700 text-sub uppercase">Critical Modules</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Hub -->
+    <div class="bulk-toolbar">
+        <div class="d-flex align-items-center gap-3">
+            <i class="bi bi-tools text-primary fs-5"></i>
+            <span class="small fw-800 text-main uppercase">Maintenance Mode:</span>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary px-3" onclick="bulkAction('DISABLE', 'ALL')">Suspend
+                    All</button>
+                <button class="btn btn-outline-primary px-3" onclick="bulkAction('ENABLE', 'ALL')">Restore All</button>
+                <button class="btn btn-outline-danger px-3" onclick="bulkAction('DISABLE', 'CRITICAL')">Silence
+                    Critical</button>
+            </div>
+        </div>
+        <div class="date-display small fw-700 text-sub">
+            <i class="bi bi-clock-history me-1"></i> System Updated: <span id="lastRefreshed">Just Now</span>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-9">
+            <!-- Navigation Hub -->
+            <div class="hub-navbar">
+                <ul class="nav-tabs-custom">
+                    <li><a href="javascript:void(0)" class="nav-link-item active"
+                            onclick="filterProtocol('ALL', this)"><i class="bi bi-grid-fill"></i> System-Wide</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link-item" onclick="filterProtocol('CRITICAL', this)"><i
+                                class="bi bi-exclamation-octagon-fill text-danger"></i> SOS Protocols</a></li>
+                    <li><a href="javascript:void(0)" class="nav-link-item" onclick="filterProtocol('SECURITY', this)"><i
+                                class="bi bi-shield-check text-success"></i> Security Intelligence</a></li>
+                </ul>
+                <div class="search-box-premium position-relative" style="min-width: 300px;">
+                    <i class="bi bi-search position-absolute top-50 translate-middle-y ms-3 text-sub"></i>
+                    <input type="text" id="hubSearch" class="form-control border-0 bg-surface-2 ps-5 rounded-4 py-2"
+                        placeholder="Search routes, people, or emails...">
+                </div>
+            </div>
+
+            <!-- Protocol Display Grid -->
+            <div class="protocol-grid" id="settingsGrid">
+                {% for setting in settings %}
+                <div class="protocol-card-wrap setting-item-card"
+                    data-search="{{ setting.department }} {{ setting.key_person }} {{ setting.email }}"
+                    data-priority="{{ setting.priority }}" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+                    <div class="protocol-card h-100">
+                        <div class="card-banner {{ setting.priority|lower }}">
+                            <div
+                                class="badge bg-white text-dark shadow-sm border-0 fs-10 tracking-wider uppercase px-2">
+                                {{ setting.priority }}</div>
+                            <div class="form-check form-switch p-0 m-0">
+                                <input class="form-check-input" style="width: 2.2rem; height: 1.1rem; cursor: pointer;"
+                                    type="checkbox" {% if setting.alerts_enabled %}checked{% endif %}
+                                    onclick="toggleAlert({{ setting.id }}, this)">
+                            </div>
+                        </div>
+                        <div class="card-avatar-wrap">
+                            <div class="card-avatar">{{ setting.key_person[0]|upper }}</div>
+                            <div class="d-flex flex-column align-items-end">
+                                <span
+                                    class="badge {% if setting.alerts_enabled %}status-in{% else %}status-out{% endif %} status-badge py-1 px-2 fs-11">
+                                    <i
+                                        class="bi bi-circle-fill me-1 fs-xs {{ 'pulse-online' if setting.alerts_enabled }}"></i>
+                                    {{ 'Active' if setting.alerts_enabled else 'Inactive' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <h5 class="fw-800 text-main mb-1">{{ setting.department }}</h5>
+                            <p class="text-sub small fw-600 mb-3"><i class="bi bi-person me-1"></i>{{ setting.key_person
+                                }}</p>
+
+                            <div class="info-strip">
+                                <div class="strip-item">
+                                    <label class="d-block fs-10 fw-800 text-sub uppercase mb-0">Frequency</label>
+                                    <span class="small fw-800 text-main">{{ setting.frequency|replace('_', ' ')|title
+                                        }}</span>
+                                </div>
+                                <div class="strip-item text-end">
+                                    <label class="d-block fs-10 fw-800 text-sub uppercase mb-0">Dispatches</label>
+                                    <span class="small fw-800 text-primary">{{ setting.trigger_count }}</span>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-surface-2 p-2 rounded-3 border d-flex align-items-center justify-content-between">
+                                <span class="small text-muted font-monospace overflow-hidden text-truncate me-2">{{
+                                    setting.email }}</span>
+                                <button class="btn btn-sm btn-light border-0 py-0"
+                                    onclick="copyToClipboard('{{ setting.email }}')" title="Copy Link"><i
+                                        class="bi bi-copy"></i></button>
+                            </div>
+                        </div>
+                        <div
+                            class="card-footer bg-white border-top p-3 d-flex justify-content-between align-items-center">
+                            <button class="btn btn-sm btn-link text-primary fw-800 text-decoration-none p-0"
+                                onclick="viewHistory({{ setting.id }}, '{{ setting.department }}')">
+                                <i class="bi bi-clock-history me-1"></i> History
+                            </button>
+                            <div class="d-flex gap-1">
+                                <button class="btn-action ping-btn" data-id="{{ setting.id }}" title="System Test"><i
+                                        class="bi bi-activity"></i></button>
+                                <button class="btn-action edit-btn" data-setting='{{ setting|tojson }}'
+                                    title="Edit Protocol"><i class="bi bi-sliders"></i></button>
+                                <button class="btn-action btn-action-danger delete-btn" data-id="{{ setting.id }}"
+                                    title="Terminate"><i class="bi bi-trash3"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Right Side: Dispatch Activity & Live Chart -->
+        <div class="col-lg-3">
+            <div class="performance-view mb-4">
+                <h6 class="fw-800 text-main mb-3 uppercase small tracking-widest"><i
+                        class="bi bi-graph-up-arrow me-2 text-primary"></i>System Load</h6>
+                <div class="chart-container">
+                    <canvas id="dispatchChart"></canvas>
+                </div>
+            </div>
+
+            <div class="timeline-wrap">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h6 class="fw-800 text-main mb-0 uppercase small tracking-widest"><i
+                            class="bi bi-broadcast text-danger me-2"></i>Live Traffic</h6>
+                    <span class="badge bg-danger-subtle text-danger rounded-pill fw-800 mb-0">Real-time</span>
+                </div>
+                <div class="timeline-list" id="globalTimeline">
+                    {% for setting in settings|sort(attribute='last_triggered_at', reverse=True) %}
+                    {% if setting.last_triggered_at %}
+                    <div class="timeline-item border-start border-2 ps-3 pb-3 position-relative">
+                        <div class="position-absolute start-0 translate-middle-x bg-white p-1" style="margin-top: 4px;">
+                            <div class="bg-primary rounded-circle" style="width: 10px; height: 10px;"></div>
+                        </div>
+                        <div class="small fw-700 text-sub mb-1">{{ setting.last_triggered_at.strftime('%H:%M:%S') }}
+                        </div>
+                        <div class="bg-surface-2 p-2 rounded-3 small border">
+                            <strong>{{ setting.key_person }}</strong> alerted for <strong>{{ setting.department
+                                }}</strong>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-premium">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h3 class="fw-800 text-main mb-0">Protocol Signal History</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <p class="px-4 text-sub fw-600 mb-4" id="historyModalSubtitle"></p>
+            <div class="modal-body p-4 pt-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="bg-surface-2">
+                            <tr>
+                                <th class="fs-11 text-sub uppercase fw-800">Timestamp</th>
+                                <th class="fs-11 text-sub uppercase fw-800">Status</th>
+                                <th class="fs-11 text-sub uppercase fw-800">Diagnostics</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Alert -->
+<div class="modal fade" id="addAlertModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content modal-content-premium">
+            <div class="modal-header border-0 p-4">
+                <h3 class="fw-800 text-main mb-0" id="modalTitle">Establish Dispatch Protocol</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <form id="alertForm">
+                    <input type="hidden" id="settingId">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" id="dept" list="deptList" class="form-control rounded-4 border-2"
+                                    placeholder="Department" required>
+                                <label><i class="bi bi-building me-2"></i>Target Department</label>
+                            </div>
+                            <datalist id="deptList">{% for company in companies %}<option value="{{ company }}">{%
+                                    endfor %}</datalist>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input type="text" id="keyName" class="form-control rounded-4 border-2"
+                                    placeholder="Focal Person" required>
+                                <label><i class="bi bi-person-badge me-2"></i>Focal Person</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-floating mb-3">
+                                <input type="email" id="email" class="form-control rounded-4 border-2"
+                                    placeholder="Email" required>
+                                <label><i class="bi bi-envelope-at me-2"></i>Secure Email Destination</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-800 text-sub uppercase mb-2">Priority Level</label>
+                            <div class="d-flex gap-2">
+                                <input type="radio" class="btn-check" name="priority" id="pLow" value="LOW">
+                                <label class="btn btn-outline-success border-2 rounded-3 flex-grow-1"
+                                    for="pLow">Low</label>
+                                <input type="radio" class="btn-check" name="priority" id="pMed" value="MEDIUM" checked>
+                                <label class="btn btn-outline-primary border-2 rounded-3 flex-grow-1"
+                                    for="pMed">Medium</label>
+                                <input type="radio" class="btn-check" name="priority" id="pHigh" value="HIGH">
+                                <label class="btn btn-outline-warning border-2 rounded-3 flex-grow-1"
+                                    for="pHigh">High</label>
+                                <input type="radio" class="btn-check" name="priority" id="pCrit" value="CRITICAL">
+                                <label class="btn btn-outline-danger border-2 rounded-3 flex-grow-1"
+                                    for="pCrit">SOS</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-800 text-sub uppercase mb-2">Relay Frequency</label>
+                            <select id="frequency" class="form-select rounded-4 border-2 py-3">
+                                <option value="IMMEDIATE">Real-time (Immediate)</option>
+                                <option value="DAILY_DIGEST">Daily Summary Digest</option>
+                                <option value="HOURLY_SUMMARY">Hourly Intelligence</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg w-100 py-3 rounded-4 fw-bold shadow">
+                            <span id="btnText">Establish Protocol</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let dispatchChart;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initChart();
+        loadAnalytics();
+
+        // Event Listeners for Actions
+        document.querySelectorAll('.ping-btn').forEach(btn => btn.addEventListener('click', () => testPing(btn.dataset.id, btn)));
+        document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', () => editSetting(JSON.parse(btn.dataset.setting))));
+        document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', () => deleteSetting(btn.dataset.id)));
+
+        // Search
+        document.getElementById('hubSearch').addEventListener('input', e => {
+            const term = e.target.value.toLowerCase();
+            document.querySelectorAll('.setting-item-card').forEach(card => {
+                const text = card.getAttribute('data-search').toLowerCase();
+                card.style.display = text.includes(term) ? 'block' : 'none';
+            });
+        });
+
+        document.getElementById('lastRefreshed').innerText = new Date().toLocaleTimeString();
+    });
+
+    function initChart() {
+        const ctx = document.getElementById('dispatchChart').getContext('2d');
+        dispatchChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Signals',
+                    data: [],
+                    borderColor: '#6366f1',
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 10 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
+    async function loadAnalytics() {
+        try {
+            const response = await fetch('/api/email-alerts/analytics');
+            const data = await response.json();
+            if (data.success) {
+                dispatchChart.data.labels = data.timeline.map(d => d.date);
+                dispatchChart.data.datasets[0].data = data.timeline.map(d => d.count);
+                dispatchChart.update();
+            }
+        } catch (err) { console.error(err); }
+    }
+
+    async function toggleAlert(id, checkbox) {
+        try {
+            const res = await fetch(`/api/email-alerts/toggle/${id}`, { method: 'POST' });
+            if (res.ok) {
+                const badge = checkbox.closest('.protocol-card').querySelector('.status-badge');
+                if (checkbox.checked) {
+                    badge.className = 'badge status-in status-badge py-1 px-2 fs-11';
+                    badge.innerHTML = '<i class="bi bi-circle-fill me-1 fs-xs pulse-online"></i> Active';
+                } else {
+                    badge.className = 'badge status-out status-badge py-1 px-2 fs-11';
+                    badge.innerHTML = '<i class="bi bi-circle-fill me-1 fs-xs"></i> Inactive';
+                }
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function bulkAction(action, type) {
+        const title = action === 'ENABLE' ? 'Restore Protocols?' : 'Suspend Protocols?';
+        const msg = type === 'CRITICAL' ? 'This will affect only High-Priority routes.' : 'This will affect all notification channels.';
+
+        const result = await Swal.fire({
+            title: title,
+            text: msg,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Execute',
+            cancelButtonText: 'Abort'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const res = await fetch('/api/email-alerts/bulk-toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ enabled: action === 'ENABLE', category: type })
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire('Success', data.message, 'success').then(() => location.reload());
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    async function viewHistory(id, dept) {
+        document.getElementById('historyModalSubtitle').innerText = `Recent signals for ${dept}`;
+        const body = document.getElementById('historyTableBody');
+        body.innerHTML = '<tr><td colspan="3" class="text-center py-4"><span class="spinner-border spinner-border-sm"></span> Analyzing data...</td></tr>';
+
+        const modal = new bootstrap.Modal(document.getElementById('historyModal'));
+        modal.show();
+
+        try {
+            const res = await fetch(`/api/email-alerts/history/${id}`);
+            const data = await res.json();
+            if (data.success && data.logs.length > 0) {
+                body.innerHTML = data.logs.map(log => `
+                    <tr>
+                        <td class="small fw-600">${new Date(log.triggered_at).toLocaleString()}</td>
+                        <td><span class="badge bg-success-subtle text-success fs-10 uppercase">${log.status}</span></td>
+                        <td class="small text-sub italic">${log.details}</td>
+                    </tr>
+                `).join('');
+            } else {
+                body.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-muted">No signal history detected for this route.</td></tr>';
+            }
+        } catch (e) { body.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Failed to retrieve history.</td></tr>'; }
+    }
+
+    function filterProtocol(type, element) {
+        document.querySelectorAll('.nav-link-item').forEach(t => t.classList.remove('active'));
+        if (element) element.classList.add('active');
+
+        document.querySelectorAll('.setting-item-card').forEach(card => {
+            const p = card.getAttribute('data-priority');
+            const searchTag = card.getAttribute('data-search').toLowerCase();
+            if (type === 'ALL') card.style.display = 'block';
+            else if (type === 'CRITICAL' && p === 'CRITICAL') card.style.display = 'block';
+            else if (type === 'SECURITY' && (searchTag.includes('security') || p === 'HIGH' || p === 'CRITICAL')) card.style.display = 'block';
+            else card.style.display = 'none';
+        });
+    }
+
+    async function testPing(id, btn) {
+        btn.disabled = true;
+        const icon = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        try {
+            const res = await fetch(`/api/email-alerts/test/${id}`, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire('Signal Routed', data.message, 'success').then(() => {
+                    location.reload();
+                });
+            }
+        } catch (e) { console.error(e); }
+        finally { btn.disabled = false; btn.innerHTML = icon; }
+    }
+
+    document.getElementById('alertForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const priority = document.querySelector('input[name="priority"]:checked').value;
+        const data = {
+            id: document.getElementById('settingId').value,
+            department: document.getElementById('dept').value,
+            key_person: document.getElementById('keyName').value,
+            email: document.getElementById('email').value,
+            priority: priority,
+            frequency: document.getElementById('frequency').value
+        };
+        try {
+            const res = await fetch('/api/email-alerts/save', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (res.ok) location.reload();
+        } catch (e) { console.error(e); }
+    });
+
+    function editSetting(s) {
+        document.getElementById('dept').value = s.department;
+        document.getElementById('keyName').value = s.key_person;
+        document.getElementById('email').value = s.email;
+        document.getElementById('frequency').value = s.frequency;
+        document.getElementById('settingId').value = s.id;
+        document.getElementById('modalTitle').innerText = 'Reconfigure Protocol';
+        document.getElementById('btnText').innerText = 'Update Signal Route';
+
+        // Priority radio
+        const pMap = { 'LOW': 'pLow', 'MEDIUM': 'pMed', 'HIGH': 'pHigh', 'CRITICAL': 'pCrit' };
+        document.getElementById(pMap[s.priority]).checked = true;
+
+        new bootstrap.Modal(document.getElementById('addAlertModal')).show();
+    }
+
+    async function deleteSetting(id) {
+        const result = await Swal.fire({
+            title: 'Terminate Route?',
+            text: 'This action is permanent.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes, terminate'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const res = await fetch(`/api/email-alerts/delete/${id}`, { method: 'DELETE' });
+            if (res.ok) location.reload();
+        } catch (e) { console.error(e); }
+    }
+
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text);
+        Swal.fire({ title: 'Copied!', text: 'Email copied to buffer.', icon: 'success', timer: 1500, showConfirmButton: false, position: 'top-end', toast: true });
+    }
+
+    function exportProtocols() {
+        Swal.fire('Exporting...', 'Generating operational PDF report...', 'info').then(() => {
+            window.print();
+        });
+    }
+</script>
+{% endblock %}

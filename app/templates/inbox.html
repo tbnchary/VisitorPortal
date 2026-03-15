@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+
+{% block title %}Intelligence Inbox | Visitor Portal{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --inbox-sidebar-width: 260px;
+        --gmail-bg: #f6f8fb;
+        --gmail-hover: #eaf1fb;
+        --gmail-active: #d3e3fd;
+        --gmail-text: #1f1f1f;
+        --gmail-sub: #444746;
+    }
+
+    body {
+        background-color: var(--gmail-bg);
+        overflow: hidden;
+    }
+
+    .inbox-wrapper {
+        display: flex;
+        height: calc(100vh - 80px);
+        margin: -1rem;
+        padding: 0;
+    }
+
+    .inbox-sidebar {
+        width: var(--inbox-sidebar-width);
+        background: var(--gmail-bg);
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .btn-compose {
+        padding: 1.25rem 1.5rem;
+        background: #c2e7ff;
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-weight: 500;
+        color: #001d35;
+        margin-bottom: 1rem;
+        transition: box-shadow .15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-compose:hover {
+        box-shadow: 0 1px 3px 0 rgba(60, 64, 67, .3), 0 4px 8px 3px rgba(60, 64, 67, .15);
+        background: #b3dffd;
+    }
+
+    .nav-item-inbox {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 1.25rem;
+        border-radius: 20px;
+        color: var(--gmail-sub);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+
+    .nav-item-inbox:hover {
+        background: var(--gmail-hover);
+        color: var(--gmail-text);
+    }
+
+    .nav-item-inbox.active {
+        background: var(--gmail-active);
+        color: #001d35;
+        font-weight: 700;
+    }
+
+    .nav-item-inbox i {
+        font-size: 1.1rem;
+        width: 24px;
+    }
+
+    .inbox-content {
+        flex: 1;
+        background: white;
+        border-radius: 16px 0 0 0;
+        display: flex;
+        flex-direction: column;
+        box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.02);
+    }
+
+    .inbox-toolbar {
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #f1f3f4;
+    }
+
+    .message-list {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .message-row {
+        display: flex;
+        align-items: center;
+        padding: 0 1rem;
+        height: 48px;
+        border-bottom: 1px solid #f1f3f4;
+        cursor: pointer;
+        position: relative;
+        transition: box-shadow 0.2s;
+    }
+
+    .message-row:hover {
+        box-shadow: inset 1px 0 0 #dadce0, inset -1px 0 0 #dadce0, 0 1px 2px 0 rgba(60, 64, 67, .3), 0 1px 3px 1px rgba(60, 64, 67, .15);
+        z-index: 1;
+    }
+
+    .message-row.unread {
+        background: white;
+        font-weight: 700;
+    }
+
+    .message-row.unread .message-sender,
+    .message-row.unread .message-subject {
+        color: var(--gmail-text);
+    }
+
+    .message-checkbox {
+        width: 40px;
+        display: flex;
+        align-items: center;
+    }
+
+    .message-star {
+        width: 30px;
+        color: #dadce0;
+        transition: color 0.1s;
+    }
+
+    .message-star:hover,
+    .message-star.starred {
+        color: #f4b400;
+    }
+
+    .message-sender {
+        width: 180px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: var(--gmail-sub);
+    }
+
+    .message-body {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.9rem;
+        overflow: hidden;
+    }
+
+    .message-subject {
+        color: var(--gmail-sub);
+        white-space: nowrap;
+    }
+
+    .message-preview {
+        color: #70757a;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-weight: 400;
+    }
+
+    .message-date {
+        width: 80px;
+        text-align: right;
+        font-size: 0.75rem;
+        color: var(--gmail-sub);
+        font-weight: 500;
+    }
+
+    .message-actions {
+        display: none;
+        background: white;
+        position: absolute;
+        right: 1rem;
+        gap: 5px;
+        padding-left: 10px;
+    }
+
+    .message-row:hover .message-actions {
+        display: flex;
+    }
+
+    .type-badge {
+        font-size: 0.65rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        text-transform: uppercase;
+        font-weight: 800;
+        margin-right: 8px;
+    }
+
+    .bg-visitor {
+        background: #e8f0fe;
+        color: #1967d2;
+    }
+
+    .bg-fleet {
+        background: #fef7e0;
+        color: #b05e00;
+    }
+
+    .bg-alert {
+        background: #fce8e6;
+        color: #c5221f;
+    }
+
+    .inbox-search {
+        background: #f1f3f4;
+        border-radius: 8px;
+        padding: 0.4rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        max-width: 720px;
+    }
+
+    .inbox-search input {
+        background: transparent;
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 1rem;
+    }
+
+    .btn-icon-gmail {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--gmail-sub);
+        border: none;
+        background: transparent;
+        transition: background 0.2s;
+    }
+
+    .btn-icon-gmail:hover {
+        background: rgba(60, 64, 67, 0.08);
+        color: var(--gmail-text);
+    }
+</style>
+
+<div class="inbox-wrapper">
+    <!-- Sidebar -->
+    <div class="inbox-sidebar">
+        <button class="btn-compose" onclick="location.href='{{ url_for('main.add_visitor') }}'">
+            <i class="bi bi-pencil-square fs-4"></i>
+            <span>Register</span>
+        </button>
+
+        <a href="?filter=inbox" class="nav-item-inbox {% if current_filter == 'inbox' %}active{% endif %}">
+            <div><i class="bi bi-inbox-fill"></i> Inbox</div>
+            <span class="badge rounded-pill bg-danger" style="font-size: 0.6rem;">{{ items|length if current_filter ==
+                'inbox' else '' }}</span>
+        </a>
+        <a href="?filter=starred" class="nav-item-inbox {% if current_filter == 'starred' %}active{% endif %}">
+            <div><i class="bi bi-star"></i> Starred</div>
+        </a>
+        <a href="?filter=snoozed" class="nav-item-inbox {% if current_filter == 'snoozed' %}active{% endif %}">
+            <div><i class="bi bi-clock"></i> Snoozed</div>
+        </a>
+        <a href="?filter=sent" class="nav-item-inbox {% if current_filter == 'sent' %}active{% endif %}">
+            <div><i class="bi bi-send"></i> Sent</div>
+        </a>
+        <a href="?filter=drafts" class="nav-item-inbox {% if current_filter == 'drafts' %}active{% endif %}">
+            <div><i class="bi bi-file-earmark-text"></i> Drafts</div>
+        </a>
+        <a href="?filter=archived" class="nav-item-inbox {% if current_filter == 'archived' %}active{% endif %}">
+            <div><i class="bi bi-archive"></i> Archived</div>
+        </a>
+
+        <hr class="my-3 opacity-10">
+
+        <h6 class="px-3 fs-xs fw-800 text-sub uppercase mb-2">Categories</h6>
+        <a href="?category=social" class="nav-item-inbox">
+            <div><i class="bi bi-people"></i> Social</div>
+        </a>
+        <a href="?category=updates" class="nav-item-inbox">
+            <div><i class="bi bi-info-circle"></i> Updates</div>
+        </a>
+        <a href="?category=promotions" class="nav-item-inbox">
+            <div><i class="bi bi-megaphone"></i> Promotions</div>
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="inbox-content">
+        <!-- Toolbar -->
+        <div class="inbox-toolbar">
+            <div class="toolbar-left d-flex align-items-center gap-2">
+                <div class="inbox-search">
+                    <i class="bi bi-search text-sub"></i>
+                    <input type="text" placeholder="Search in intelligence" id="inboxSearchInput">
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn-icon-gmail" title="Refresh" onclick="location.reload()"><i
+                        class="bi bi-arrow-clockwise"></i></button>
+                <button class="btn-icon-gmail" title="Settings"
+                    onclick="location.href='{{ url_for('main.settings') }}'"><i class="bi bi-gear"></i></button>
+                <div class="ms-3 d-flex align-items-center gap-2">
+                    <span class="small text-sub">1-{{ items|length }} of {{ items|length }}</span>
+                    <button class="btn-icon-gmail btn-sm"><i class="bi bi-chevron-left"></i></button>
+                    <button class="btn-icon-gmail btn-sm"><i class="bi bi-chevron-right"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Bar (Selection) -->
+        <div class="px-3 py-1 d-flex gap-1 border-bottom bg-light">
+            <div class="form-check m-0 d-flex align-items-center me-3">
+                <input class="form-check-input" type="checkbox" id="selectAll">
+            </div>
+            <button class="btn-icon-gmail" title="Archive" onclick="bulkAction('archive')"><i
+                    class="bi bi-archive"></i></button>
+            <button class="btn-icon-gmail" title="Delete" onclick="bulkAction('delete')"><i
+                    class="bi bi-trash"></i></button>
+            <div class="vr mx-2 my-2"></div>
+            <button class="btn-icon-gmail" title="Mark as read"><i class="bi bi-envelope-open"></i></button>
+            <button class="btn-icon-gmail" title="Snooze"><i class="bi bi-clock"></i></button>
+            <div class="vr mx-2 my-2"></div>
+            <div class="dropdown">
+                <button class="btn-icon-gmail" data-bs-toggle="dropdown"><i
+                        class="bi bi-three-dots-vertical"></i></button>
+                <ul class="dropdown-menu shadow border-0">
+                    <li><a class="dropdown-item" href="#">Mark all as read</a></li>
+                    <li><a class="dropdown-item" href="#">Select all</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- List -->
+        <div class="message-list">
+            {% if items %}
+            {% for item in items %}
+            <div class="message-row {% if item.status == 'PENDING' %}unread{% endif %}" data-type="{{ item.type }}"
+                data-id="{{ item.id }}" onclick="viewDetails('{{ item.type }}', {{ item.id }})">
+                <div class="message-checkbox">
+                    <input type="checkbox" class="row-check" onclick="event.stopPropagation()">
+                </div>
+                <div class="message-star {% if item.is_starred %}starred{% endif %}"
+                    onclick="toggleStar(this, '{{ item.type }}', {{ item.id }}); event.stopPropagation()">
+                    <i class="bi {% if item.is_starred %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                </div>
+                <div class="message-sender">
+                    {{ item.sender }}
+                </div>
+                <div class="message-body">
+                    <span
+                        class="type-badge {% if item.type == 'VISITOR_APPROVAL' %}bg-visitor{% elif item.type == 'FLEET_APPROVAL' %}bg-fleet{% else %}bg-alert{% endif %}">
+                        {{ item.type|replace('_', ' ') }}
+                    </span>
+                    <span class="message-subject">{{ item.subject }}</span>
+                    <span class="px-2 text-muted">-</span>
+                    <span class="message-preview">{{ item.preview }}</span>
+                </div>
+                <div class="message-actions">
+                    {% if item.status == 'PENDING' %}
+                    <button class="btn btn-sm btn-success rounded-pill px-3 py-1 fw-bold fs-xs"
+                        onclick="actionItem('{{ item.type }}', {{ item.id }}, 'approve'); event.stopPropagation()">
+                        <i class="bi bi-check-lg"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 fw-bold fs-xs"
+                        onclick="actionItem('{{ item.type }}', {{ item.id }}, 'reject'); event.stopPropagation()">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                    {% else %}
+                    <span
+                        class="badge {% if item.status in ['APPROVED', 'ALERT'] %}bg-success{% else %}bg-danger{% endif %} rounded-pill opacity-75 fs-xs">
+                        {{ item.status }}
+                    </span>
+                    {% endif %}
+                    <button class="btn-icon-gmail btn-sm ms-2" title="Archive"
+                        onclick="singleAction('archive', '{{ item.type }}', {{ item.id }}); event.stopPropagation()"><i
+                            class="bi bi-archive"></i></button>
+                    <button class="btn-icon-gmail btn-sm" title="Delete"
+                        onclick="singleAction('delete', '{{ item.type }}', {{ item.id }}); event.stopPropagation()"><i
+                            class="bi bi-trash"></i></button>
+                </div>
+                <div class="message-date">
+                    {% if item.date %}
+                    {% if item.date.date() == now.date() %}
+                    {{ item.date.strftime('%H:%M') }}
+                    {% else %}
+                    {{ item.date.strftime('%b %d') }}
+                    {% endif %}
+                    {% else %}
+                    -
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="py-5 text-center text-muted">
+                <i class="bi bi-inbox fs-1 opacity-25"></i>
+                <h5 class="mt-3 fw-bold">No messages found</h5>
+                <p>This folder is empty.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    async function toggleStar(el, type, id) {
+        const isStarred = !el.classList.contains('starred');
+        el.classList.toggle('starred');
+        const icon = el.querySelector('i');
+        icon.className = isStarred ? 'bi bi-star-fill' : 'bi bi-star';
+
+        try {
+            await fetch('/api/inbox/star', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, type, is_starred: isStarred ? 1 : 0 })
+            });
+        } catch (e) { console.error(e); }
+    }
+
+    async function actionItem(type, id, action) {
+        const title = action === 'approve' ? 'Approve Request?' : 'Reject Request?';
+        const color = action === 'approve' ? '#10b981' : '#ef4444';
+
+        const result = await Swal.fire({
+            title: title,
+            text: `Confirming ${action} for this intelligence record.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Confirm',
+            confirmButtonColor: color
+        });
+
+        if (result.isConfirmed) {
+            try {
+                let url, method = 'POST', body;
+                if (type === 'VISITOR_APPROVAL') {
+                    url = `/host-approve-visitor/${id}`;
+                    body = new FormData();
+                    body.append('action', action);
+                    body.append('approval_notes', 'Actioned via Intelligence Inbox');
+                } else if (type === 'FLEET_APPROVAL') {
+                    url = `/api/fleet/approve_booking/${id}`;
+                    body = JSON.stringify({ action: action.toUpperCase() });
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    body: body,
+                    headers: type === 'FLEET_APPROVAL' ? { 'Content-Type': 'application/json' } : {}
+                });
+
+                if (res.ok) {
+                    Swal.fire({ icon: 'success', title: 'Action Successful', toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    Swal.fire('Error', 'Action failed.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Error', 'System error.', 'error');
+            }
+        }
+    }
+
+    async function singleAction(action, type, id) {
+        const payload = { items: { [type]: [id] } };
+        const res = await fetch(`/api/inbox/${action}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+            Swal.fire({ icon: 'success', title: `${action}D`, toast: true, position: 'top-end', showConfirmButton: false, timer: 1500 });
+            setTimeout(() => location.reload(), 800);
+        }
+    }
+
+    async function bulkAction(action) {
+        const selected = document.querySelectorAll('.row-check:checked');
+        if (selected.length === 0) return;
+
+        const items = {};
+        selected.forEach(cb => {
+            const row = cb.closest('.message-row');
+            const type = row.dataset.type;
+            const id = parseInt(row.dataset.id);
+            if (!items[type]) items[type] = [];
+            items[type].push(id);
+        });
+
+        const res = await fetch(`/api/inbox/${action}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items })
+        });
+        if (res.ok) location.reload();
+    }
+
+    function viewDetails(type, id) {
+        if (type === 'VISITOR_APPROVAL') {
+            window.location.href = `/visitor/${id}`;
+        } else if (type === 'FLEET_APPROVAL') {
+            Swal.fire('Fleet Intelligence', 'Detailed booking metrics available in Departmental Approvals.', 'info');
+        } else if (type === 'SECURITY_ALERT') {
+            Swal.fire('Security Incident', 'High-priority alert requiring immediate oversight.', 'warning');
+        }
+    }
+
+    document.getElementById('selectAll').addEventListener('change', function (e) {
+        document.querySelectorAll('.row-check').forEach(cb => cb.checked = e.target.checked);
+    });
+
+    document.getElementById('inboxSearchInput').addEventListener('input', function (e) {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('.message-row').forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = text.includes(term) ? 'flex' : 'none';
+        });
+    });
+</script>
+{% endblock %}

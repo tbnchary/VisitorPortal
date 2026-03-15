@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* camera_test.html styles extracted */
+    .camera-test-container {
+        font-family: Arial, sans-serif;
+        background: #1a1a1a;
+        color: white;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: calc(100vh - 60px);
+    }
+
+    .camera-test-container h1 {
+        margin-bottom: 20px;
+        color: #4f46e5;
+    }
+
+    .camera-status {
+        background: #2a2a2a;
+        padding: 15px 30px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-size: 18px;
+    }
+
+    .camera-status.success {
+        background: #10b981;
+        color: white;
+    }
+
+    .camera-status.error {
+        background: #ef4444;
+        color: white;
+    }
+
+    .video-container {
+        position: relative;
+        width: 640px;
+        max-width: 90vw;
+        background: black;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    video {
+        width: 100%;
+        height: auto;
+        display: block;
+        transform: scaleX(-1);
+        /* Mirror effect */
+    }
+
+    canvas {
+        width: 100%;
+        height: auto;
+        display: none;
+    }
+
+    .camera-guide {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 250px;
+        border: 3px solid rgba(79, 70, 229, 0.7);
+        border-radius: 50% / 40%;
+        pointer-events: none;
+    }
+
+    .camera-controls {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .camera-btn {
+        padding: 15px 30px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .camera-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-start {
+        background: #4f46e5;
+        color: white;
+    }
+
+    .btn-capture {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-stop {
+        background: #6b7280;
+        color: white;
+    }
+
+    .camera-info-box {
+        background: #2a2a2a;
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 20px;
+        max-width: 640px;
+    }
+
+    .camera-info-box h3 {
+        color: #4f46e5;
+        margin-bottom: 10px;
+    }
+
+    .camera-info-box ul {
+        list-style-position: inside;
+        line-height: 1.8;
+    }
+
+    .camera-log {
+        background: #000;
+        color: #0f0;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 20px;
+        max-width: 640px;
+        width: 100%;
+        font-family: 'Courier New', monospace;
+        font-size: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .log-entry {
+        margin-bottom: 5px;
+    }
+
+    .camera-preview {
+        margin-top: 20px;
+        max-width: 640px;
+    }
+
+    .camera-preview img {
+        width: 100%;
+        border-radius: 10px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="camera-test-container">
+    <h1>🎥 Camera Test Page</h1>
+
+    <div class="camera-status" id="status">Ready to test camera</div>
+
+    <div class="video-container">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="canvas"></canvas>
+        <div class="camera-guide"></div>
+    </div>
+
+    <div class="camera-controls">
+        <button class="camera-btn btn-start" onclick="startCamera()">▶️ Start Camera</button>
+        <button class="camera-btn btn-capture" onclick="capturePhoto()">📸 Capture Photo</button>
+        <button class="camera-btn btn-stop" onclick="stopCamera()">⏹️ Stop Camera</button>
+    </div>
+
+    <div class="camera-preview" id="preview" style="display: none;">
+        <h3>Captured Photo:</h3>
+        <img id="capturedImage" alt="Captured photo">
+    </div>
+
+    <div class="camera-log" id="log">
+        <div class="log-entry">Console Log:</div>
+    </div>
+
+    <div class="camera-info-box">
+        <h3>📋 Instructions:</h3>
+        <ul>
+            <li>Click "Start Camera" to begin</li>
+            <li>Allow camera permission when prompted</li>
+            <li>You should see yourself mirrored (like a mirror)</li>
+            <li>Click "Capture Photo" to take a picture</li>
+            <li>Check the console log below for any errors</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let stream_test = null;
+    const video_el = document.getElementById('video');
+    const canvas_el = document.getElementById('canvas');
+    const status_el = document.getElementById('status');
+    const log_el = document.getElementById('log');
+    const preview_el = document.getElementById('preview');
+    const captured_img = document.getElementById('capturedImage');
+
+    function log_msg(message, type = 'info') {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        const timestamp = new Date().toLocaleTimeString();
+        entry.textContent = `[${timestamp}] ${message}`;
+        log_el.appendChild(entry);
+        log_el.scrollTop = log_el.scrollHeight;
+        console.log(message);
+    }
+
+    function update_status(message, type = 'info') {
+        status_el.textContent = message;
+        status_el.className = 'camera-status ' + type;
+    }
+
+    async function startCamera() {
+        try {
+            log_msg('Requesting camera access...');
+            update_status('Requesting camera access...', 'info');
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('getUserMedia is not supported in this browser');
+            }
+
+            const constraints = {
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
+            };
+
+            log_msg('Calling getUserMedia with constraints: ' + JSON.stringify(constraints));
+            stream_test = await navigator.mediaDevices.getUserMedia(constraints);
+
+            log_msg('✅ Camera stream obtained successfully!');
+            log_msg('Stream ID: ' + stream_test.id);
+
+            video_el.srcObject = stream_test;
+
+            video_el.onloadedmetadata = function () {
+                log_msg('Video metadata loaded');
+                video_el.play()
+                    .then(() => {
+                        log_msg('✅ Video is playing!');
+                        update_status('✅ Camera is working! You should see yourself.', 'success');
+                    })
+                    .catch(err => {
+                        log_msg('❌ Video play error: ' + err.message, 'error');
+                        update_status('❌ Video play error: ' + err.message, 'error');
+                    });
+            };
+
+        } catch (error) {
+            log_msg('❌ Camera error: ' + error.name + ' - ' + error.message, 'error');
+            update_status('❌ Camera error: ' + error.message, 'error');
+        }
+    }
+
+    function capturePhoto() {
+        if (!stream_test) {
+            update_status('❌ Please start camera first', 'error');
+            return;
+        }
+
+        try {
+            log_msg('Capturing photo...');
+            canvas_el.width = video_el.videoWidth;
+            canvas_el.height = video_el.videoHeight;
+            const ctx = canvas_el.getContext('2d');
+            ctx.translate(canvas_el.width, 0);
+            ctx.scale(-1, 1);
+            ctx.drawImage(video_el, 0, 0);
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            const imageData = canvas_el.toDataURL('image/jpeg', 0.92);
+            captured_img.src = imageData;
+            preview_el.style.display = 'block';
+            log_msg('✅ Photo captured successfully!');
+            update_status('✅ Photo captured!', 'success');
+        } catch (error) {
+            log_msg('❌ Capture error: ' + error.message, 'error');
+            update_status('❌ Capture error: ' + error.message, 'error');
+        }
+    }
+
+    function stopCamera() {
+        if (stream_test) {
+            stream_test.getTracks().forEach(track => track.stop());
+            stream_test = null;
+            video_el.srcObject = null;
+            log_msg('Camera stopped');
+            update_status('Camera stopped', 'info');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,894 @@
+/* ==========================================================================
+   MOBILE SUITE V7 - "NATIVE PRO"
+   Objective: Professional App UI, Bottom Navigation, Rich Menu Overlay.
+   ========================================================================== */
+
+
+
+@media (max-width: 992px) {
+
+    /* === 1. CORE THEME === */
+    :root {
+        --app-primary: #4f46e5;
+        /* Indigo 600 */
+        --app-bg: #f8fafc;
+        /* Slate 50 */
+        --app-surface: #ffffff;
+        --app-text: #0f172a;
+        /* Slate 900 */
+        --app-text-muted: #64748b;
+        /* Slate 500 */
+        --app-border: #e2e8f0;
+        --nav-height: 70px;
+        --header-height: 60px;
+        --safe-bottom: env(safe-area-inset-bottom, 20px);
+    }
+
+    body,
+    html {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        background-color: var(--app-bg) !important;
+        color: var(--app-text) !important;
+        overflow-x: hidden;
+        padding-top: var(--header-height) !important;
+    }
+
+    /* Hide Desktop Elements */
+    #mainSidebar,
+    .sidebar,
+    .mobile-header-v5,
+    .mobile-nav-v5,
+    .mobile-header-v2,
+    .mobile-nav-v2,
+    .dock-nav,
+    .crystal-nav,
+    .dashboard-header,
+    .mobile-desktop-mirror-js {
+        display: none !important;
+    }
+
+    /* === 2. APP HEADER (Sticky) === */
+    .app-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--header-height);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--app-border);
+        z-index: 1100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+    }
+
+    .app-brand {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--app-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .app-actions {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .header-icon-btn {
+        font-size: 20px;
+        color: var(--app-text-muted);
+        position: relative;
+    }
+
+    .notif-badge {
+        position: absolute;
+        top: -2px;
+        right: -2px;
+        width: 8px;
+        height: 8px;
+        background: #ef4444;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+    .header-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e0e7ff;
+        color: var(--app-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    /* === 3. BOTTOM NAVIGATION (Pro) === */
+    .app-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: calc(var(--nav-height) + var(--safe-bottom));
+        background: var(--app-surface);
+        border-top: 1px solid var(--app-border);
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        padding-bottom: var(--safe-bottom);
+        z-index: 1200;
+        box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.03);
+    }
+
+    .nav-tab {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        /* Slate 500 */
+        text-decoration: none;
+        gap: 4px;
+        position: relative;
+    }
+
+    .nav-tab i {
+        font-size: 22px;
+        transition: transform 0.2s, color 0.2s;
+    }
+
+    .nav-tab span {
+        font-size: 10px;
+        font-weight: 700;
+    }
+
+    .nav-tab.active {
+        color: var(--app-primary);
+    }
+
+    .nav-tab.active i {
+        transform: translateY(-2px);
+    }
+
+    /* Exit Tab Special Styling */
+    .nav-tab.exit-tab {
+        color: #ef4444 !important;
+        /* Red-500 */
+    }
+
+    .nav-tab.exit-tab i {
+        color: #ef4444 !important;
+    }
+
+    /* Floating Center Button (Purple Gradient) */
+    .nav-tab.center-fab {
+        position: relative;
+    }
+
+    .fab-button {
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+        /* Purple to Pink */
+        border-radius: 50%;
+        /* Circle */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 24px;
+        box-shadow: 0 4px 15px rgba(217, 70, 239, 0.4);
+        transform: translateY(-25px);
+        border: 4px solid var(--app-surface);
+        cursor: pointer;
+        pointer-events: auto;
+        /* Ensure clickable */
+        z-index: 1210;
+        /* Above nav bar */
+    }
+
+    /* === 4. CONTENT WRAPPER === */
+    .main-content {
+        padding: 20px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        padding-bottom: 100px !important;
+        /* Navigation Clearance */
+    }
+
+    .dashboard-container,
+    .dashboard-grid-container {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        height: auto !important;
+        padding: 0 !important;
+    }
+
+    /* Refined Stats Grid */
+    .stats-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+        margin-bottom: 24px !important;
+    }
+
+    .stat-card {
+        background: white !important;
+        border: 1px solid var(--app-border) !important;
+        border-radius: 16px !important;
+        padding: 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 100px !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .stat-label {
+        font-size: 11px !important;
+        color: var(--app-text-muted) !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .stat-value {
+        font-size: 22px !important;
+        font-weight: 800 !important;
+        color: var(--app-text) !important;
+    }
+
+    .stat-icon {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 16px !important;
+        border-radius: 8px !important;
+        position: absolute !important;
+        top: 12px !important;
+        right: 12px !important;
+    }
+
+    /* Charts & Tables */
+    .charts-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+
+    .chart-card,
+    .table-card {
+        border-radius: 20px !important;
+        border: 1px solid var(--app-border) !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02) !important;
+        padding: 16px !important;
+        background: white !important;
+    }
+
+    /* === 5. "MORE" MENU DRAWER (Dark Sidebar Style) === */
+    .menu-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 85%;
+        /* Container feature: slightly less than full width */
+        max-width: 300px;
+        height: 100%;
+        background: #0f172a;
+        /* Dark Navy from image */
+        z-index: 1300;
+        padding: 20px;
+        padding-top: 50px;
+        transform: translateX(-100%);
+        /* Slide form left */
+        visibility: visible;
+        /* Always visible for transition */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .menu-overlay.active {
+        transform: translateX(0);
+        /* Slide In */
+    }
+
+    /* Menu Backdrop */
+    .menu-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1290;
+        /* Behind menu */
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s;
+        backdrop-filter: blur(2px);
+    }
+
+    .menu-backdrop.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .menu-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+        /* Push footer down */
+    }
+
+    .menu-item {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        gap: 14px;
+        /* More space for icon */
+        padding: 12px 16px;
+        background: transparent;
+        border-radius: 12px;
+        /* Smoother corners */
+        border: 1px solid transparent;
+        /* Container setup */
+        width: 100%;
+        transition: all 0.2s;
+    }
+
+    .menu-item:hover,
+    .menu-item:active {
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .menu-item.active {
+        background: linear-gradient(90deg, #4f46e5 0%, #6366f1 100%);
+        /* Premium Container */
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .menu-item i {
+        font-size: 18px;
+        /* Slightly larger */
+        color: #94a3b8;
+        /* Slate 400 */
+        width: 24px;
+        text-align: center;
+        transition: color 0.2s;
+    }
+
+    .menu-item.active i {
+        color: white;
+    }
+
+    .menu-item span {
+        font-size: 14px;
+        /* Readable small font */
+        font-weight: 500;
+        color: #cbd5e1;
+        /* Slate 300 */
+        text-align: left;
+    }
+
+    .menu-item.active span {
+        color: white;
+        font-weight: 600;
+    }
+
+    /* Search Box in Menu */
+    .menu-search {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+
+    .menu-search input {
+        background: transparent;
+        border: none;
+        color: white;
+        font-size: 12px;
+        width: 100%;
+        outline: none;
+    }
+
+    .menu-search i {
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    /* Menu Footer (Stats & Profile) */
+    .menu-footer {
+        margin-top: 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 20px;
+    }
+
+    .menu-stats-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding: 0 10px;
+    }
+
+    .menu-stat {
+        text-align: center;
+    }
+
+    .menu-stat-val {
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+    }
+
+    .menu-stat-lbl {
+        font-size: 9px;
+        color: #64748b;
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .menu-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px;
+    }
+
+    .menu-avatar {
+        width: 32px;
+        height: 32px;
+        background: #4f46e5;
+        border-radius: 50%;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 12px;
+    }
+
+    .menu-user-info div:first-child {
+        color: white;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .menu-user-info div:last-child {
+        color: #64748b;
+        font-size: 10px;
+    }
+
+    /* === 7. RESPONSIVE DASHBOARD CONTROLS === */
+    .chart-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+    }
+
+    .chart-header>div {
+        width: 100% !important;
+        justify-content: space-between !important;
+    }
+
+    /* Target the controls container (Search + Toggles) */
+    .chart-header .d-flex {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        width: 100% !important;
+    }
+
+    /* Make search box full width on mobile */
+    .chart-header .search-box {
+        width: 100% !important;
+        margin-right: 0 !important;
+        margin-bottom: 8px !important;
+    }
+
+    .chart-header input {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        /* Prevent padding overflow */
+    }
+
+    /* Filter Groups Wrapper */
+    .filter-group {
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        width: 100% !important;
+        margin-top: 4px !important;
+    }
+
+    .filter-btn {
+        flex: 1 !important;
+        text-align: center !important;
+    }
+
+    /* Ensure Chart Canvas Fits */
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    /* Fix specific chart containers */
+    .chart-card>div[style*="height"] {
+        height: auto !important;
+        min-height: 220px !important;
+        /* Give slightly more room */
+    }
+
+    /* Table Responsive Scroll */
+    .table-container,
+    .table-card>div {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        width: 100% !important;
+        display: block !important;
+    }
+
+    /* Hide some less critical toggles if space is tight */
+    #trend-type-toggles,
+    #purpose-type-toggles,
+    #hourly-type-toggles {
+        margin-left: auto !important;
+        /* Push to right */
+    }
+
+    /* === 8. VISITOR REGISTRATION MOBILE FIX (COMPACT MODE) === */
+    .registration-portal-v45 {
+        height: auto !important;
+        overflow-y: visible !important;
+        padding-bottom: 80px !important;
+    }
+
+    .container-v45 {
+        padding: 5px !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Compact Header */
+    .core-header {
+        padding: 1rem !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+
+    .header-left {
+        width: 100%;
+    }
+
+    .gate-icon {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 1rem !important;
+    }
+
+    .gate-text h1 {
+        font-size: 1rem !important;
+    }
+
+    .gate-text p {
+        font-size: 0.65rem !important;
+    }
+
+    /* Small Tabs */
+    .stunning-tabs-container {
+        padding: 4px !important;
+        margin-bottom: 1rem !important;
+    }
+
+    .tab-item {
+        padding: 8px !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 4px !important;
+    }
+
+    .tab-icon {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.9rem !important;
+    }
+
+    .tab-title {
+        font-size: 0.7rem !important;
+    }
+
+    .tab-desc {
+        display: none !important;
+        /* Hide description to save space */
+    }
+
+    /* Compact Form Identity Cards */
+    .identity-card-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        /* 2 columns side-by-side */
+        gap: 8px !important;
+    }
+
+    .identity-opt {
+        padding: 8px !important;
+        min-height: auto !important;
+    }
+
+    .opt-icon {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 1rem !important;
+        margin-bottom: 4px !important;
+    }
+
+    .opt-text strong {
+        font-size: 0.8rem !important;
+    }
+
+    .opt-text span {
+        font-size: 0.6rem !important;
+        line-height: 1 !important;
+    }
+
+    /* Compact Inputs */
+    .floating-intel-input {
+        margin-bottom: 0.5rem !important;
+    }
+
+    .floating-intel-input .input-i-group {
+        height: auto !important;
+        min-height: 40px !important;
+        padding: 4px 8px !important;
+    }
+
+    .floating-intel-input i {
+        font-size: 0.9rem !important;
+    }
+
+    .floating-intel-input input,
+    .floating-intel-input select {
+        font-size: 0.85rem !important;
+        height: 30px !important;
+    }
+
+    .floating-intel-input label {
+        font-size: 0.65rem !important;
+        top: 2px !important;
+    }
+
+    /* Ensure form steps are visible */
+    .form-step {
+        display: none;
+        animation: none !important;
+    }
+
+    .form-step.active {
+        display: block !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+
+    /* Purpose Grid Compact */
+    .purpose-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        /* 3 cols for density */
+        gap: 6px !important;
+    }
+
+    .purpose-chip {
+        padding: 6px !important;
+        font-size: 0.7rem !important;
+        gap: 4px !important;
+        flex-direction: column !important;
+        text-align: center !important;
+    }
+
+    .purpose-chip i {
+        font-size: 1rem !important;
+    }
+
+    /* Camera Frame Fix */
+    .secure-capture-frame {
+        height: auto !important;
+        min-height: 250px !important;
+        padding: 10px !important;
+    }
+
+    /* Chat Widget Fix */
+    .chat-widget-container,
+    #chat-widget-container {
+        bottom: 110px !important;
+        /* Above Nav */
+        right: 15px !important;
+        z-index: 1000 !important;
+    }
+
+    /* === 9. GLOBAL MOBILE PAGE FIXES === */
+    /* Universal Container Fit */
+    .container-fluid,
+    .container,
+    .page-header,
+    .card,
+    .stunning-header {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Fix Table Overflows Globally */
+    .table-responsive,
+    .table-card,
+    .card-body,
+    .dataTables_wrapper {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        display: block !important;
+        width: 100% !important;
+    }
+
+    table {
+        width: 100% !important;
+        min-width: 600px;
+        /* Force scroll for wide tables */
+    }
+
+    /* Compact Headers & Titles */
+    h1,
+    .display-4,
+    .page-title {
+        font-size: 1.5rem !important;
+        line-height: 1.2 !important;
+    }
+
+    h2,
+    .display-5 {
+        font-size: 1.25rem !important;
+    }
+
+    .lead,
+    .page-subtitle {
+        font-size: 0.85rem !important;
+    }
+
+    /* Card Adjustments */
+    .card-body,
+    .p-4,
+    .p-5 {
+        padding: 1rem !important;
+    }
+
+    /* Form Controls Compact */
+    .form-control,
+    .form-select,
+    .btn {
+        font-size: 0.9rem !important;
+        padding: 0.5rem 0.75rem !important;
+        height: auto !important;
+    }
+
+    /* Stack Filters Vertically */
+    .row.g-3>[class*="col-"] {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
+    }
+
+    /* Modal Fixes */
+    .modal-dialog {
+        margin: 10px !important;
+        max-width: calc(100vw - 20px) !important;
+        width: auto !important;
+    }
+
+    .modal-content {
+        border-radius: 12px !important;
+        overflow-y: auto !important;
+        max-height: 90vh !important;
+    }
+
+    /* Stunning Header Specifics (Groups Page) */
+    .stunning-header {
+        padding: 2rem 1rem !important;
+        /* Reduce massive padding */
+        margin-bottom: -1rem !important;
+        border-radius: 0 0 20px 20px !important;
+    }
+
+    .header-stat {
+        margin-bottom: 10px !important;
+        padding: 10px !important;
+    }
+
+    /* Navigation Breadcrumbs */
+    .breadcrumb-nav,
+    .breadcrumb-nav-v45 {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 8px !important;
+    }
+
+    /* Hide decorative/heavy elements */
+    .blob,
+    .animate-in {
+        animation: none !important;
+        /* Performance */
+    }
+
+    /* Ensure Bottom Nav Clearance */
+    body {
+        padding-bottom: 90px !important;
+    }
+
+    /* Zoom Controls Styling */
+    .zoom-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-right: 12px;
+        background: rgba(0, 0, 0, 0.04);
+        padding: 4px 8px;
+        border-radius: 12px;
+    }
+
+    .zoom-btn {
+        background: transparent;
+        border: none;
+        color: var(--app-text-muted);
+        font-size: 20px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s, transform 0.1s;
+    }
+
+    .zoom-btn:active {
+        transform: scale(0.9);
+        color: var(--app-primary);
+    }
+
+    .zoom-divider {
+        width: 1px;
+        height: 16px;
+        background: var(--app-border);
+        margin: 0 4px;
+    }
+}
+
+/* Hide desktop-only decorations */
+.stunning-bg,
+.blob {
+    display: none !important;
+}
+
+/* Ensure buttons are reachable */
+.form-actions {
+    position: relative !important;
+    bottom: auto !important;
+    margin-top: 15px;
+    flex-direction: column-reverse;
+    gap: 8px;
+}
+
+.btn-action-main,
+.btn-action-sec {
+    width: 100% !important;
+    justify-content: center;
+    padding: 10px !important;
+    font-size: 0.9rem !important;
+}

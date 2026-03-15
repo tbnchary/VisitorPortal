@@ -1,0 +1,622 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --coe-primary: #2563eb;
+        --coe-bg: #f8fafc;
+        --coe-card: #ffffff;
+        --coe-border: #e2e8f0;
+        --coe-text: #1e293b;
+    }
+
+    .coe-command-tower {
+        background: var(--coe-bg);
+        min-height: 100vh;
+        padding: 30px;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    .tower-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+    }
+
+    .tower-title {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--coe-text);
+        letter-spacing: -0.5px;
+    }
+
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: var(--coe-card);
+        padding: 24px;
+        border-radius: 16px;
+        border: 1px solid var(--coe-border);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .stat-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--coe-text);
+    }
+
+    .main-grid {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 30px;
+    }
+
+    /* Column 1: Security Gate */
+    .gate-column {
+        background: #ffffff;
+        border-radius: 20px;
+        border: 1px solid var(--coe-border);
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 300px);
+    }
+
+    .column-header {
+        padding: 20px;
+        border-bottom: 1px solid var(--coe-border);
+        font-weight: 700;
+        color: var(--coe-text);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .visitor-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 15px;
+    }
+
+    .visitor-item {
+        background: #f1f5f9;
+        padding: 15px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .visitor-item:hover {
+        border-color: var(--coe-primary);
+        background: #eff6ff;
+    }
+
+    .visitor-item.selected {
+        background: #2563eb;
+        color: white !important;
+    }
+
+    .visitor-item.selected .text-muted {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+
+    /* Column 2: Manufacturing Hub */
+    .hub-column {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 20px;
+        align-content: start;
+    }
+
+    .customer-card {
+        background: white;
+        border-radius: 20px;
+        border: 1px solid var(--coe-border);
+        padding: 24px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    }
+
+    .customer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .customer-name {
+        font-weight: 800;
+        font-size: 18px;
+        color: var(--coe-primary);
+    }
+
+    .shed-unit {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border: 1px solid var(--coe-border);
+    }
+
+    .shed-title {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .allocation-btn {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        background: #f1f5f9;
+        border: 1px dashed #cbd5e1;
+        font-weight: 600;
+        font-size: 12px;
+        color: #64748b;
+        transition: all 0.2s;
+        margin-top: 10px;
+    }
+
+    .allocation-btn:hover {
+        background: var(--coe-primary);
+        color: white;
+        border-style: solid;
+        border-color: var(--coe-primary);
+    }
+
+    .occupant-pill {
+        display: inline-flex;
+        align-items: center;
+        background: white;
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-right: 5px;
+        margin-bottom: 5px;
+        border: 1px solid var(--coe-border);
+    }
+
+    .badge-waiting {
+        background: #fee2e2;
+        color: #dc2626;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 800;
+    }
+
+    /* ADVANCED FEATURES CSS */
+    .health-score {
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        margin-top: 5px;
+        overflow: hidden;
+    }
+
+    .health-bar {
+        height: 100%;
+        transition: width 1s ease-in-out;
+    }
+
+    .health-high {
+        background: #22c55e;
+        box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+    }
+
+    .health-mid {
+        background: #eab308;
+    }
+
+    .health-low {
+        background: #ef4444;
+    }
+
+    .bulk-checkbox {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        z-index: 10;
+    }
+
+    .telemetry-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px;
+        margin-top: 10px;
+        display: none;
+    }
+
+    .telemetry-active {
+        display: block;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .search-pill {
+        background: white;
+        border: 1px solid var(--coe-border);
+        border-radius: 100px;
+        padding: 8px 16px;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    .search-pill i {
+        color: #94a3b8;
+        margin-right: 10px;
+    }
+
+    .search-pill input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 13px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="coe-command-tower">
+    <div class="tower-header">
+        <div>
+            <h1 class="tower-title">CoE Command Tower</h1>
+            <p class="text-muted small fw-600 mb-0">Advanced Manufacturing Logistics Interface</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-white border rounded-pill px-4 fw-700" onclick="location.reload()">
+                <i class="bi bi-arrow-clockwise me-2"></i>Refresh Sync
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-label">Security Queue</div>
+            <div class="stat-value text-danger">{{ stats.waiting }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Active Customers</div>
+            <div class="stat-value">{{ stats.active_customers }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Allocated On-Site</div>
+            <div class="stat-value text-primary">{{ stats.on_site }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Sheds</div>
+            <div class="stat-value">{{ stats.total_sheds }}</div>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- Column 1: Security Gate (Waiting for Allocation) -->
+        <div class="gate-column">
+            <div class="column-header">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-lock text-primary"></i>
+                    <span>SECURITY GATE</span>
+                </div>
+                <span class="badge-waiting">{{ unallocated|length }} WAITING</span>
+            </div>
+
+            <div class="p-3">
+                <div class="search-pill">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="queueSearch" placeholder="Search visitors..."
+                        onkeyup="filterQueue(this.value)">
+                </div>
+                <div class="d-flex justify-content-between x-small fw-800 text-muted mb-2 px-1">
+                    <span onclick="selectAllVisitors()" style="cursor: pointer" class="text-primary">SELECT ALL</span>
+                    <span onclick="clearSelection()" style="cursor: pointer">CLEAR</span>
+                </div>
+            </div>
+
+            <div class="visitor-list" id="gateQueue">
+                {% if unallocated %}
+                {% for visitor in unallocated %}
+                <div class="visitor-item" data-vid="{{ visitor.id }}" onclick="selectVisitor('{{ visitor.id }}', this)">
+                    <input type="checkbox" class="bulk-checkbox" onclick="event.stopPropagation(); syncCheckbox(this)">
+                    <div class="d-flex justify-content-between align-items-start mb-1 pe-4">
+                        <span class="fw-800 small">{{ visitor.visitor_name }}</span>
+                        <span class="x-small text-muted">{{ visitor.check_in.strftime('%H:%M') }}</span>
+                    </div>
+                    <div class="x-small text-muted fw-600">{{ visitor.company }}</div>
+                    <div class="x-small font-monospace text-primary mt-1">{{ visitor.purpose }}</div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-check-circle text-success display-6 mb-3"></i>
+                    <p class="text-muted small">No unallocated visitors.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Column 2: Manufacturing Hub (Allocated/Sheds) -->
+        <div class="hub-column">
+            <div class="col-12 mb-4" style="grid-column: 1 / -1;">
+                <div class="d-flex gap-2 align-items-center overflow-auto pb-2">
+                    <button class="btn btn-primary rounded-pill px-4 fw-700 x-small" onclick="filterHub('all')">All
+                        Customers</button>
+                    {% for customer in customers %}
+                    <button class="btn btn-white border rounded-pill px-3 fw-700 x-small"
+                        onclick="filterHub('{{ customer.name }}')">{{ customer.name }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% for customer in customers %}
+            <div class="customer-card customer-section" data-customer="{{ customer.name }}">
+                <div class="customer-header">
+                    <span class="customer-name">{{ customer.name }}</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary bg-opacity-10 text-primary small fw-800">{{ customer.sheds|length
+                            }} Sheds</span>
+                        <i class="bi bi-broadcast text-warning cursor-pointer" title="Zone Alert"
+                            onclick="emergencyBroadcast('{{ customer.name }}')"></i>
+                    </div>
+                </div>
+
+                <div class="shed-list">
+                    {% for shed in customer.sheds %}
+                    <div class="shed-unit">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="shed-title">{{ shed.name }}</span>
+                            <span class="x-small text-muted fw-700">NODE ID: {{ shed.unique_id }}</span>
+                        </div>
+
+                        <!-- Health Telemetry -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between x-small fw-800 text-muted mb-1">
+                                <span>Thermal Stability</span>
+                                <span class="text-success">Optimal</span>
+                            </div>
+                            <div class="health-score">
+                                <div class="health-bar health-high" style="width: 95%"></div>
+                            </div>
+                        </div>
+
+                        <div class="active-occupants">
+                            <h6 class="x-small fw-800 text-muted mb-2">ALLOCATED PERSONNEL</h6>
+                            {% set count = namespace(value=0) %}
+                            {% for visitor in allocated %}
+                            {% if visitor.shed_name == shed.name %}
+                            <div class="occupant-pill">
+                                <i class="bi bi-person-fill text-primary me-1"></i>
+                                {{ visitor.visitor_name }}
+                            </div>
+                            {% set count.value = count.value + 1 %}
+                            {% endif %}
+                            {% endfor %}
+
+                            {% if count.value == 0 %}
+                            <p class="x-small text-muted italic mb-2">Unit Vacant</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex gap-2 mt-3">
+                            <button class="allocation-btn flex-grow-1"
+                                onclick="allocateToShed('{{ shed.id }}', '{{ shed.name }}')">
+                                <i class="bi bi-lightning-fill me-1"></i> ALLOCATE
+                            </button>
+                            <button class="btn btn-light rounded-pill x-small" style="width: 40px"
+                                onclick="toggleTelemetry('{{ shed.id }}')">
+                                <i class="bi bi-activity"></i>
+                            </button>
+                        </div>
+
+                        <!-- Telemetry Drawer -->
+                        <div class="telemetry-card" id="tele-{{ shed.id }}">
+                            <div class="d-flex justify-content-between x-small mb-1">
+                                <span class="text-muted">Current Load</span>
+                                <span class="fw-700">1.4 kW</span>
+                            </div>
+                            <div class="d-flex justify-content-between x-small">
+                                <span class="text-muted">Environment</span>
+                                <span class="fw-700">22.4°C / 45% Hum</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    let selectedVisitorIds = new Set();
+
+    function filterQueue(query) {
+        const q = query.toLowerCase();
+        document.querySelectorAll('.visitor-item').forEach(item => {
+            const text = item.innerText.toLowerCase();
+            item.style.display = text.includes(q) ? 'block' : 'none';
+        });
+    }
+
+    function filterHub(customer) {
+        document.querySelectorAll('.customer-section').forEach(section => {
+            if (customer === 'all') {
+                section.style.display = 'block';
+            } else {
+                section.style.display = section.dataset.customer === customer ? 'block' : 'none';
+            }
+        });
+    }
+
+    function selectVisitor(id, el) {
+        const checkbox = el.querySelector('.bulk-checkbox');
+        if (selectedVisitorIds.has(id.toString())) {
+            selectedVisitorIds.delete(id.toString());
+            el.classList.remove('selected');
+            checkbox.checked = false;
+        } else {
+            selectedVisitorIds.add(id.toString());
+            el.classList.add('selected');
+            checkbox.checked = true;
+        }
+    }
+
+    function syncCheckbox(cb) {
+        const item = cb.closest('.visitor-item');
+        const id = item.dataset.vid;
+        if (cb.checked) {
+            selectedVisitorIds.add(id);
+            item.classList.add('selected');
+        } else {
+            selectedVisitorIds.delete(id);
+            item.classList.remove('selected');
+        }
+    }
+
+    function selectAllVisitors() {
+        document.querySelectorAll('.visitor-item').forEach(item => {
+            const id = item.dataset.vid;
+            if (item.style.display !== 'none') {
+                selectedVisitorIds.add(id);
+                item.classList.add('selected');
+                item.querySelector('.bulk-checkbox').checked = true;
+            }
+        });
+    }
+
+    function clearSelection() {
+        selectedVisitorIds.clear();
+        document.querySelectorAll('.visitor-item').forEach(item => {
+            item.classList.remove('selected');
+            item.querySelector('.bulk-checkbox').checked = false;
+        });
+    }
+
+    function toggleTelemetry(shedId) {
+        const card = document.getElementById('tele-' + shedId);
+        if (card) card.classList.toggle('telemetry-active');
+    }
+
+    function emergencyBroadcast(customer) {
+        Swal.fire({
+            title: `Zone Broadcast: ${customer}`,
+            text: "Send a notification/alert to all visitors in this area?",
+            input: 'textarea',
+            inputPlaceholder: 'Enter message for zone personnel...',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'SEND BROADCAST',
+            confirmButtonColor: '#ef4444'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire('Sent!', 'Message broadcasted via factory PA and Mobile.', 'success');
+            }
+        });
+    }
+
+    async function allocateToShed(shedId, shedName) {
+        if (selectedVisitorIds.size === 0) {
+            Swal.fire({
+                title: 'No Selection',
+                text: 'Please select visitors from the Security Gate queue.',
+                icon: 'warning',
+                toast: true,
+                position: 'top-end',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        const count = selectedVisitorIds.size;
+        const result = await Swal.fire({
+            title: 'Confirm Allocation',
+            text: `Assign ${count} personnel to ${shedName}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: `YES, ALLOCATE ${count}`,
+            confirmButtonColor: '#2563eb'
+        });
+
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Processing...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const ids = Array.from(selectedVisitorIds);
+            let successCount = 0;
+
+            for (const vid of ids) {
+                const ok = await performAllocation(vid, shedId, false);
+                if (ok) successCount++;
+            }
+
+            Swal.fire('Complete', `${successCount} personnel successfully allocated.`, 'success')
+                .then(() => location.reload());
+        }
+    }
+
+    async function performAllocation(visitorId, shedId, reload = true) {
+        try {
+            const response = await fetch('/api/coe/allocate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ visitor_id: visitorId, shed_id: shedId })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                if (reload) location.reload();
+                return true;
+            }
+            return false;
+        } catch (error) {
+            return false;
+        }
+    }
+</script>
+{% endblock %}

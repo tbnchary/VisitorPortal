@@ -1,0 +1,482 @@
+/* ========================================
+   STUNNING FEATURES CSS
+   Dark Mode, Confetti, QR Scanner, Success Modal
+   ======================================== */
+
+/* Dark Mode Styles */
+body.dark-mode {
+    background: #0f172a !important;
+    color: #e2e8f0 !important;
+}
+
+body.dark-mode .premium-core-card,
+body.dark-mode .secure-capture-frame,
+body.dark-mode .stat-card,
+body.dark-mode .dashboard-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+    border-color: #334155 !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .core-header,
+body.dark-mode .breadcrumb-nav-v45 {
+    background: rgba(30, 41, 59, 0.8) !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode .floating-intel-input input,
+body.dark-mode .floating-intel-input select,
+body.dark-mode .floating-intel-input textarea {
+    background: rgba(30, 41, 59, 0.6) !important;
+    color: #e2e8f0 !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode .floating-intel-input label {
+    color: #94a3b8 !important;
+}
+
+body.dark-mode .identity-opt {
+    background: rgba(30, 41, 59, 0.6) !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode .identity-opt.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-color: #667eea !important;
+}
+
+body.dark-mode .tab-item {
+    background: rgba(30, 41, 59, 0.6) !important;
+    color: #94a3b8 !important;
+}
+
+body.dark-mode .tab-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+}
+
+body.dark-mode .glass-control-bar {
+    background: rgba(15, 23, 42, 0.9) !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode .stunning-bg {
+    opacity: 0.3;
+}
+
+/* QR Scanner Modal */
+.qr-scanner-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.qr-scanner-content {
+    background: white;
+    border-radius: 24px;
+    padding: 0;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.qr-scanner-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 24px 24px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.qr-scanner-header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.btn-close-qr {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-close-qr:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.qr-scanner-body {
+    padding: 2rem;
+}
+
+.qr-video-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    background: #000;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+#qrVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.qr-scan-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-scan-box {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    border: 2px solid rgba(102, 126, 234, 0.5);
+}
+
+.qr-corner {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border: 4px solid #667eea;
+}
+
+.qr-tl {
+    top: -2px;
+    left: -2px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.qr-tr {
+    top: -2px;
+    right: -2px;
+    border-left: none;
+    border-bottom: none;
+}
+
+.qr-bl {
+    bottom: -2px;
+    left: -2px;
+    border-right: none;
+    border-top: none;
+}
+
+.qr-br {
+    bottom: -2px;
+    right: -2px;
+    border-left: none;
+    border-top: none;
+}
+
+.qr-scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #667eea, transparent);
+    animation: qrScan 2s linear infinite;
+}
+
+@keyframes qrScan {
+    0% {
+        top: 0;
+    }
+
+    100% {
+        top: 100%;
+    }
+}
+
+.qr-instruction {
+    text-align: center;
+    margin: 1.5rem 0 0.5rem;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.qr-status {
+    text-align: center;
+    padding: 0.75rem;
+    background: #f1f5f9;
+    border-radius: 12px;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Success Modal */
+.success-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10001;
+    animation: fadeIn 0.3s ease;
+}
+
+.success-content {
+    background: white;
+    border-radius: 24px;
+    padding: 3rem 2rem;
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: successPop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes successPop {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-icon-container {
+    margin-bottom: 1.5rem;
+}
+
+.success-checkmark {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+}
+
+.checkmark {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 3;
+    stroke: #4ade80;
+    stroke-miterlimit: 10;
+    box-shadow: inset 0 0 0 #4ade80;
+    animation: fillCheckmark 0.4s ease-in-out 0.4s forwards, scaleCheckmark 0.3s ease-in-out 0.9s both;
+}
+
+.checkmark-circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 3;
+    stroke-miterlimit: 10;
+    stroke: #4ade80;
+    fill: none;
+    animation: strokeCheckmark 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark-check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    stroke: #4ade80;
+    animation: strokeCheckmark 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes strokeCheckmark {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes scaleCheckmark {
+
+    0%,
+    100% {
+        transform: none;
+    }
+
+    50% {
+        transform: scale3d(1.1, 1.1, 1);
+    }
+}
+
+@keyframes fillCheckmark {
+    100% {
+        box-shadow: inset 0 0 0 50px #4ade80;
+    }
+}
+
+.success-content h2 {
+    color: #0f172a;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.success-content>p {
+    color: #64748b;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.success-details {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: left;
+}
+
+.success-details p {
+    margin: 0.5rem 0;
+    color: #475569;
+    font-size: 0.95rem;
+}
+
+.success-details strong {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Dark Mode for Modals */
+body.dark-mode .qr-scanner-content,
+body.dark-mode .success-content {
+    background: #1e293b;
+}
+
+body.dark-mode .qr-status {
+    background: #0f172a;
+    color: #94a3b8;
+}
+
+body.dark-mode .success-content h2 {
+    color: #e2e8f0;
+}
+
+body.dark-mode .success-content>p {
+    color: #94a3b8;
+}
+
+body.dark-mode .success-details {
+    background: #0f172a;
+}
+
+body.dark-mode .success-details p {
+    color: #94a3b8;
+}
+
+body.dark-mode .success-details strong {
+    color: #e2e8f0;
+}
+
+/* Pulse Animation for Active Elements */
+.pulse-active {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+    }
+}
+
+/* Enhanced Button Hover Effects */
+.quick-btn {
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.quick-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.quick-btn:active {
+    transform: translateY(0);
+}
+
+/* Glassmorphism Enhancement */
+.glass-control-bar {
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Smooth Transitions for All Interactive Elements */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+input,
+select,
+textarea,
+button {
+    transition: all 0.3s ease !important;
+}

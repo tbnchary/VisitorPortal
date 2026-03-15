@@ -1,0 +1,344 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header animate-in">
+    <div>
+        <h1 class="page-title">Menu Maintenance</h1>
+        <p class="page-subtitle">Enable or disable sidebar tabs. Changes require admin privileges.</p>
+    </div>
+    <a href="{{ url_for('main.settings') }}" class="btn-premium btn-premium-secondary">
+        <i class="bi bi-gear"></i> Settings
+    </a>
+</div>
+
+<div class="dashboard-container pt-0">
+    <div class="row mx-4">
+        <div class="col-lg-12">
+            <div class="glass-card animate-in" style="animation-delay: 0.1s;">
+                <div class="d-flex align-items-center gap-4 mb-4">
+                    <div class="sidebar-brand-icon" style="width: 56px; height: 56px; border-radius: 16px;">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-800 mb-1 text-main">Sidebar Configuration</h4>
+                        <p class="text-sub small mb-0">Manage the visibility of navigation items for all users.</p>
+                    </div>
+                </div>
+
+                <!-- Diagnostic Area -->
+                <div id="menuStats" class="mb-3">
+                    <span class="badge bg-light text-primary border px-3 py-2">Detecting modules...</span>
+                </div>
+
+                <div class="table-container m-0 border-0 shadow-none">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Menu Item</th>
+                                <th>URL Path</th>
+                                <th class="text-end">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="menuList">
+                            <!-- Items will be loaded here via JavaScript -->
+                            <tr>
+                                <td colspan="3" class="text-center py-5">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="p-3 rounded-4 mt-4 d-flex justify-content-between align-items-center"
+                    style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2);">
+                    <div class="small text-sub">
+                        <i class="bi bi-info-circle me-1"></i> If sidebar is stuck, use Force Enable.
+                    </div>
+                    <button onclick="forceEnableAll()" class="btn btn-sm btn-outline-danger px-3">
+                        <i class="bi bi-shield-lock-fill me-1"></i> Force Enable All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .menu-item-row {
+        transition: all 0.2s ease;
+    }
+
+    .menu-item-row:hover {
+        background-color: var(--surface-2);
+    }
+
+    .item-icon-wrapper {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--surface-3);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--primary);
+        font-size: 1.1rem;
+    }
+
+    /* Premium Modern Switch CSS */
+    .premium-switch {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 24px;
+    }
+
+    .premium-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #e2e8f0;
+        transition: .4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 34px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 2px;
+        background-color: white;
+        transition: .4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    input:checked+.slider {
+        background-color: #10b981;
+    }
+
+    input:focus+.slider {
+        box-shadow: 0 0 1px #10b981;
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(22px);
+    }
+
+    .switch-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        justify-content: flex-end;
+    }
+
+    .status-text {
+        font-size: 0.85rem;
+        font-weight: 600;
+        min-width: 60px;
+        text-align: right;
+    }
+
+    .status-text.enabled {
+        color: #10b981;
+    }
+
+    .status-text.disabled {
+        color: var(--text-sub);
+    }
+
+    .premium-switch.processing {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+</style>
+
+<script>
+    async function loadMenu() {
+        console.log("Menu Maintenance: Initializing...");
+        const statsEl = document.getElementById('menuStats');
+        const listEl = document.getElementById('menuList');
+
+        if (statsEl) statsEl.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Loading modules...';
+
+        try {
+            const res = await fetch('{{ url_for("main.api_get_sidebar_menu") }}');
+            if (!res.ok) throw new Error(`Server Error: ${res.status}`);
+
+            const allItems = await res.json();
+
+            // Critical modules that should NEVER be disabled or removed from here
+            // Settings is hidden as requested, menu_maintenance is hidden to prevent locking out this tool
+            const criticalModules = ['settings', 'menu_maintenance'];
+            const items = allItems.filter(item => !criticalModules.includes(item.name));
+
+            console.log("Menu Maintenance: Data filtered", items);
+
+            if (statsEl) {
+                const activeCount = items.filter(i => (i.enabled === true || i.enabled == 1)).length;
+                statsEl.innerHTML = `<span class="badge bg-primary rounded-pill px-3 py-2 shadow-sm">${activeCount} / ${items.length} Modules Active</span>`;
+            }
+
+            listEl.innerHTML = '';
+
+            items.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.className = 'menu-item-row animate-in';
+                tr.style.animationDelay = `${(index * 0.05) + 0.1}s`;
+
+                const isEnabled = (item.enabled === true || item.enabled == 1 || item.enabled === "1");
+
+                tr.innerHTML = `
+                <td>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="item-icon-wrapper">
+                            <i class="${item.icon}"></i>
+                        </div>
+                        <div>
+                            <div class="fw-800 text-main" style="letter-spacing: -0.01em;">${item.label}</div>
+                            <div class="text-sub x-small opacity-75">ID: ${item.id} | Slug: ${item.name}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <code class="px-2 py-1 rounded-3 bg-light text-primary small border" style="font-family: 'JetBrains Mono', monospace;">${item.url}</code>
+                </td>
+                <td class="text-end">
+                    <div class="switch-container">
+                        <span class="status-text ${isEnabled ? 'enabled' : 'disabled'}" id="status-text-${item.id}">
+                            ${isEnabled ? 'Enabled' : 'Disabled'}
+                        </span>
+                        <label class="premium-switch" id="switch-wrap-${item.id}">
+                            <input type="checkbox" 
+                                   ${isEnabled ? 'checked' : ''} 
+                                   onchange="toggleItem(${item.id}, '${item.label}', this)">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </td>
+            `;
+                listEl.appendChild(tr);
+            });
+        } catch (error) {
+            console.error('Menu Maintenance: Load failed', error);
+            if (statsEl) statsEl.innerHTML = '<span class="badge bg-danger">Load Failed</span>';
+            listEl.innerHTML = `
+            <tr>
+                <td colspan="3" class="text-center py-5">
+                    <div class="alert alert-danger border-0 shadow-sm mx-auto" style="max-width: 400px;">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 d-block mb-2"></i>
+                        <strong>Failed to load menu list</strong><br>
+                        <span class="small">${error.message}</span>
+                    </div>
+                </td>
+            </tr>`;
+        }
+    }
+
+    async function toggleItem(id, label, checkbox) {
+        const wrapper = document.getElementById(`switch-wrap-${id}`);
+        const statusText = document.getElementById(`status-text-${id}`);
+        const wasChecked = !checkbox.checked; // State before the change
+
+        console.log(`Action: Toggle ${label} (ID: ${id}) to ${checkbox.checked}`);
+
+        // Visual Lock
+        wrapper.classList.add('processing');
+        checkbox.disabled = true;
+
+        try {
+            const endpoint = `{{ url_for('main.api_toggle_sidebar_menu', item_id=0) }}`.replace('/0/', `/${id}/`);
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // Server confirmed state
+                const isNowOn = (data.enabled === true || data.enabled == 1);
+
+                // Sync UI
+                checkbox.checked = isNowOn;
+                statusText.innerText = isNowOn ? 'Enabled' : 'Disabled';
+                statusText.className = `status-text ${isNowOn ? 'enabled' : 'disabled'}`;
+
+                if (window.Swal) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: `${label} updated`,
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }
+            } else {
+                throw new Error(data.error || 'Server rejected update');
+            }
+        } catch (err) {
+            console.error("Toggle Failed:", err);
+            // Revert on error
+            checkbox.checked = wasChecked;
+
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Update Failed',
+                    text: err.message
+                });
+            } else {
+                alert(`Error: ${err.message}`);
+            }
+        } finally {
+            wrapper.classList.remove('processing');
+            checkbox.disabled = false;
+        }
+    }
+
+    async function forceEnableAll() {
+        const confirmed = await Swal.fire({
+            title: 'Force Enable All?',
+            text: "This will enable all sidebar modules safely.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Yes, enable all'
+        });
+
+        if (!confirmed.isConfirmed) return;
+
+        try {
+            const res = await fetch('{{ url_for("main.api_reset_sidebar_menu") }}', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire('Success', 'All modules enabled! Please refresh your browser.', 'success')
+                    .then(() => loadMenu());
+            } else throw new Error(data.error);
+        } catch (err) {
+            Swal.fire('Error', err.message, 'error');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadMenu);
+</script>
+{% endblock %}

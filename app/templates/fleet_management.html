@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Fleet & Drivers Hub</h1>
+        <p class="page-subtitle">Manage Vehicles, Drivers, and Schedules</p>
+    </div>
+</div>
+
+<div class="container-fluid px-4 dashboard-container pt-0">
+    <div class="row g-4">
+
+        <!-- DRIVERS Management -->
+        <div class="col-xl-6">
+            <div class="card shadow-sm border-0 h-100" style="border-radius: 16px;">
+                <div class="card-header bg-white border-0 pt-4 pb-2 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-person-badge me-2"></i>Drivers</h5>
+                    <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal"
+                        data-bs-target="#addDriverModal">
+                        <i class="bi bi-plus-lg me-1"></i> Add Driver
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle data-table">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Status</th>
+                                    <th>Dept</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in drivers %}
+                                <tr>
+                                    <td class="fw-bold">{{ d.name }}</td>
+                                    <td>{{ d.phone }}</td>
+                                    <td>
+                                        <span
+                                            class="badge {{ 'bg-success' if d.status == 'AVAILABLE' else 'bg-warning text-dark' }} rounded-pill px-3">
+                                            {{ d.status }}
+                                        </span>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark border">{{ d.department or 'General'
+                                            }}</span></td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">No drivers registered</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- VEHICLES Management -->
+        <div class="col-xl-6">
+            <div class="card shadow-sm border-0 h-100" style="border-radius: 16px;">
+                <div class="card-header bg-white border-0 pt-4 pb-2 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-success"><i class="bi bi-car-front-fill me-2"></i>Vehicles</h5>
+                    <button class="btn btn-success btn-sm rounded-pill px-3" data-bs-toggle="modal"
+                        data-bs-target="#addVehicleModal">
+                        <i class="bi bi-plus-lg me-1"></i> Add Vehicle
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle data-table">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Brand/Model</th>
+                                    <th>Plate No.</th>
+                                    <th>Capacity</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for v in vehicles %}
+                                <tr>
+                                    <td class="fw-bold">{{ v.brand }} <small class="text-muted">{{ v.model }}</small>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark shadow-sm border"
+                                            style="font-family: monospace; font-size: 0.9rem;">{{ v.plate_number
+                                            }}</span></td>
+                                    <td><i class="bi bi-people-fill text-muted me-1"></i> {{ v.capacity }}</td>
+                                    <td>
+                                        <span
+                                            class="badge {{ 'bg-success' if v.status == 'AVAILABLE' else 'bg-warning text-dark' }} rounded-pill px-3">
+                                            {{ v.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">No vehicles registered</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal fade" id="addDriverModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <form action="/api/fleet/add_driver" method="POST">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Register New Driver</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">Full Name</label>
+                        <input type="text" name="name" class="form-control" required placeholder="e.g. John Doe">
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Phone</label>
+                            <input type="tel" name="phone" class="form-control" required placeholder="Mobile Number">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">License No</label>
+                            <input type="text" name="license_number" class="form-control" placeholder="Driving License">
+                        </div>
+                    </div>
+                    <div class="mb-0 mt-3">
+                        <label class="form-label fw-bold small text-uppercase">Assigned Department (Optional)</label>
+                        <input type="text" name="department" class="form-control" placeholder="e.g. Logistics, HR">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Save Driver</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addVehicleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <form action="/api/fleet/add_vehicle" method="POST">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Register New Vehicle</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Brand</label>
+                            <input type="text" name="brand" class="form-control" required placeholder="e.g. Toyota">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Model</label>
+                            <input type="text" name="model" class="form-control" required placeholder="e.g. Innova">
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-1">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold small text-uppercase">License Plate No.</label>
+                            <input type="text" name="plate_number" class="form-control" required
+                                placeholder="XX 00 XX 0000" style="text-transform: uppercase;">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-uppercase">Capacity</label>
+                            <input type="number" name="capacity" class="form-control" value="4" min="1">
+                        </div>
+                    </div>
+                    <div class="mb-0 mt-3">
+                        <label class="form-label fw-bold small text-uppercase">Assigned Department (Optional)</label>
+                        <input type="text" name="department" class="form-control"
+                            placeholder="e.g. Logistics, VIP Transport">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4">Register Vehicle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .data-table th {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #64748b;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .data-table td {
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+</style>
+{% endblock %}

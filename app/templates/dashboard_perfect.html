@@ -1,0 +1,1257 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard | Visitor Portal{% endblock %}
+
+{% block content %}
+<!-- PREMIUM DASHBOARD CSS - FINAL - 2026-02-22 -->
+<style>
+    body {
+        background-color: var(--surface-2);
+        color: var(--text-main);
+    }
+
+    .dashboard-container {
+        width: 100%;
+        padding: 1.5rem 2rem;
+        max-width: 1800px;
+        margin: 0 auto;
+    }
+
+    .welcome-row {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .welcome-title h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -1px;
+        margin-bottom: 0.25rem;
+        color: var(--text-main);
+    }
+
+    .welcome-subtitle {
+        color: var(--text-sub);
+        font-size: 1rem;
+        font-weight: 500;
+    }
+
+    .date-display {
+        background: white;
+        padding: 0.5rem 1rem;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-soft);
+        font-weight: 600;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        border-radius: 24px;
+        padding: 1.75rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 120px;
+    }
+
+    .stat-card>div {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        background: rgba(255, 255, 255, 0.9);
+        box-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.15);
+        border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .stat-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .stat-value {
+        font-size: 2.25rem;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        letter-spacing: -1px;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-sub);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .span-8 {
+        grid-column: span 8;
+    }
+
+    .span-4 {
+        grid-column: span 4;
+    }
+
+    .span-6 {
+        grid-column: span 6;
+    }
+
+    .span-12 {
+        grid-column: span 12;
+    }
+
+    .chart-card {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 28px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        padding: 2rem;
+        height: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.05);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .custom-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 8px;
+        border-radius: 8px;
+        transition: all 0.2s;
+        cursor: default;
+    }
+
+    .custom-legend-item:hover {
+        background: var(--surface-2);
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .chart-title i {
+        width: 36px;
+        height: 36px;
+        background: var(--primary-light);
+        color: var(--primary);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .filter-group {
+        display: flex;
+        background: var(--surface-3);
+        padding: 2px;
+        border-radius: 6px;
+        gap: 2px;
+    }
+
+    .filter-btn {
+        border: none;
+        background: none;
+        padding: 4px 8px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--secondary);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .filter-btn.active {
+        background: white;
+        color: var(--primary);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-toggle-btn {
+        padding: 6px 8px;
+        line-height: 1;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--secondary);
+        background: var(--surface-1);
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        min-height: 32px;
+    }
+
+    .chart-toggle-btn:hover {
+        background: var(--surface-3);
+        color: var(--primary);
+        border-color: var(--primary-light);
+    }
+
+    .chart-toggle-btn.active {
+        background: var(--primary-light);
+        color: var(--primary);
+        border-color: var(--primary);
+        box-shadow: 0 1px 2px rgba(79, 70, 229, 0.1);
+    }
+
+    .search-box {
+        position: relative;
+    }
+
+    .search-box input {
+        padding: 0.4rem 0.8rem 0.4rem 2rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        font-size: 0.85rem;
+        width: 100%;
+        transition: all 0.2s;
+    }
+
+    .search-box i {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--secondary);
+        font-size: 0.8rem;
+    }
+
+    .search-box input:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    tr {
+        transition: all 0.2s ease;
+    }
+
+    tr:hover td {
+        background-color: var(--surface-2);
+        cursor: pointer;
+    }
+
+    th {
+        background: var(--surface-2);
+        padding: 1.25rem 1.5rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--text-sub);
+        letter-spacing: 0.05em;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .table-card {
+        background: var(--surface-1);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        box-shadow: var(--shadow-soft);
+        margin-bottom: 3rem;
+    }
+
+    .table-header-row {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    td {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--surface-3);
+        font-size: 0.95rem;
+        vertical-align: middle;
+    }
+
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary) 0%, #a5b4fc 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.9rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .badge-status {
+        padding: 0.4rem 0.8rem;
+        border-radius: 30px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.025em;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .status-in {
+        background: #ecfdf5;
+        color: #059669;
+        border: 1px solid #10b98120;
+    }
+
+    .status-out {
+        background: #f1f5f9;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+    }
+
+    @keyframes pulse-animation {
+        0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        }
+
+        70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+        }
+
+        100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+        }
+    }
+
+    .pulse-dot {
+        animation: pulse-animation 2s infinite;
+    }
+
+    .quick-action-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.5rem 1.25rem;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+        text-decoration: none !important;
+        box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+    }
+
+    .quick-action-btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+        color: white;
+    }
+
+    @media (max-width: 1200px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .span-8,
+        .span-4,
+        .span-6 {
+            grid-column: span 12;
+        }
+    }
+
+    /* --- ADVANCED PROFILE DRAWER --- */
+    .profile-drawer-content {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background: #fafafa;
+    }
+
+    .profile-header {
+        padding: 3rem 1.5rem 2rem;
+        background: white;
+        border-bottom: 1px solid #f1f5f9;
+        text-align: center;
+    }
+
+    .profile-avatar {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1 0%, #a5b4fc 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin: 0 auto 1.5rem;
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
+        border: 4px solid white;
+    }
+
+    .profile-name {
+        font-size: 1.75rem;
+        font-weight: 850;
+        color: #0f172a;
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.5px;
+        text-transform: uppercase;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        padding: 2rem 1.5rem;
+        background: #fff;
+        border-radius: 20px;
+        margin: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .info-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .info-value {
+        font-size: 1rem;
+        font-weight: 750;
+        color: #1e293b;
+    }
+
+    .stats-row {
+        display: flex;
+        padding: 1.25rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        margin: 0 1.5rem 1.5rem;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .stat-box {
+        text-align: center;
+        flex: 1;
+        border-right: 1px solid #e2e8f0;
+        padding: 0.5rem;
+    }
+
+    .stat-box:last-child {
+        border-right: none;
+    }
+
+    .stat-box-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-box-value {
+        font-size: 1.25rem;
+        font-weight: 800;
+        color: #2563eb;
+    }
+
+    .arrival-card {
+        padding: 1.5rem;
+        background: white;
+        border-radius: 24px;
+        margin: 0 1.5rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid #f1f5f9;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.03);
+    }
+
+    .arrival-time-large {
+        font-size: 2.5rem;
+        font-weight: 850;
+        color: #0f172a;
+        line-height: 1;
+    }
+
+    .qr-mini {
+        width: 60px;
+        height: 60px;
+        flex-shrink: 0;
+        padding: 5px;
+        border: 1px solid #f1f5f9;
+        border-radius: 12px;
+    }
+
+    .security-section {
+        padding: 0 1.5rem 2rem;
+    }
+
+    .section-title {
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: #475569;
+        text-transform: uppercase;
+        margin-bottom: 1.25rem;
+        display: block;
+    }
+
+    .asset-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .asset-label {
+        font-size: 0.95rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .asset-value {
+        font-size: 0.95rem;
+        color: #0f172a;
+        font-weight: 750;
+    }
+
+    .profile-footer {
+        padding: 1.5rem;
+        background: white;
+        position: sticky;
+        bottom: 0;
+        border-top: 1px solid #f1f5f9;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .btn-print {
+        background: #6366f1;
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 14px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+        box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+        text-decoration: none;
+    }
+
+    .btn-print:hover {
+        background: #4f46e5;
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    .btn-dismiss {
+        background: #f8fafc;
+        color: #475569;
+        border: 1px solid #e2e8f0;
+        padding: 0.9rem;
+        border-radius: 14px;
+        font-weight: 700;
+        width: 100%;
+    }
+
+    .maximize-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #f8fafc;
+        z-index: 9999;
+        display: none;
+        /* JS sets display:flex inline */
+        flex-direction: column;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        padding: 3vh 3vw;
+        color: #1e293b;
+    }
+
+    .maximize-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        max-width: 1600px;
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .maximize-content {
+        flex-grow: 1;
+        width: 100%;
+        max-width: 1540px;
+        margin: 0 auto;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .close-maximize {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        background: #e2e8f0;
+        border: 1px solid #cbd5e1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #1e293b;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .close-maximize:hover {
+        background: #fee2e2;
+        color: #dc2626;
+        border-color: #fecaca;
+        transform: rotate(90deg);
+    }
+
+    #maximizedCanvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        background: #f1f5f9;
+        border-radius: 6px;
+        padding: 2px 8px;
+        font-size: .78rem;
+        color: #475569;
+        transition: background .15s;
+    }
+
+    .chip:hover {
+        background: #e2e8f0;
+    }
+
+    .custom-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #475569;
+        cursor: pointer;
+        padding: 4px 10px;
+        border-radius: 8px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+        background: #f8fafc;
+    }
+
+    .custom-legend-item:hover {
+        background: #fff;
+        border-color: #6366f1;
+        color: #6366f1;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+        transform: translateY(-1px);
+    }
+
+    .legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        flex-shrink: 0;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 1), 0 0 0 3px rgba(0, 0, 0, 0.05);
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="welcome-row">
+        <div class="welcome-title">
+            <h1>Analytics Dashboard</h1>
+            <p class="welcome-subtitle">Welcome back, <strong class="text-primary">{{ session.get('username', 'Admin')
+                    }}</strong>{% if session.get('unit') %} <span
+                    class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle rounded-pill ms-1"><i
+                        class="bi bi-geo-alt-fill me-1"></i>{{ session.get('unit') }}</span>{% endif %}. Here is the
+                overview of your facility today.</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div id="realtimeIndicator" class="d-flex align-items-center gap-2 px-3 py-1 rounded-pill"
+                style="background:#f0f9ff;border:1px solid #e0f2fe;font-size:0.7rem;font-weight:700;color:#0369a1;">
+                <span class="pulse-dot"
+                    style="width:7px;height:7px;background:#0ea5e9;border-radius:50%;display:inline-block;"></span>
+                LIVE UPDATES ACTIVE
+            </div>
+            <div id="labelToggleContainer" class="me-2">
+                <button onclick="toggleAllLabels()" id="labelToggleBtn"
+                    class="btn btn-primary btn-sm rounded-pill d-flex align-items-center gap-1 px-3">
+                    <i class="bi bi-tag-fill"></i>
+                    <span>Hide Data Labels</span>
+                </button>
+            </div>
+            <div class="date-display">
+                <i class="bi bi-calendar3"></i>
+                <span id="currentDate"></span>
+            </div>
+            <a href="{{ url_for('main.department_approvals') }}" class="quick-action-btn"
+                style="background: var(--warning); color: #fff;">
+                <i class="bi bi-shield-check"></i>
+                Approvals
+            </a>
+            <a href="{{ url_for('main.add_visitor') }}" class="quick-action-btn">
+                <i class="bi bi-plus-lg"></i>
+                New Visitor
+            </a>
+        </div>
+    </div>
+
+    {% if session.get('role') in ['ADMIN', 'SECURITY', 'RECEPTION'] %}
+    <div class="card shadow-sm border-0 mb-4 rounded-4" style="background: linear-gradient(135deg, #1e293b, #0f172a);">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="text-white fw-bold mb-0"><i class="bi bi-shield-check text-success me-2"></i> Security Quick
+                    Hub: Universal Badge Find</h5>
+                <a href="{{ url_for('main.host_approvals') }}" class="btn btn-outline-light btn-sm rounded-pill">View
+                    All Queue</a>
+            </div>
+
+            <div class="row align-items-center">
+                <div class="col-md-5">
+                    <p class="text-white-50 small mb-2">Find a pre-registered request instantly by Phone, Name, or ID
+                    </p>
+                    <div class="input-group mb-3 mb-md-0">
+                        <span class="input-group-text bg-white border-0"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control border-0" id="quickBadgeSearch"
+                            placeholder="Type visitor details or scan QR..." onkeyup="searchQuickBadge()">
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div id="quickBadgeResults" class="d-flex gap-2 overflow-auto pb-2 px-2" style="max-height: 100px;">
+                        <span class="text-white-50 small align-self-center fst-italic"><i class="bi bi-arrow-left"></i>
+                            Type to search or fetch approved visitors...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function searchQuickBadge() {
+            const q = document.getElementById('quickBadgeSearch').value.toLowerCase();
+            const results = document.getElementById('quickBadgeResults');
+            if (q.length < 2) {
+                results.innerHTML = '<span class="text-white-50 small align-self-center fst-italic">Type more to search...</span>';
+                return;
+            }
+
+            fetch(`/api/quick_visitors?q=${q}&status=PRE_REGISTERED`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        results.innerHTML = '<span class="text-white-50 small align-self-center fst-italic">No approved requests found.</span>';
+                    } else {
+                        let html = '';
+                        data.forEach(v => {
+                            html += `
+                            <div class="card bg-white border-0 rounded-3 shadow-sm" style="min-width: 250px;">
+                                <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.85rem;">${v.visitor_name}</h6>
+                                        <small class="text-muted" style="font-size: 0.7rem;">${v.company || 'Host: ' + v.person_to_meet}</small>
+                                    </div>
+                                    <form action="/host-approve-visitor/${v.id}" method="POST" class="m-0">
+                                        <button type="submit" name="action" value="checkin" class="btn btn-primary btn-sm px-2 py-1" style="font-size: 0.7rem; font-weight: bold; line-height: 1;" onclick="return confirm('Assign badge immediately for ${v.visitor_name}?');">
+                                            <i class="bi bi-person-badge"></i> ASSIGN
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        `;
+                        });
+                        results.innerHTML = html;
+                    }
+                });
+        }
+    </script>
+    {% endif %}
+
+    <div class="stats-grid">
+        <div class="stat-card" onclick="openDrill('total')" title="View All Records">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value" id="stat-total-visits">{{ stats.total_visits }}</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+                <div class="stat-icon" style="background: #fef3c7; color: #d97706;"><i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card" onclick="openDrill('active')" style="border-bottom: 4px solid var(--primary);"
+            title="View Active Visitors">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value text-primary" id="stat-active-now">{{ stats.active_now }}</div>
+                    <div class="stat-label">Currently On-Site</div>
+                </div>
+                <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);"><i
+                        class="bi bi-person-check-fill"></i></div>
+            </div>
+        </div>
+        <div class="stat-card" onclick="openDrill('today')" title="View Today's Check-ins">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value" id="stat-today-checkins">{{ stats.today_checkins }}</div>
+                    <div class="stat-label">Today's Check-ins</div>
+                </div>
+                <div class="stat-icon" style="background: #dcfce7; color: #166534;"><i
+                        class="bi bi-box-arrow-in-right"></i></div>
+            </div>
+        </div>
+        <div class="stat-card" onclick="openDrill('avg_duration')" title="View Duration Insights">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value" id="avgDurationDisplay">{{ avg_duration_global }} min</div>
+                    <div class="stat-label">Avg. Duration</div>
+                </div>
+                <div class="stat-icon" style="background: #f1f5f9; color: #475569;"><i class="bi bi-stopwatch"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="stats-grid mb-5">
+        <div class="stat-card" onclick="openDrill('sheds_avail')"
+            style="min-height: 100px; background: linear-gradient(to right, #ffffff, #f0f9ff);"
+            title="View Available Sheds">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value" style="font-size: 1.8rem; color: #0369a1;">{{ stats.avail_sheds }}</div>
+                    <div class="stat-label" style="font-size: 0.7rem;">Sheds Available</div>
+                </div>
+                <div class="stat-icon"
+                    style="background: #e0f2fe; color: #0369a1; width: 44px; height: 44px; font-size: 1.2rem;"><i
+                        class="bi bi-building-up"></i></div>
+            </div>
+        </div>
+        <div class="stat-card" onclick="openDrill('rooms_ready')"
+            style="min-height: 100px; background: linear-gradient(to right, #ffffff, #f0fdf4);"
+            title="View Ready Rooms">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value" style="font-size: 1.8rem; color: #15803d;">{{ stats.avail_rooms }}</div>
+                    <div class="stat-label" style="font-size: 0.7rem;">Rooms Ready</div>
+                </div>
+                <div class="stat-icon"
+                    style="background: #dcfce7; color: #15803d; width: 44px; height: 44px; font-size: 1.2rem;"><i
+                        class="bi bi-door-open"></i></div>
+            </div>
+        </div>
+        <div class="stat-card" onclick="openDrill('rooms_blocked')"
+            style="min-height: 100px; background: linear-gradient(to right, #ffffff, #fff1f2);"
+            title="View Blocked Rooms">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value" style="font-size: 1.8rem; color: #be123c;">{{ stats.blocked_rooms }}</div>
+                    <div class="stat-label" style="font-size: 0.7rem;">Rooms Blocked</div>
+                </div>
+                <div class="stat-icon"
+                    style="background: #ffe4e6; color: #be123c; width: 44px; height: 44px; font-size: 1.2rem;"><i
+                        class="bi bi-lock"></i></div>
+            </div>
+        </div>
+        <div class="stat-card" onclick="openDrill('active_shed')"
+            style="min-height: 100px; background: linear-gradient(to right, #ffffff, #f5f3ff);"
+            title="View Shed Visitors">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="stat-value" style="font-size: 1.8rem; color: #6d28d9;">{{ stats.active_shed_visitors }}
+                    </div>
+                    <div class="stat-label" style="font-size: 0.7rem;">Shed Visitors</div>
+                </div>
+                <div class="stat-icon"
+                    style="background: #ede9fe; color: #6d28d9; width: 44px; height: 44px; font-size: 1.2rem;"><i
+                        class="bi bi-truck"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card span-12">
+            <div class="chart-header">
+                <div class="chart-title"><i class="bi bi-graph-up-arrow text-primary"></i>Visitor Traffic Trends</div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="search-box me-3" style="width: 150px;"><i class="bi bi-search"
+                            style="font-size: 0.7rem;"></i><input type="text" id="trendSearchInput"
+                            placeholder="Filter..." onkeyup="filterTrendChart()"
+                            style="padding: 0.25rem 0.5rem 0.25rem 1.75rem; font-size: 0.75rem; height: auto; width: 100%;">
+                    </div>
+                    <div class="d-flex gap-1 me-2" id="trend-type-toggles">
+                        <button class="chart-toggle-btn active" onclick="setTrendType('line', this)"
+                            title="Line View"><i class="bi bi-graph-up"></i></button>
+                        <button class="chart-toggle-btn" onclick="setTrendType('bar', this)" title="Bar View"><i
+                                class="bi bi-bar-chart-fill"></i></button>
+                    </div>
+                    <div class="filter-group d-flex align-items-center">
+                        <button class="filter-btn active" onclick="updatePeriod(7, this)">7D</button>
+                        <button class="filter-btn" onclick="updatePeriod(30, this)">30D</button>
+                        <button class="filter-btn" onclick="updatePeriod(90, this)">90D</button>
+                        <button class="filter-btn" onclick="toggleDateRange()" id="customBtn">Custom</button>
+                    </div>
+
+                    <!-- Hidden Date Range Picker -->
+                    <div id="dateRangeContainer"
+                        class="d-none animate__animated animate__fadeIn ms-2 d-flex align-items-center gap-1 p-1 bg-light rounded-pill border">
+                        <input type="date" id="startDate" class="form-control form-control-sm border-0 bg-transparent"
+                            style="width:115px; font-size:0.75rem;">
+                        <span class="text-muted small">to</span>
+                        <input type="date" id="endDate" class="form-control form-control-sm border-0 bg-transparent"
+                            style="width:115px; font-size:0.75rem;">
+                        <button class="btn btn-primary btn-sm rounded-pill px-3" onclick="applyDateRange()"
+                            style="font-size:0.7rem; font-weight:700;">Go</button>
+                    </div>
+
+                    <div class="dropdown">
+                        <button class="chart-toggle-btn ms-1" data-bs-toggle="dropdown"><i
+                                class="bi bi-three-dots-vertical"></i></button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm"
+                            style="border-radius:12px; font-size:0.8rem; font-weight:600;">
+                            <li>
+                                <h6 class="dropdown-header">ADVANCED FEATURES</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="#" onclick="toggleAverageLine()"><i
+                                        class="bi bi-dash-lg me-2 text-primary"></i>Show Average Line</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="togglePeakAnnotation()"><i
+                                        class="bi bi-pin-angle-fill me-2 text-danger"></i>Annotate Peak Day</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li>
+                                <h6 class="dropdown-header">EXPORT OPTIONS</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="#" onclick="exportChart('trend', 'png')"><i
+                                        class="bi bi-image me-2"></i>Save as Image (PNG)</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="downloadTrendCSV()"><i
+                                        class="bi bi-filetype-csv me-2"></i>Download CSV</a></li>
+                        </ul>
+                    </div>
+
+                    <button class="chart-toggle-btn ms-1" onclick="maximizeChart('trend')" title="Maximize View"><i
+                            class="bi bi-arrows-fullscreen"></i></button>
+                </div>
+            </div>
+            <div style="position: relative; height: 200px; width: 100%;"><canvas id="trendChart"
+                    style="display:block;width:100%;height:100%;"></canvas></div>
+        </div>
+        <div class="chart-card span-6">
+            <div class="chart-header">
+                <div class="chart-title"><i class="bi bi-bar-chart-line-fill text-primary"></i>Hourly Peak & Departures
+                </div>
+                <div class="d-flex gap-1" id="hourly-type-toggles">
+                    <button class="chart-toggle-btn active" onclick="setHourlyType('bar', this)" title="Bar"><i
+                            class="bi bi-bar-chart-fill"></i></button>
+                    <button class="chart-toggle-btn" onclick="setHourlyType('line', this)" title="Smooth Line"><i
+                            class="bi bi-graph-up"></i></button>
+                    <button class="chart-toggle-btn" onclick="setHourlyType('radar', this)" title="24h Clock"><i
+                            class="bi bi-clock"></i></button>
+                    <button class="chart-toggle-btn ms-1" onclick="maximizeChart('hourly')" title="Maximize View"><i
+                            class="bi bi-arrows-fullscreen"></i></button>
+                </div>
+            </div>
+            <div style="position: relative; height: 200px; width: 100%;"><canvas id="hourlyChart"
+                    style="display:block;width:100%;height:100%;"></canvas></div>
+        </div>
+        <div class="chart-card span-6">
+            <div class="chart-header">
+                <div>
+                    <div class="chart-title"><i class="bi bi-pie-chart-fill text-primary"></i>Purpose Distribution</div>
+                    <div id="purposeInsight"
+                        class="badge bg-primary-subtle text-primary border-primary border-opacity-10 py-1 px-2 rounded-pill mt-1"
+                        style="font-size: 0.65rem; display: none;"></div>
+                </div>
+                <div class="d-flex gap-1" id="purpose-type-toggles">
+                    <button class="chart-toggle-btn active" onclick="setPurposeType('doughnut', this)"
+                        title="Doughnut View"><i class="bi bi-circle-fill"></i></button>
+                    <button class="chart-toggle-btn" onclick="setPurposeType('polarArea', this)"
+                        title="Polar Area View"><i class="bi bi-sun-fill"></i></button>
+                    <button class="chart-toggle-btn" onclick="setPurposeType('bar', this)" title="Bar View"><i
+                            class="bi bi-bar-chart-fill"></i></button>
+                    <button class="chart-toggle-btn ms-1" onclick="maximizeChart('purpose')" title="Maximize View"><i
+                            class="bi bi-arrows-fullscreen"></i></button>
+                </div>
+            </div>
+            <div class="row g-0 h-100">
+                <div class="col-7">
+                    <div style="position: relative; height: 200px; width: 100%;"><canvas id="purposeChart"
+                            style="display:block;width:100%;height:100%;"></canvas></div>
+                </div>
+                <div class="col-5">
+                    <div id="purposeCustomLegend" class="d-flex flex-column gap-2 p-3 justify-content-center h-100"
+                        style="font-size: 0.75rem; font-weight: 600;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="glass-card mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+            <div>
+                <h5 class="fw-800 text-main mb-0">Recent Activity</h5>
+                <p class="text-sub small mb-0">Latest 20 visitor entries</p>
+            </div>
+            <div class="d-flex gap-3 align-items-center">
+                <div class="search-box"><i class="bi bi-search"></i><input type="text" id="searchInput"
+                        placeholder="Quick search..." onkeyup="filterTable()" style="height: 38px;"></div>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0, this)" style="cursor: pointer;" title="Sort by Visitor">Visitor <i
+                                class="bi bi-arrow-down-up opacity-50 ms-1"></i></th>
+                        <th onclick="sortTable(1, this)" style="cursor: pointer;" title="Sort by Host">Meeting With <i
+                                class="bi bi-arrow-down-up opacity-50 ms-1"></i></th>
+                        <th onclick="sortTable(2, this)" style="cursor: pointer;" title="Sort by Time">Check-In <i
+                                class="bi bi-arrow-down-up opacity-50 ms-1"></i></th>
+                        <th onclick="sortTable(3, this)" style="cursor: pointer;" title="Sort by Status">Status <i
+                                class="bi bi-arrow-down-up opacity-50 ms-1"></i></th>
+                        <th class="text-end"></th>
+                    </tr>
+                </thead>
+                <tbody id="visitorTableBody">
+                    {% for v in visitors[:20] %}
+                    <tr class="clickable-row">
+                        <td onclick="showDetails({{ v.id }})">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="avatar" style="width: 36px; height: 36px; font-size: 0.9rem;">
+                                    {{ (v.visitor_name[0] if v.visitor_name else '?') | upper }}
+                                </div>
+                                <div>
+                                    <div class="fw-600 text-main">{{ v.visitor_name }}</div>
+                                    <div class="text-sub chip-xs" style="font-size: 0.75rem; cursor: pointer;"
+                                        data-drilltype="company" data-drillval="{{ v.company }}">
+                                        {{ v.company }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td onclick="openDrill('host', '{{ v.person_to_meet }}')">
+                            <div class="text-main fw-600 border-bottom border-primary border-opacity-10 d-inline-block">
+                                {{ v.person_to_meet }}
+                            </div>
+                        </td>
+                        <td onclick="openDrill('hour', {{ v.check_in.hour if v.check_in else 0 }})">
+                            <div class="text-main fw-500">
+                                {{ v.check_in.strftime('%H:%M %p') if v.check_in else '-' }}
+                            </div>
+                        </td>
+                        <td onclick="openDrill('{{ 'active' if v.status == 'IN' else 'total' }}')">
+                            {% if v.status == 'IN' %}
+                            <span class="badge-status status-in">
+                                <span class="pulse-dot"
+                                    style="width: 6px; height: 6px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                                ACTIVE
+                            </span>
+                            {% else %}
+                            <span class="badge-status status-out">DEPARTED</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end" onclick="event.stopPropagation();">
+                            <div class="d-flex justify-content-end gap-2">
+
+                                <button type="button"
+                                    class="btn btn-light btn-sm rounded-circle p-2 hover-bg-primary hover-text-white transition-all shadow-sm"
+                                    title="Show Profile" onclick="showDetails({{ v.id }})">
+                                    <i class="bi bi-person-circle text-primary" style="font-size: 0.8rem;"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div id="noResults" class="text-center py-5 d-none"><i
+                    class="bi bi-search mb-2 d-block fs-1 opacity-25"></i>
+                <p class="text-sub">No matching visitors found.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard Data Bridge
+        window.DASH_RAW = {
+            dates: {{ (chart_dates or []) | tojson | safe }},
+            counts: {{ (chart_counts or []) | tojson | safe }},
+            avg: {{ chart_avg or 0 }},
+            peak: {{ chart_peak or 0 }},
+            purpose: {{ (purpose_data or []) | tojson | safe }},
+            hourly: {{ (hourly_data or []) | tojson | safe }}
+        };
+    </script>
+    <script>
+        function sortTable(n, thElement) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("visitorTableBody").parentNode;
+            switching = true;
+            dir = "asc";
+
+            // Reset icons
+            var headers = table.querySelectorAll("th i");
+            headers.forEach(icon => {
+                icon.className = "bi bi-arrow-down-up opacity-50 ms-1";
+            });
+            var myIcon = thElement.querySelector("i");
+
+            while (switching) {
+                switching = false;
+                rows = table.getElementsByTagName("TR");
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    if (!x || !y) continue;
+
+                    var cmpX = x.innerText.toLowerCase().trim();
+                    var cmpY = y.innerText.toLowerCase().trim();
+
+                    // Specific logic for check-in time (index 2)
+                    if (n === 2) {
+                        cmpX = cmpX === '-' ? '0' : new Date('1970/01/01 ' + cmpX).getTime();
+                        cmpY = cmpY === '-' ? '0' : new Date('1970/01/01 ' + cmpY).getTime();
+                    }
+
+                    if (dir == "asc") {
+                        if (cmpX > cmpY) { shouldSwitch = true; break; }
+                    } else if (dir == "desc") {
+                        if (cmpX < cmpY) { shouldSwitch = true; break; }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+            if (myIcon) {
+                myIcon.className = dir === "asc" ? "bi bi-arrow-up text-primary ms-1 fw-bold" : "bi bi-arrow-down text-primary ms-1 fw-bold";
+            }
+        }
+    </script>
+    <script src="/static/js/chart.umd.min.js"></script>
+    <script src="/static/js/chartjs-plugin-datalabels.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+
+
+</div>
+<div id="maximizeOverlay" class="maximize-overlay">
+    <div class="maximize-header d-flex justify-content-between align-items-center"
+        style="max-width:1540px;width:100%;margin:0 auto 1.25rem;padding-bottom:1rem;border-bottom:1px solid #e2e8f0;">
+        <div>
+            <h2 id="maximizeTitle" class="fw-800 mb-0" style="color:#1e293b;font-size:1.4rem;">Analysis View</h2>
+            <small style="color:#64748b;">Click any data point to drill down</small>
+        </div>
+        <button class="close-maximize" onclick="closeMaximizeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="maximize-content"></div>
+</div>
+
+{% endblock %}

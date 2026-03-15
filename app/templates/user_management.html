@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">User Management</h1>
+        <p class="page-subtitle">Manage administrative accounts and access levels</p>
+    </div>
+</div>
+
+<div class="dashboard-container pt-0">
+    <div class="mx-4">
+
+        <!-- Pending Approvals -->
+        {% if pending_users %}
+        <div class="glass-card mb-4 border-start border-4 border-warning">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="sidebar-brand-icon"
+                    style="width: 48px; height: 48px; border-radius: 14px; background: #fffbeb; color: #f59e0b;">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div>
+                    <h5 class="fw-800 mb-0">Pending Approvals</h5>
+                    <p class="text-sub small mb-0">Users waiting for administrative access</p>
+                </div>
+                <span class="badge bg-warning text-dark ms-auto fw-bold">{{ pending_users|length }}</span>
+            </div>
+            <div class="table-container m-0 border-0 shadow-none">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Credentials</th>
+                            <th>Role</th>
+                            <th>Requested On</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in pending_users %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar-sm me-2">{{ user.full_name[0].upper() }}</div>
+                                    <strong>{{ user.full_name }}</strong>
+                                </div>
+                            </td>
+                            <td><code>{{ user.username }}</code></td>
+                            <td><i class="bi bi-envelope me-1"></i>{{ user.email }}</td>
+                            <td>
+                                <span class="badge bg-{% if user.role == 'ADMIN' %}danger{% else %}info{% endif %}">
+                                    {{ user.role }}
+                                </span>
+                            </td>
+                            <td><small class="text-muted">{{ user.created_at.strftime('%Y-%m-%d %H:%M') if
+                                    user.created_at else '-' }}</small></td>
+                            <td class="text-center">
+                                <form method="POST" action="{{ url_for('main.approve_user', user_id=user.id) }}"
+                                    style="display: inline;">
+                                    <button type="submit" name="action" value="approve"
+                                        class="btn btn-sm btn-success me-1" title="Approve">
+                                        <i class="bi bi-check-circle"></i> Approve
+                                    </button>
+                                    <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger"
+                                        title="Reject">
+                                        <i class="bi bi-x-circle"></i> Reject
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endif %}
+
+<!-- Approved Users -->
+<div class="glass-card mb-4 border-start border-4 border-success">
+    <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="sidebar-brand-icon"
+            style="width: 48px; height: 48px; border-radius: 14px; background: #ecfdf5; color: #10b981;">
+            <i class="bi bi-shield-check"></i>
+        </div>
+        <div>
+            <h5 class="fw-800 mb-0">Active Administrators</h5>
+            <p class="text-sub small mb-0">Accounts with system access</p>
+        </div>
+        <span class="badge bg-success text-white ms-auto fw-bold">{{ approved_users|length }}</span>
+    </div>
+
+    <div class="table-container m-0 border-0 shadow-none">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Credentials</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <th>Full Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Approved By</th>
+                <th>Approved At</th>
+                <th class="text-center">Actions</th>
+                </tr>
+                </thead>
+            <tbody>
+                {% for user in approved_users %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="user-avatar-sm me-2">{{ user.full_name[0].upper() }}</div>
+                            <strong>{{ user.full_name }}</strong>
+                        </div>
+                    </td>
+                    <td><code>{{ user.username }}</code></td>
+                    <td><i class="bi bi-envelope me-1"></i>{{ user.email }}</td>
+                    <td>
+                        <span class="badge bg-{% if user.role == 'ADMIN' %}danger{% else %}info{% endif %}">
+                            {{ user.role }}
+                        </span>
+                    </td>
+                    <td><small class="text-muted">{{ user.approved_by_name or 'System' }}</small></td>
+                    <td><small class="text-muted">{{ user.approved_at.strftime('%Y-%m-%d %H:%M') if
+                            user.approved_at else '-' }}</small></td>
+                    <td class="text-center">
+                        <form method="POST" action="{{ url_for('main.deactivate_user', user_id=user.id) }}"
+                            style="display: inline;">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Deactivate"
+                                onclick="return confirm('Are you sure you want to deactivate this user?')">
+                                <i class="bi bi-person-x"></i> Deactivate
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Rejected Users -->
+{% if rejected_users %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-x me-2"></i>
+                    Rejected / Deactivated Users
+                    <span class="badge bg-light text-dark ms-2">{{ rejected_users|length }}</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in rejected_users %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="user-avatar-sm me-2">{{ user.full_name[0].upper() }}</div>
+                                        <strong>{{ user.full_name }}</strong>
+                                    </div>
+                                </td>
+                                <td><code>{{ user.username }}</code></td>
+                                <td><i class="bi bi-envelope me-1"></i>{{ user.email }}</td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        {{ user.role }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <form method="POST" action="{{ url_for('main.approve_user', user_id=user.id) }}"
+                                        style="display: inline;">
+                                        <button type="submit" name="action" value="approve"
+                                            class="btn btn-sm btn-success" title="Approve">
+                                            <i class="bi bi-check-circle"></i> Approve
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+</div>
+
+<style>
+    .user-avatar-sm {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 14px;
+    }
+
+    .table th {
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+    }
+
+    .table td {
+        vertical-align: middle;
+    }
+
+    .btn-sm {
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+</style>
+{% endblock %}

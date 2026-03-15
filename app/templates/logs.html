@@ -1,0 +1,1696 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header px-4">
+    <div>
+        <h1 class="page-title">Visitor Intelligence Logs</h1>
+        <p class="page-subtitle">Historical analysis and real-time security stream</p>
+    </div>
+    <div class="d-flex gap-3">
+        <button onclick="exportWithFilters()" class="btn-premium btn-premium-secondary">
+            <i class="bi bi-file-earmark-excel"></i> Export Intelligence
+        </button>
+        <a href="{{ url_for('main.add_visitor') }}" class="btn-premium btn-premium-primary">
+            <i class="bi bi-plus-lg"></i> Check-in Visitor
+        </a>
+    </div>
+</div>
+
+<!-- Integrated Security Hub -->
+<div class="alert-hub mb-4 mx-4">
+    <div class="alert-container" id="alertHub">
+        <div class="hub-status-bar">
+            <div class="hub-dot pulse"></div>
+            Intelligence Guard Active — Monitoring Feed...
+        </div>
+    </div>
+</div>
+
+{% if session.get('role') in ['ADMIN', 'MANAGEMENT'] %}
+{% set pending_deletions = visitors | selectattr('deletion_requested', 'equalto', 1) | list %}
+{% if pending_deletions %}
+<div class="alert mt-3 mx-4 d-flex align-items-center justify-content-between"
+    style="background-color: var(--danger-light); border: 1px solid var(--danger); border-radius: 12px; color: var(--danger);">
+    <div>
+        <i class="bi bi-exclamation-triangle-fill fs-4 me-2"></i>
+        <strong>Action Required:</strong> You have {{ pending_deletions|length }} pending visitor deletion request(s).
+    </div>
+    <button type="button" class="btn btn-danger btn-sm rounded-pill fw-bold px-3"
+        onclick="document.getElementById('searchInput').value=''; document.getElementById('statusFilter').value='ALL'; liveFilter(); filterDeletions();">
+        Review Requests
+    </button>
+</div>
+<script>
+    function filterDeletions() {
+        const rows = document.querySelectorAll('#tableBody tr');
+        rows.forEach(row => {
+            const hasPending = row.innerHTML.includes('bi-hourglass-top');
+            if (!hasPending) {
+                row.style.display = 'none';
+            } else {
+                row.style.display = '';
+            }
+        });
+        document.getElementById('resultCount').textContent = document.querySelectorAll('#tableBody tr[style=""]').length || document.querySelectorAll('#tableBody tr:not([style*="display: none"])').length;
+    }
+</script>
+{% endif %}
+{% endif %}
+
+<div class="dashboard-container pt-0">
+
+    {% if date_filter %}
+    <!-- Date Filter Active Banner -->
+    <div class="alert alert-info d-flex justify-content-between align-items-center animate-in mb-4"
+        style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border: none; border-radius: 12px;">
+        <div>
+            <i class="bi bi-calendar-event me-2"></i>
+            <strong>Showing visitors for:</strong> {{ date_filter }}
+        </div>
+        <a href="{{ url_for('main.logs') }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-x-lg me-1"></i> Clear Date Filter
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Advanced Filter Panel -->
+    <div class="glass-card mb-4 mx-4 border-0 shadow-sm" style="background: white; border-radius: 20px;">
+        <div class="row g-2 align-items-center p-2">
+            <div class="col-xl-4 col-lg-5">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by name, company, host..."
+                        value="{{ request.args.get('search', '') }}" onkeyup="liveFilter()">
+                    <button class="search-clear-btn"
+                        onclick="document.getElementById('searchInput').value=''; liveFilter();" title="Clear search">
+                        <i class="bi bi-x"></i>
+                    </button>
+                    <div class="search-shortcut">/</div>
+                </div>
+            </div>
+            <div class="col-xl-8 col-lg-7">
+                <div class="row g-2">
+                    <div class="col-md-2 col-6">
+                        <select id="statusFilter" class="form-select border shadow-none bg-light"
+                            onchange="liveFilter()"
+                            style="height: 48px; border-radius: 12px; font-weight: 500; font-size: 0.8rem;">
+                            <option value="ALL">Status</option>
+                            <option value="IN">On-Site</option>
+                            <option value="OUT">Departed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <select id="companyFilter" class="form-select border shadow-none bg-light"
+                            onchange="liveFilter()"
+                            style="height: 48px; border-radius: 12px; font-weight: 500; font-size: 0.8rem;">
+                            <option value="ALL">Company</option>
+                            {% set unique_companies = [] %}
+                            {% for v in visitors %}
+                            {% if v.company and v.company not in unique_companies %}
+                            {% set _ = unique_companies.append(v.company) %}
+                            {% endif %}
+                            {% endfor %}
+                            {% for c in unique_companies|sort %}
+                            <option value="{{ c }}">{{ c }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <select id="hostFilter" class="form-select border shadow-none bg-light" onchange="liveFilter()"
+                            style="height: 48px; border-radius: 12px; font-weight: 500; font-size: 0.8rem;">
+                            <option value="ALL">Host</option>
+                            {% set unique_hosts = [] %}
+                            {% for v in visitors %}
+                            {% if v.person_to_meet and v.person_to_meet not in unique_hosts %}
+                            {% set _ = unique_hosts.append(v.person_to_meet) %}
+                            {% endif %}
+                            {% endfor %}
+                            {% for h in unique_hosts|sort %}
+                            <option value="{{ h }}">{{ h }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <select id="purposeFilter" class="form-select border shadow-none bg-light"
+                            onchange="liveFilter()"
+                            style="height: 48px; border-radius: 12px; font-weight: 500; font-size: 0.8rem;">
+                            <option value="ALL">Purpose</option>
+                            {% set unique_purposes = [] %}
+                            {% for v in visitors %}
+                            {% if v.purpose and v.purpose not in unique_purposes %}
+                            {% set _ = unique_purposes.append(v.purpose) %}
+                            {% endif %}
+                            {% endfor %}
+                            {% for p in unique_purposes|sort %}
+                            <option value="{{ p }}">{{ p }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <input type="date" id="dateFilter" class="form-control border shadow-none bg-light"
+                            onchange="liveFilter()"
+                            style="height: 48px; border-radius: 12px; font-weight: 500; font-size: 0.8rem;">
+                    </div>
+                    <div class="col-md-1 col-6 text-end d-flex align-items-center gap-1">
+                        <button class="btn btn-premium-secondary btn-sm rounded-pill px-2 flex-grow-1"
+                            onclick="clearFilters()" style="height: 40px; font-size: 0.75rem;">Reset</button>
+                    </div>
+                    <div class="col-md-1 col-6 d-flex align-items-center">
+                        <span id="resultCount" class="badge bg-primary-subtle text-primary rounded-pill px-2"
+                            style="font-weight: 800; font-size: 0.75rem;">{{ visitors|length }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="filterChipsContainer" class="d-flex flex-wrap gap-2 px-3 pb-3 animate-in" style="min-height: 20px;">
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-4 mx-4">
+        <div class="col-md-3">
+            <div class="stat-card stat-card-interactive glass-panel" id="card-ALL"
+                onclick="drillByField('total', 'ALL')">
+                <div class="filter-active-indicator"></div>
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <div class="stat-value" id="totalCount">{{ visitors|length }}</div>
+                        <div class="stat-label">Total Logs</div>
+                        <div class="trend-box info">
+                            <i class="bi bi-graph-up"></i> Historical Archive
+                        </div>
+                    </div>
+                    <div class="stat-icon bg-primary-subtle text-primary">
+                        <i class="bi bi-people"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-interactive glass-panel" id="card-IN"
+                onclick="drillByField('status', 'IN')">
+                <div class="filter-active-indicator"></div>
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <div class="stat-value text-success" id="activeCount">{{ visitors|selectattr('status',
+                            'equalto', 'IN')|list|length }}</div>
+                        <div class="stat-label">On-Site Now</div>
+                        <div class="trend-box success">
+                            <i class="bi bi-shield-check"></i> Secure Perimeter
+                        </div>
+                    </div>
+                    <div class="stat-icon bg-success-subtle text-success">
+                        <i class="bi bi-person-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-interactive glass-panel" id="card-OUT"
+                onclick="drillByField('status', 'OUT')">
+                <div class="filter-active-indicator"></div>
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <div class="stat-value text-secondary" id="departedCount">{{ visitors|selectattr('status',
+                            'equalto', 'OUT')|list|length }}</div>
+                        <div class="stat-label">Departed History</div>
+                        <div class="trend-box secondary">
+                            <i class="bi bi-clock-history"></i> Logged Departure
+                        </div>
+                    </div>
+                    <div class="stat-icon bg-secondary-subtle text-secondary">
+                        <i class="bi bi-person-dash"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card stat-card-interactive glass-panel"
+                onclick="event.stopPropagation(); window.openGlobalDrawer('Peak Hour Analysis', generatePeakHourHTML())">
+                <div class="filter-active-indicator"></div>
+                <div class="d-flex justify-content-between align-items-center w-100">
+                    <div>
+                        <div class="stat-value text-warning" id="peakHourDisplay">--:--</div>
+                        <div class="stat-label">Peak Hour</div>
+                        <div class="trend-box warning">
+                            <i class="bi bi-lightning"></i> Traffic Trend
+                        </div>
+                    </div>
+                    <div class="stat-icon bg-warning-subtle text-warning">
+                        <i class="bi bi-lightning-charge"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container mx-4">
+        <table class="data-table" id="logsTable">
+            <thead>
+                <tr>
+                    <th class="ps-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="selectAllLogs">
+                        </div>
+                    </th>
+                    <th class="sortable-header" onclick="sortColumn(1)">
+                        ID <i class="bi bi-arrow-down-up sort-icon"></i>
+                    </th>
+                    <th class="sortable-header" onclick="sortColumn(2)">
+                        Visitor <i class="bi bi-arrow-down-up sort-icon"></i>
+                    </th>
+                    <th class="sortable-header" onclick="sortColumn(3)">
+                        Company <i class="bi bi-arrow-down-up sort-icon"></i>
+                    </th>
+                    <th class="sortable-header" onclick="sortColumn(4)">
+                        Meeting With <i class="bi bi-arrow-down-up sort-icon"></i>
+                    </th>
+                    <th class="sortable-header" onclick="sortColumn(5)">
+                        Purpose <i class="bi bi-arrow-down-up sort-icon"></i>
+                    </th>
+                    <th class="sortable-header" onclick="sortColumn(6)">
+                        Check In/Out <i class="bi bi-arrow-down-up sort-icon"></i>
+                    </th>
+                    <th class="sortable-header" onclick="sortColumn(7)">
+                        Status <i class="bi bi-arrow-down-up sort-icon"></i>
+                    </th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                {% for v in visitors %}
+                <tr class="log-row clickable-row" data-id="{{ v.id }}" data-status="{{ v.status }}"
+                    data-purpose="{{ v.purpose }}"
+                    data-date="{{ v.check_in.strftime('%Y-%m-%d') if v.check_in else '' }}"
+                    onclick="toggleRowSelectionFromRow(event, {{ v.id }})">
+                    <td class="ps-4" onclick="event.stopPropagation();">
+                        <div class="form-check">
+                            <input class="form-check-input log-checkbox" type="checkbox" value="{{ v.id }}"
+                                onclick="updateBulkActions()">
+                        </div>
+                    </td>
+                    <td class="text-muted" data-sort="{{ v.id }}">#{{ v.id }}</td>
+                    <td data-sort="{{ v.visitor_name.lower() if v.visitor_name else '' }}">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="avatar">{{ v.visitor_name[:1]|default('?', true)|upper }}</div>
+                            <div>
+                                <div class="fw-600 d-flex align-items-center gap-2">
+                                    {{ v.visitor_name }}
+                                    {% if v.welcome_note %}
+                                    <i class="bi bi-stars text-warning" title="Special Welcome Note"
+                                        data-bs-toggle="tooltip"></i>
+                                    {% endif %}
+                                    {% if v.regular_id %}
+                                    <span
+                                        class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill animate-in"
+                                        style="font-size: 0.65rem;" title="Regular Visitor - Group: {{ v.group_name }}">
+                                        <i class="bi bi-star-fill me-1"></i>REGULAR
+                                    </span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-muted d-flex flex-column" style="font-size: 0.75rem;">
+                                    <span><i class="bi bi-telephone me-1"></i>{{ v.phone }}</span>
+                                    {% if v.email %}
+                                    <span class="visitor-email-text"><i class="bi bi-envelope me-1"></i>{{ v.email
+                                        }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td data-sort="{{ (v.company or '').lower() }}">
+                        <span
+                            class="company-link badge bg-light text-dark fw-500 border cursor-pointer hover-bg-primary hover-text-white transition-all"
+                            style="padding: 0.4rem 0.75rem; border-radius: 8px;"
+                            onclick='event.stopPropagation(); drillByField("company", {{ v.company|tojson }})'>
+                            {{ v.company or '--' }}
+                        </span>
+                    </td>
+                    <td data-sort="{{ (v.person_to_meet or '').lower() }}">
+                        <span class="host-link fw-600 text-primary cursor-pointer hover-text-dark transition-all"
+                            onclick='event.stopPropagation(); drillByField("host", {{ v.person_to_meet|tojson }})'>
+                            <i class="bi bi-person-circle me-1 opacity-50"></i>{{ v.person_to_meet or '--' }}
+                        </span>
+                    </td>
+                    <td data-sort="{{ (v.purpose or '').lower() }}">
+                        <span
+                            class="badge bg-light text-dark border purpose-badge purpose-{{ v.purpose|lower|default('other') }} cursor-pointer hover-scale"
+                            onclick='event.stopPropagation(); drillByField("purpose", {{ v.purpose|tojson }})'>
+                            {{ v.purpose or 'General' }}
+                        </span>
+                    </td>
+                    <td data-sort="{{ v.check_in.timestamp() if v.check_in else 0 }}">
+                        {% if v.check_in %}
+                        <div class="text-success cursor-pointer hover-text-primary drilldown-trigger"
+                            style="font-size: 0.8125rem;"
+                            onclick='event.stopPropagation(); drillByHour("{{ v.check_in.strftime("%H") }}")'>
+                            <i class="bi bi-arrow-right-circle me-1"></i>{{ v.check_in.strftime('%H:%M') }}
+                            <div class="text-muted small" style="font-size: 0.7rem;">{{ v.check_in.strftime('%d %b') }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if v.check_out %}
+                        <div class="text-muted mt-1 cursor-pointer hover-text-secondary drilldown-trigger"
+                            style="font-size: 0.8125rem;"
+                            onclick='event.stopPropagation(); drillByHour("{{ v.check_out.strftime("%H") }}", "OUT")'>
+                            <i class="bi bi-arrow-left-circle me-1"></i>{{ v.check_out.strftime('%H:%M') }}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td data-sort="{{ v.status }}">
+                        <span
+                            class="badge-status {{ 'status-in' if v.status == 'IN' else 'status-out' }} cursor-pointer hover-scale"
+                            onclick='event.stopPropagation(); drillByField("status", "{{ v.status }}")'>
+                            {% if v.status == 'IN' %}
+                            <span class="pulse-dot"
+                                style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                            ON-SITE
+                            {% else %}
+                            DEPARTED
+                            {% endif %}
+                        </span>
+                    </td>
+                    <td class="text-end" onclick="event.stopPropagation();">
+                        <div class="d-flex justify-content-end gap-2">
+                            {% if not v.regular_id %}
+                            <button type="button"
+                                class="btn btn-primary btn-sm rounded-circle p-2 hover-scale shadow-sm"
+                                title="Quick Add to Group"
+                                onclick="event.stopPropagation(); window.quickAddToGroup({{ v.id }})">
+                                <i class="bi bi-person-plus-fill"></i>
+                            </button>
+                            {% endif %}
+                            <a href="{{ url_for('main.view_visitor', id=v.id) }}"
+                                class="btn btn-light btn-sm rounded-circle p-2 hover-bg-info hover-text-white transition-all"
+                                title="View Full Details">
+                                <i class="bi bi-eye text-info"></i>
+                            </a>
+                            <a href="{{ url_for('main.badge', id=v.id) }}" target="_blank"
+                                class="btn btn-light btn-sm rounded-circle p-2 hover-bg-primary hover-text-white transition-all"
+                                title="Print Badge">
+                                <i class="bi bi-printer text-muted"></i>
+                            </a>
+                            {% if v.status == 'IN' %}
+                            <a href="{{ url_for('main.checkout', id=v.id) }}"
+                                class="btn btn-light btn-sm rounded-circle p-2 hover-bg-danger hover-text-white transition-all"
+                                title="Check Out">
+                                <i class="bi bi-box-arrow-right text-danger"></i>
+                            </a>
+                            {% endif %}
+
+                            <button type="button"
+                                class="btn btn-light btn-sm rounded-circle p-2 hover-bg-success hover-text-white transition-all"
+                                title="Visit Intelligence (AI)"
+                                onclick="event.stopPropagation(); showVisitorProfile({{ v.id }})">
+                                <i class="bi bi-robot text-success"></i>
+                            </button>
+
+                            {% if session.get('role') in ['SECURITY', 'ADMIN', 'MANAGEMENT'] %}
+                            {% if v.deletion_requested %}
+                            {% if session.get('role') in ['ADMIN', 'MANAGEMENT'] %}
+                            <form action="{{ url_for('main.approve_deletion', visitor_id=v.id) }}" method="POST"
+                                class="d-inline border-0 m-0">
+                                <button type="submit"
+                                    class="btn btn-success btn-sm rounded-circle p-2 hover-scale shadow-sm"
+                                    title="Approve Deletion"
+                                    onclick="event.stopPropagation(); return confirm('Permanently delete this record?');">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                            </form>
+                            <form action="{{ url_for('main.reject_deletion', visitor_id=v.id) }}" method="POST"
+                                class="d-inline border-0 m-0">
+                                <button type="submit"
+                                    class="btn btn-danger btn-sm rounded-circle p-2 hover-scale shadow-sm"
+                                    title="Reject Deletion"
+                                    onclick="event.stopPropagation(); return confirm('Reject this deletion request?');">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger p-2 rounded-circle"
+                                title="Deletion Pending Approval">
+                                <i class="bi bi-hourglass-top"></i>
+                            </span>
+                            {% endif %}
+                            {% else %}
+                            <button type="button"
+                                class="btn btn-light btn-sm rounded-circle p-2 hover-bg-danger hover-text-white transition-all"
+                                title="Request Deletion"
+                                onclick="event.stopPropagation(); requestDeletion({{ v.id }}, '{{ v.visitor_name | replace('\'', '') }}')">
+                                <i class="bi bi-trash text-danger"></i>
+                            </button>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div id="noResults" class="text-center py-5 d-none animate-in">
+            <div class="mb-3">
+                <i class="bi bi-search text-muted opacity-25" style="font-size: 4rem;"></i>
+            </div>
+            <h5 class="fw-bold text-muted">No matching records found</h5>
+            <p class="text-muted small">Try adjusting your filters or search terms</p>
+            <button class="btn btn-primary btn-sm rounded-pill px-4 mt-2" onclick="clearFilters()">
+                Reset All Filters
+            </button>
+        </div>
+    </div>
+
+    <!-- Bulk Action Bar -->
+    <div id="bulkActionBar" class="bulk-action-bar animate-in d-none">
+        <div class="container-fluid px-4 py-3">
+            <div class="glass-card bg-dark text-white border-0 shadow-lg d-flex align-items-center justify-content-between p-3"
+                style="border-radius: 16px;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="selected-badge">
+                        <span id="bulkCount">0</span> selected
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-light btn-sm rounded-pill px-3"
+                        onclick="clearSelections()">Cancel</button>
+                    <button class="btn btn-primary btn-sm rounded-pill px-4 fw-bold" onclick="openBulkGroupModal()">
+                        <i class="bi bi-person-plus-fill me-1"></i> Add to Group
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add to Group Modal -->
+    <div class="modal fade" id="addToGroupModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Add to Group</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">Select a regular visitor group to add the selected visitors to.
+                        This will allow them to check-in easily in the future.</p>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">Target Group</label>
+                        <select id="groupSelect" class="form-select border-0 bg-light rounded-3 py-3 shadow-none">
+                            <option value="">Loading groups...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4 fw-bold"
+                        onclick="submitBulkAdd()">Confirm Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Premium Alert Modal -->
+<div id="premiumAlert" class="premium-alert-overlay" onclick="closePremiumAlert(event)">
+    <div class="premium-alert-card shadow-lg" id="alertCard">
+        <div class="alert-icon-wrapper" id="alertIconBox">
+            <i id="alertIcon" class="bi"></i>
+        </div>
+        <h3 class="premium-alert-title" id="alertTitle">Notification</h3>
+        <p class="premium-alert-message" id="alertMessage">Message goes here</p>
+        <button class="premium-alert-btn" onclick="closePremiumAlert(null)">Understand</button>
+    </div>
+</div>
+
+<style>
+    /* Professional Search Bar Styles */
+    .search-box {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: white;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 0 16px;
+        height: 48px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .search-box:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+
+    .search-box i.bi-search {
+        color: var(--text-sub);
+        font-size: 1.1rem;
+        margin-right: 12px;
+    }
+
+    .search-box input {
+        border: none;
+        background: transparent;
+        width: 100%;
+        height: 100%;
+        font-size: 0.95rem;
+        font-weight: 500;
+        outline: none;
+    }
+
+    .search-clear-btn {
+        background: #f1f5f9;
+        border: none;
+        color: #64748b;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .search-box input:not(:placeholder-shown)~.search-clear-btn {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .search-shortcut {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #94a3b8;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        margin-left: 12px;
+    }
+
+    .stat-card-interactive {
+        min-height: 110px;
+        padding: 1.25rem !important;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid var(--border);
+        background: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card-interactive:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 20px -8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Intelligence Hub Styles */
+    .alert-hub {
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
+        padding: 12px 16px;
+    }
+
+    .alert-container {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+    }
+
+    .alert-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .hub-status-bar {
+        font-size: 0.75rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 12px;
+        font-weight: 600;
+    }
+
+    .hub-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #3b82f6;
+    }
+
+    .hub-dot.pulse {
+        animation: hubPulse 2s infinite;
+    }
+
+    @keyframes hubPulse {
+        0% {
+            transform: scale(0.8);
+            opacity: 0.5;
+        }
+
+        100% {
+            transform: scale(1.6);
+            opacity: 0;
+        }
+    }
+
+    .alert-glass {
+        min-width: 280px;
+        background: white;
+        border-radius: 12px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+        border: 1px solid #f1f5f9;
+        animation: alertIn 0.4s ease-out;
+    }
+
+    @keyframes alertIn {
+        from {
+            transform: translateY(10px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .alert-icon-box {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .SUCCESS .alert-icon-box {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .CRITICAL .alert-icon-box {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .INFO .alert-icon-box {
+        background: #e0e7ff;
+        color: #4f46e5;
+    }
+
+    .alert-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .alert-title {
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: #1e293b;
+        display: block;
+    }
+
+    .alert-msg {
+        font-size: 0.72rem;
+        color: #64748b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* Trend Indicators */
+    .trend-box {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-top: 8px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        width: fit-content;
+    }
+
+    .trend-box.info {
+        background: #e0e7ff;
+        color: #4338ca;
+    }
+
+    .trend-box.success {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .trend-box.secondary {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .trend-box.warning {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    }
+
+    /* Premium Alert System */
+    .premium-alert-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .premium-alert-overlay.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .premium-alert-card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 24px;
+        padding: 40px;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        transform: scale(0.8) translateY(20px);
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .premium-alert-overlay.show .premium-alert-card {
+        transform: scale(1) translateY(0);
+    }
+
+    .alert-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 24px;
+        font-size: 2.5rem;
+        position: relative;
+    }
+
+    .alert-icon-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        animation: pulse-ring 2s infinite;
+    }
+
+    @keyframes pulse-ring {
+        0% {
+            transform: scale(0.8);
+            opacity: 0.5;
+        }
+
+        100% {
+            transform: scale(1.3);
+            opacity: 0;
+        }
+    }
+
+    .alert-success .alert-icon-wrapper {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .alert-success .alert-icon-wrapper::after {
+        background: #22c55e;
+    }
+
+    .alert-error .alert-icon-wrapper {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .alert-error .alert-icon-wrapper::after {
+        background: #ef4444;
+    }
+
+    .alert-info .alert-icon-wrapper {
+        background: #e0e7ff;
+        color: #4f46e5;
+    }
+
+    .alert-info .alert-icon-wrapper::after {
+        background: #6366f1;
+    }
+
+    .premium-alert-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin-bottom: 12px;
+        color: #0f172a;
+        letter-spacing: -0.02em;
+    }
+
+    .premium-alert-message {
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 32px;
+        font-size: 1rem;
+    }
+
+    .premium-alert-btn {
+        background: #0f172a;
+        color: white;
+        border: none;
+        padding: 12px 32px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.3);
+    }
+
+    .premium-alert-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.4);
+        background: #1e293b;
+    }
+
+    .stat-card.active {
+        border: 2px solid var(--primary);
+        background: var(--primary-light);
+    }
+
+    .stat-value {
+        font-size: 1.75rem !important;
+        font-weight: 800;
+    }
+
+    .stat-label {
+        font-size: 0.75rem !important;
+        font-weight: 700;
+        color: var(--text-sub);
+        text-transform: uppercase;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .data-table th {
+        background: #f8fafc;
+        padding: 1rem;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .log-row:hover {
+        background: #f8fafc;
+    }
+
+    .selected-row {
+        background-color: rgba(99, 102, 241, 0.05) !important;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        background: #e0e7ff;
+        color: #4f46e5;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+
+    .bulk-action-bar {
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 800px;
+        z-index: 1050;
+    }
+</style>
+
+<script>
+    // --- DATA INITIALIZATION ---
+    window.visitors = [
+        {% for v in visitors %}
+    {
+        "id": { { v.id | default (0) } },
+        "name": { { (v.visitor_name or "") | tojson } },
+        "company": { { (v.company or "") | tojson } },
+        "phone": { { (v.phone or "") | tojson } },
+        "email": { { (v.email or "") | tojson } },
+        "host": { { (v.person_to_meet or "") | tojson } },
+        "hostPhone": { { (v.host_phone or "") | tojson } },
+        "purpose": { { (v.purpose or "") | tojson } },
+        "status": { { v.status | tojson } },
+        "checkIn": { { (v.check_in.strftime('%Y-%m-%d %H:%M:%S') if v.check_in else "") | tojson } },
+        "checkOut": { { (v.check_out.strftime('%Y-%m-%d %H:%M:%S') if v.check_out else "") | tojson } },
+        "customQR": { { (v.custom_qr or "") | tojson } },
+        "priority": { { (v.visit_priority or "Normal") | tojson } },
+        "laptopSerial": { { (v.laptop_serial or "") | tojson } },
+        "groupCount": { { (v.additional_visitors_count or 0) | int } },
+        "isRegular": { { (v.regular_id is not none) | tojson } },
+        "groupName": { { (v.group_name or "") | tojson } },
+        "visitCount": { { (v.visit_count or 1) | int } }
+    } {% if not loop.last %}, {% endif %}
+    {% endfor %}
+    ];
+
+    window.visitors.forEach(v => {
+        if (v.checkIn && v.checkIn.includes(' ')) {
+            v.checkInDate = new Date(v.checkIn.replace(' ', 'T'));
+        } else if (v.checkIn) {
+            v.checkInDate = new Date(v.checkIn);
+        } else {
+            v.checkInDate = null;
+        }
+
+        if (v.checkOut && v.checkOut.includes(' ')) {
+            v.checkOutDate = new Date(v.checkOut.replace(' ', 'T'));
+        } else if (v.checkOut) {
+            v.checkOutDate = new Date(v.checkOut);
+        } else {
+            v.checkOutDate = null;
+        }
+    });
+
+    // --- FILTERING & STATS ---
+    function liveFilter() {
+        console.log('LiveFilter Triggered');
+        const searchInput = document.getElementById('searchInput');
+        const query = searchInput ? searchInput.value.toLowerCase() : '';
+
+        const sf = document.getElementById('statusFilter');
+        const status = sf ? sf.value : 'ALL';
+
+        const cf = document.getElementById('companyFilter');
+        const company = cf ? cf.value : 'ALL';
+
+        const hf = document.getElementById('hostFilter');
+        const host = hf ? hf.value : 'ALL';
+
+        const pf = document.getElementById('purposeFilter');
+        const purpose = pf ? pf.value : 'ALL';
+
+        const df = document.getElementById('dateFilter');
+        const date = df ? df.value : '';
+
+        const rows = document.querySelectorAll('#tableBody tr');
+        let count = 0;
+
+        rows.forEach(row => {
+            // Robust access to cells
+            if (!row.cells || row.cells.length < 5) return;
+
+            const text = row.innerText.toLowerCase();
+            const rowStatus = row.getAttribute('data-status') || '';
+            const rowDate = row.getAttribute('data-date') || '';
+            const rowCompany = (row.cells[3].innerText || '--').trim();
+            const rowHost = (row.cells[4].innerText || '--').trim();
+            const rowPurpose = row.getAttribute('data-purpose') || '';
+
+            const matchSearch = !query || text.includes(query);
+            const matchStatus = status === 'ALL' || rowStatus === status;
+            const matchCompany = company === 'ALL' || rowCompany === company;
+            const matchHost = host === 'ALL' || rowHost === host;
+            const matchPurpose = purpose === 'ALL' || rowPurpose === purpose;
+            const matchDate = !date || rowDate === date;
+
+            if (matchSearch && matchStatus && matchCompany && matchHost && matchPurpose && matchDate) {
+                row.style.display = '';
+                count++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+
+        const rc = document.getElementById('resultCount');
+        if (rc) rc.textContent = count;
+
+        const nr = document.getElementById('noResults');
+        if (nr) nr.classList.toggle('d-none', count > 0);
+
+        const lt = document.getElementById('logsTable');
+        if (lt) lt.classList.toggle('d-none', count === 0);
+
+        renderFilterChips();
+        updateQuickStats();
+    }
+
+    function renderFilterChips() {
+        const container = document.getElementById('filterChipsContainer');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const filters = [
+            { id: 'statusFilter', label: 'Status' },
+            { id: 'companyFilter', label: 'Company' },
+            { id: 'hostFilter', label: 'Host' },
+            { id: 'purposeFilter', label: 'Purpose' },
+            { id: 'dateFilter', label: 'Date' }
+        ];
+
+        let hasFilters = false;
+
+        filters.forEach(f => {
+            const el = document.getElementById(f.id);
+            if (el && el.value && el.value !== 'ALL') {
+                hasFilters = true;
+                const valText = el.tagName === 'SELECT' ? el.options[el.selectedIndex].text : el.value;
+                const chip = document.createElement('div');
+                chip.className = 'badge bg-light text-dark border d-flex align-items-center gap-2 py-2 px-3 rounded-pill animate-in';
+                chip.style.fontSize = '0.75rem';
+                chip.innerHTML = `
+                    <span class="text-muted">${f.label}:</span> ${valText}
+                    <i class="bi bi-x-circle-fill text-muted hover-text-danger cursor-pointer" onclick="clearSpecificFilter('${f.id}')"></i>
+                `;
+                container.appendChild(chip);
+            }
+        });
+
+        const query = document.getElementById('searchInput').value;
+        if (query) {
+            hasFilters = true;
+            const chip = document.createElement('div');
+            chip.className = 'badge bg-light text-dark border d-flex align-items-center gap-2 py-2 px-3 rounded-pill animate-in';
+            chip.style.fontSize = '0.75rem';
+            chip.innerHTML = `
+                <span class="text-muted">Search:</span> ${query}
+                <i class="bi bi-x-circle-fill text-muted hover-text-danger cursor-pointer" onclick="document.getElementById('searchInput').value=''; liveFilter();"></i>
+            `;
+            container.appendChild(chip);
+        }
+
+        if (hasFilters) {
+            const clearBtn = document.createElement('small');
+            clearBtn.className = 'text-primary fw-bold ms-2 cursor-pointer';
+            clearBtn.style.fontSize = '0.75rem';
+            clearBtn.textContent = 'Clear All';
+            clearBtn.onclick = clearFilters;
+            container.appendChild(clearBtn);
+        }
+    }
+
+    function clearSpecificFilter(id) {
+        const el = document.getElementById(id);
+        if (el.tagName === 'SELECT') el.value = 'ALL';
+        else el.value = '';
+        liveFilter();
+    }
+
+    function clearFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = 'ALL';
+        document.getElementById('companyFilter').value = 'ALL';
+        document.getElementById('hostFilter').value = 'ALL';
+        document.getElementById('purposeFilter').value = 'ALL';
+        document.getElementById('dateFilter').value = '';
+        liveFilter();
+    }
+
+    function updateQuickStats() {
+        const visibleRows = Array.from(document.querySelectorAll('#tableBody tr')).filter(r => r.style.display !== 'none');
+        let active = 0, departed = 0;
+
+        visibleRows.forEach(row => {
+            if (row.getAttribute('data-status') === 'IN') active++;
+            else departed++;
+        });
+
+        const activeEl = document.getElementById('activeCount');
+        const departedEl = document.getElementById('departedCount');
+        const totalEl = document.getElementById('totalCount');
+
+        if (activeEl) activeEl.textContent = active;
+        if (departedEl) departedEl.textContent = departed;
+        if (totalEl) totalEl.textContent = visibleRows.length;
+
+        const status = document.getElementById('statusFilter').value;
+        document.querySelectorAll('.stat-card').forEach(c => c.classList.remove('active'));
+        if (status !== 'ALL') {
+            const activeCard = document.getElementById(`card-${status}`);
+            if (activeCard) activeCard.classList.add('active');
+        }
+    }
+
+    // --- DRILL-DOWN & PROFILE ---
+    let lastFilteredList = { title: '', data: [] };
+
+    function drillByField(field, value) {
+        if (window.event) window.event.stopPropagation();
+
+        // Sync with main table filters
+        if (field === 'company') document.getElementById('companyFilter').value = value || 'ALL';
+        if (field === 'host') document.getElementById('hostFilter').value = value || 'ALL';
+        if (field === 'purpose') document.getElementById('purposeFilter').value = value || 'ALL';
+        if (field === 'status') document.getElementById('statusFilter').value = value || 'ALL';
+
+        liveFilter();
+
+        if (field === 'total') {
+            lastFilteredList = { title: 'Full History', data: window.visitors };
+            openListDrawer('Full History', window.visitors);
+            return;
+        }
+
+        const cleanValue = value === null ? "" : value;
+        let filtered = [];
+        let label = cleanValue || "Unknown";
+
+        if (field === 'company') {
+            filtered = window.visitors.filter(v => v.company === cleanValue);
+            label = `Visitors from ${cleanValue || 'General'}`;
+        } else if (field === 'host') {
+            filtered = window.visitors.filter(v => v.host === cleanValue);
+            label = `Visitors meeting ${cleanValue || 'General'}`;
+        } else if (field === 'purpose') {
+            filtered = window.visitors.filter(v => v.purpose === cleanValue);
+            label = `${cleanValue || 'General'} Visits`;
+        } else if (field === 'status') {
+            filtered = window.visitors.filter(v => v.status === cleanValue);
+            label = cleanValue === 'IN' ? 'On-Site Visitors' : 'Departed Visitors';
+        }
+
+        lastFilteredList = { title: label, data: filtered };
+        openListDrawer(label, filtered);
+    }
+
+    function drillByHour(hour, status = 'IN') {
+        const hourInt = parseInt(hour);
+        const filtered = window.visitors.filter(v => {
+            const date = status === 'IN' ? v.checkInDate : v.checkOutDate;
+            return date && date.getHours() === hourInt;
+        });
+        openListDrawer(`${hour}:00 ${status === 'IN' ? 'Arrivals' : 'Departures'}`, filtered);
+    }
+
+    function openListDrawer(title, data) {
+        let html = `
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">${title}</h4>
+                <div class="badge bg-primary rounded-pill px-3">${data.length} Results</div>
+            </div>
+            <div class="list-group list-group-flush">
+        `;
+
+        if (data.length === 0) {
+            html += '<div class="text-center py-5 text-muted">No records found.</div>';
+        } else {
+            data.forEach(v => {
+                const timeStr = v.checkIn ? v.checkIn.split(' ')[1].substring(0, 5) : '--:--';
+                html += `
+                <div class="list-group-item list-group-item-action border-0 mb-2 rounded-4" onclick="showVisitorProfile(${v.id})" style="cursor: pointer; background: var(--surface-2);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar" style="width: 44px; height: 44px;">${v.name ? v.name[0].toUpperCase() : '?'}</div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold">${v.name}</span>
+                                <small class="text-muted">${timeStr}</small>
+                            </div>
+                            <div class="small text-muted">${v.company || 'Private'} &bull; ${v.host}</div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+        html += '</div>';
+        if (window.openGlobalDrawer) window.openGlobalDrawer(title, html);
+    }
+
+    function showVisitorProfile(id) {
+        const v = window.visitors.find(x => x.id === id);
+        if (!v) return;
+
+        const checkInParts = v.checkIn ? v.checkIn.split(' ') : ['--', '--'];
+        const checkOutParts = v.checkOut ? v.checkOut.split(' ') : ['--', '--'];
+
+        const backButtonHtml = lastFilteredList.data.length > 0 ? `
+            <button class="btn btn-link text-decoration-none dropdown-item text-primary fw-bold mb-3 p-0" onclick="openListDrawer(lastFilteredList.title, lastFilteredList.data)">
+                <i class="bi bi-arrow-left me-1"></i> Back to ${lastFilteredList.title}
+            </button>
+        ` : '';
+
+        const html = `
+            ${backButtonHtml}
+            <div class="text-center mb-4">
+                <div class="avatar mx-auto mb-3" style="width: 84px; height: 84px; font-size: 2rem; background: var(--primary); color: white; border: 4px solid white; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
+                    ${v.name ? v.name[0].toUpperCase() : '?'}
+                </div>
+                <h3 class="fw-bold mb-1">${v.name}</h3>
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    <span class="badge ${v.status === 'IN' ? 'bg-success' : 'bg-secondary'} rounded-pill px-3 py-2">
+                        ${v.status === 'IN' ? 'ACTIVE' : 'DEPARTED'}
+                    </span>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">ID #${v.id}</span>
+                </div>
+            </div>
+            
+            <div class="glass-card mb-4 border-0 p-3" style="background: #f8fafc; border-radius: 20px;">
+                <div class="row g-4">
+                    <div class="col-6"><small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Company</small><b>${v.company || '--'}</b></div>
+                    <div class="col-6"><small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Contact</small><b>${v.phone || '--'}</b></div>
+                    <div class="col-6"><small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Host</small><b>${v.host || '--'}</b></div>
+                    <div class="col-6"><small class="text-muted d-block text-uppercase fw-bold mb-1" style="font-size: 0.65rem;">Purpose</small><b>${v.purpose || '--'}</b></div>
+                </div>
+            </div>
+
+            ${v.hostPhone ? `
+            <div class="mb-4 d-flex gap-2">
+                 <a href="tel:${v.hostPhone}" class="btn btn-primary-subtle text-primary flex-grow-1 rounded-4 py-2 fw-bold">
+                    <i class="bi bi-telephone-fill me-2"></i> Call Host
+                 </a>
+                 <a href="https://wa.me/${v.hostPhone.replace(/\D/g, '')}" target="_blank" class="btn btn-success-subtle text-success flex-grow-1 rounded-4 py-2 fw-bold">
+                    <i class="bi bi-whatsapp me-2"></i> WhatsApp
+                 </a>
+            </div>
+            ` : ''}
+
+            <div class="p-3 mb-4 bg-light rounded-4 border">
+                <div class="row text-center g-0">
+                    <div class="col-4 border-end">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.6rem;">Total Visits</small>
+                        <span class="fs-4 fw-bold text-primary">${v.visitCount}</span>
+                    </div>
+                    <div class="col-4 border-end">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.6rem;">Priority</small>
+                        <span class="badge ${v.priority === 'VIP' ? 'bg-danger' : 'bg-primary'} mt-1" style="font-size: 0.65rem;">
+                            ${v.priority || 'NORMAL'}
+                        </span>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block text-uppercase fw-bold" style="font-size: 0.6rem;">Group</small>
+                        <span class="d-block fw-bold small text-truncate px-2">${v.groupName || 'None'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 mb-4 bg-white shadow-sm p-4" style="border-radius: 20px;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <small class="opacity-50 text-uppercase fw-bold" style="font-size: 0.65rem;">Arrived At</small>
+                        <h2 class="mb-0 fw-bold">${checkInParts[1].substring(0, 5)}</h2>
+                        <small class="opacity-50">${checkInParts[0]}</small>
+                    </div>
+                    <div class="bg-white p-2 rounded-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-qr-code text-dark fs-1 d-flex align-items-center justify-content-center h-100"></i>
+                    </div>
+                </div>
+                ${v.checkOut ? `
+                <div class="mt-3 pt-3 border-top">
+                    <small class="opacity-50 text-uppercase fw-bold" style="font-size: 0.65rem;">Departed At</small>
+                    <h4 class="mb-0">${checkOutParts[1].substring(0, 5)}</h4>
+                </div>
+                ` : ''}
+            </div>
+
+            <div class="d-grid gap-2 mb-4">
+                <a href="/badge/${v.id}" target="_blank" class="btn btn-primary btn-lg rounded-4 fw-bold py-3"><i class="bi bi-printer me-2"></i> Print Badge</a>
+                <button onclick="resendBadge(${v.id})" class="btn btn-outline-primary btn-lg rounded-4 fw-bold py-3"><i class="bi bi-envelope me-2"></i> Resend Email</button>
+                <button class="btn btn-light btn-lg rounded-4" onclick="window.closeGlobalDrawer()">Dismiss</button>
+            </div>
+        `;
+        if (window.openGlobalDrawer) window.openGlobalDrawer("Visitor Profile", html);
+    }
+
+    window.resendBadge = function (id) {
+        fetch(`/api/resend-badge/${id}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) showPremiumAlert('Success', data.message, 'success');
+                else showPremiumAlert('Error', data.message || 'Failed to resend badge.', 'error');
+            })
+            .catch(err => showPremiumAlert('System Error', 'Could not reach server.', 'error'));
+    }
+
+    function generatePeakHourHTML() {
+        const traffic = {};
+        window.visitors.forEach(v => { if (v.checkInDate) { const h = v.checkInDate.getHours(); traffic[h] = (traffic[h] || 0) + 1; } });
+        const sorted = Object.entries(traffic).sort((a, b) => b[1] - a[1]);
+        const peak = sorted[0] ? `${sorted[0][0]}:00` : '--:--';
+
+        let html = `
+            <div class="text-center py-4">
+                <div class="display-3 fw-bold text-primary mb-2">${peak}</div>
+                <h5 class="text-muted">Daily Peak Arrival Time</h5>
+            </div>
+            <div class="p-3 bg-light rounded-4">
+                <h6 class="fw-bold mb-3 small text-uppercase">Traffic Distribution</h6>
+                <div class="chart-container" style="height: 100px;">
+                    <!-- Visual representation here -->
+                </div>
+            </div>
+        `;
+        return html;
+    }
+
+    // --- BULK ACTIONS & SETUP ---
+    function updateBulkActions() {
+        const checked = document.querySelectorAll('.log-checkbox:checked');
+        const bar = document.getElementById('bulkActionBar');
+        const count = document.getElementById('bulkCount');
+        if (checked.length > 0) {
+            bar.classList.remove('d-none');
+            count.textContent = checked.length;
+        } else {
+            bar.classList.add('d-none');
+        }
+
+        checked.forEach(cb => cb.closest('tr').classList.add('selected-row'));
+        document.querySelectorAll('.log-checkbox:not(:checked)').forEach(cb => cb.closest('tr').classList.remove('selected-row'));
+    }
+
+    function clearSelections() {
+        document.querySelectorAll('.log-checkbox').forEach(cb => cb.checked = false);
+        updateBulkActions();
+    }
+
+    function openBulkGroupModal() {
+        const modal = new bootstrap.Modal(document.getElementById('addToGroupModal'));
+        const select = document.getElementById('groupSelect');
+
+        // Fetch groups
+        fetch('/api/groups')
+            .then(res => res.json())
+            .then(groups => {
+                select.innerHTML = '<option value="">Select a group...</option>';
+                groups.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = g.name;
+                    select.appendChild(opt);
+                });
+            })
+            .catch(err => {
+                console.error('Error fetching groups:', err);
+                select.innerHTML = '<option value="">Error loading groups</option>';
+            });
+
+        modal.show();
+    }
+
+    function submitBulkAdd() {
+        const groupId = document.getElementById('groupSelect').value;
+        if (!groupId) {
+            showPremiumAlert('Selection Needed', 'Please select a visitor group from the dropdown.', 'info');
+            return;
+        }
+
+        const visitorIds = Array.from(document.querySelectorAll('.log-checkbox:checked'))
+            .map(cb => parseInt(cb.value));
+
+        if (visitorIds.length === 0) {
+            showPremiumAlert('No Selection', 'Please select at least one visitor to add.', 'info');
+            return;
+        }
+
+        executeBulkAdd(visitorIds, groupId);
+    }
+
+    window.quickAddToGroup = function (id) {
+        // We can reuse the same modal, just set a flag or handle the selection
+        const modal = new bootstrap.Modal(document.getElementById('addToGroupModal'));
+        const select = document.getElementById('groupSelect');
+        const submitBtn = document.querySelector('#addToGroupModal .btn-primary');
+
+        // Temporarily override the submit button for this instance
+        submitBtn.onclick = function () {
+            const groupId = select.value;
+            if (!groupId) {
+                showPremiumAlert('Selection Needed', 'Please select a group first.', 'info');
+                return;
+            }
+            executeBulkAdd([id], groupId);
+            const inst = bootstrap.Modal.getInstance(document.getElementById('addToGroupModal'));
+            if (inst) inst.hide();
+            // Restore original onclick for future bulk usage
+            submitBtn.onclick = window.submitBulkAdd;
+        };
+
+        // Fetch groups if not already loaded (or just always refresh)
+        fetch('/api/groups')
+            .then(res => res.json())
+            .then(groups => {
+                select.innerHTML = '<option value="">Select a group...</option>';
+                groups.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = g.name;
+                    select.appendChild(opt);
+                });
+            });
+
+        modal.show();
+    }
+
+    function executeBulkAdd(visitorIds, groupId) {
+        const btn = document.querySelector('#addToGroupModal .btn-primary');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Adding...';
+
+        fetch('/api/visitors/bulk-add-to-group', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                visitor_ids: visitorIds,
+                group_id: groupId
+            })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showPremiumAlert('Action Successful', data.message, 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addToGroupModal'));
+                    if (modal) modal.hide();
+                    clearSelections();
+                    // Optionally reload or dynamic update
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showPremiumAlert('Operation Failed', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error('Error submitting add:', err);
+                showPremiumAlert('System Error', 'An unexpected error occurred while processing your request.', 'error');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            });
+    }
+
+    // --- PREMIUM ALERT LOGIC ---
+    function showPremiumAlert(title, message, type = 'info') {
+        const overlay = document.getElementById('premiumAlert');
+        const card = document.getElementById('alertCard');
+        const titleEl = document.getElementById('alertTitle'); // Corrected ID
+        const msgEl = document.getElementById('alertMessage');
+        const icon = document.getElementById('alertIcon');
+
+        card.className = 'premium-alert-card alert-' + type;
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+
+        if (type === 'success') icon.className = 'bi bi-check2-circle';
+        else if (type === 'error') icon.className = 'bi bi-exclamation-triangle';
+        else icon.className = 'bi bi-info-circle';
+
+        overlay.classList.add('show');
+    }
+
+    function closePremiumAlert(e) {
+        if (e && e.target !== document.getElementById('premiumAlert')) return;
+        document.getElementById('premiumAlert').classList.remove('show');
+    }
+
+    function toggleRowSelectionFromRow(e, id) {
+        if (!e.target.closest('button, a, input, .cursor-pointer')) showVisitorProfile(id);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        liveFilter();
+
+        // Keyboard shortcut for search
+        document.addEventListener('keydown', e => {
+            if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+
+        // Peak Hour Display
+        const peakEl = document.getElementById('peakHourDisplay');
+        if (peakEl) {
+            const traffic = {};
+            window.visitors.forEach(v => { if (v.checkInDate) { const h = v.checkInDate.getHours(); traffic[h] = (traffic[h] || 0) + 1; } });
+            const sorted = Object.entries(traffic).sort((a, b) => b[1] - a[1]);
+            if (sorted[0]) peakEl.textContent = `${sorted[0][0]}:00`;
+        }
+
+        // --- INTELLIGENCE HUB POLLING ---
+        let existingAlertIds = new Set();
+        async function fetchHubAlerts() {
+            try {
+                const response = await fetch('/api/security/alerts');
+                const alerts = await response.json();
+                const container = document.getElementById('alertHub');
+                if (!container || alerts.length === 0) return;
+
+                // Remove status bar placeholder if first alert arrives
+                const statusBar = container.querySelector('.hub-status-bar');
+                if (statusBar && alerts.length > 0) statusBar.remove();
+
+                alerts.forEach(alert => {
+                    if (!existingAlertIds.has(alert.id)) {
+                        const div = document.createElement('div');
+                        div.className = `alert-glass ${alert.type}`;
+                        div.id = `hub-alert-${alert.id}`;
+                        div.innerHTML = `
+                            <div class="alert-icon-box"><i class="bi bi-shield-lock-fill"></i></div>
+                            <div class="alert-content">
+                                <span class="alert-title">${alert.title}</span>
+                                <div class="alert-msg">${alert.message}</div>
+                            </div>
+                        `;
+                        container.insertBefore(div, container.firstChild);
+                        existingAlertIds.add(alert.id);
+                    }
+                });
+            } catch (e) { }
+        }
+        setInterval(fetchHubAlerts, 5000);
+        fetchHubAlerts();
+
+        let lastMaxId = {{ visitors | map(attribute = 'id') | max if visitors else 0
+    }};
+    setInterval(async () => {
+        try {
+            const res = await fetch('/api/security/alerts?limit=1');
+            const data = await res.json();
+            if (data.length > 0 && data[0].visitor_id > lastMaxId) {
+                // Check if it's a new visitor check-in
+                if (data[0].title.includes('New Visitor') || data[0].title.includes('Registration')) {
+                    showPremiumAlert('New Activity', `Intelligence reports a new entry: ${data[0].message}`, 'info');
+                    lastMaxId = data[0].visitor_id;
+                    // Optional: reload table data silently or prompt
+                }
+            }
+        } catch (e) { }
+    }, 10000);
+
+    // Select All handler
+    const selectAll = document.getElementById('selectAllLogs');
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            document.querySelectorAll('.log-checkbox').forEach(cb => {
+                if (cb.offsetParent !== null) {
+                    cb.checked = this.checked;
+                }
+            });
+            updateBulkActions();
+        });
+    }
+    });
+
+    function sortColumn(index) {
+        const tbody = document.getElementById('tableBody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const dir = (window.sortDirs = window.sortDirs || {})[index] = (window.sortDirs[index] || 1) * -1;
+
+        rows.sort((a, b) => {
+            const aVal = a.cells[index].innerText;
+            const bVal = b.cells[index].innerText;
+            return aVal.localeCompare(bVal, undefined, { numeric: true }) * dir;
+        });
+
+        rows.forEach(r => tbody.appendChild(r));
+    }
+
+    function requestDeletion(visitorId, visitorName) {
+        if (confirm('Are you sure you want to request deletion for visitor: ' + visitorName + '? Management approval is required.')) {
+            fetch('/api/request_deletion/' + visitorId, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Deletion request sent to management.');
+                        location.reload();
+                    } else {
+                        alert('Failed to send deletion request: ' + data.error);
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('An error occurred while requesting deletion.');
+                });
+        }
+    }
+</script>
+
+{% endblock %}

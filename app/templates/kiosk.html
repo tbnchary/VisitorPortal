@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Command Center | Kiosk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #10b981;
+            --accent: #f43f5e;
+            --bg-dark: #020617;
+            --glass: rgba(15, 23, 42, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-dark);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* Abstract Background Elements */
+        .bg-mesh {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.05) 0%, transparent 60%);
+        }
+
+        .kiosk-wrapper {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+            perspective: 1000px;
+        }
+
+        .kiosk-card {
+            background: var(--glass);
+            backdrop-filter: blur(40px) saturate(180%);
+            -webkit-backdrop-filter: blur(40px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.6);
+            animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px) rotateX(10deg);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0) rotateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Left Sidebar Info */
+        .kiosk-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            min-height: 560px;
+        }
+
+        .kiosk-sidebar {
+            background: rgba(255, 255, 255, 0.03);
+            border-right: 1px solid var(--glass-border);
+            padding: 48px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), #4f46e5);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .logo-text {
+            font-weight: 900;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            color: var(--secondary);
+        }
+
+        .sidebar-status {
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--secondary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--secondary);
+        }
+
+        .clock-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        /* Form Area */
+        .kiosk-content {
+            padding: 48px 60px;
+            position: relative;
+        }
+
+        .step-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .step-desc {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1rem;
+            margin-bottom: 40px;
+        }
+
+        /* Premium Inputs */
+        .input-wrap {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .input-field {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 18px;
+            padding: 16px 20px;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .input-field:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.1);
+        }
+
+        .input-label {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.4);
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-weight: 600;
+        }
+
+        .input-field:focus+.input-label,
+        .input-field:not(:placeholder-shown)+.input-label {
+            top: -12px;
+            left: 10px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            background: var(--bg-dark);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* Purpose Grid */
+        .purpose-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .purpose-item {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .purpose-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-3px);
+        }
+
+        .purpose-item.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .purpose-item i {
+            font-size: 1.4rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .purpose-item span {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Buttons */
+        .btn-sf {
+            background: white;
+            color: var(--bg-dark);
+            border: none;
+            padding: 20px 40px;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn-sf:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-sf-back {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-weight: 700;
+            margin-top: 15px;
+            display: block;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        /* Step Panels */
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+            animation: panelIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes panelIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Success State */
+        .success-hero {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .success-hex {
+            width: 120px;
+            height: 120px;
+            background: var(--secondary);
+            margin: 0 auto 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            border-radius: 30px;
+            transform: rotate(45deg);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.3);
+        }
+
+        .success-hex i {
+            transform: rotate(-45deg);
+            color: white;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 850px) {
+            .kiosk-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .kiosk-sidebar {
+                display: none;
+            }
+
+            .kiosk-content {
+                padding: 40px 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-mesh"></div>
+
+    <div class="kiosk-wrapper">
+        <div class="kiosk-card">
+            <div class="kiosk-layout">
+                <!-- Sidebar -->
+                <div class="kiosk-sidebar">
+                    <div>
+                        <div class="logo-box">
+                            <div class="logo-icon"><i class="bi bi-shield-check"></i></div>
+                            <div class="logo-text">SECURE<span>VISIT</span></div>
+                        </div>
+                        <div class="sidebar-info mb-5">
+                            <h6 class="text-muted fw-bold text-uppercase mb-3"
+                                style="font-size: 0.7rem; letter-spacing: 2px;">Identity Protocol</h6>
+                            <p class="small opacity-50">Welcome to the secure self-registration terminal. Please follow
+                                the instructions to request entry clearance.</p>
+                        </div>
+                    </div>
+
+                    <div class="sidebar-status">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="status-dot"></div>
+                            <span class="small fw-bold text-uppercase opacity-75">Secure Terminal Active</span>
+                        </div>
+                        <div class="clock-display" id="kioskClock">--:--:--</div>
+                        <div class="small opacity-50" id="kioskDate">--------</div>
+                    </div>
+                </div>
+
+                <!-- Content Area -->
+                <div class="kiosk-content">
+                    <form action="/kiosk/register" method="POST" id="kioskForm">
+
+                        <!-- Panel 1: Identity -->
+                        <div class="panel active" id="p1">
+                            <div class="step-title">Identity</div>
+                            <div class="step-desc">Who are you representing today?</div>
+
+                            <div class="input-wrap">
+                                <input type="text" class="input-field" id="f_name" placeholder=" " required>
+                                <label class="input-label">Full Legal Name</label>
+                            </div>
+
+                            <div class="input-wrap">
+                                <input type="tel" class="input-field" id="f_phone" placeholder=" " required>
+                                <label class="input-label">Contact Number</label>
+                            </div>
+
+                            <div class="input-wrap">
+                                <input type="text" class="input-field" id="f_company" placeholder=" " required>
+                                <label class="input-label">Organization Name</label>
+                            </div>
+
+                            <button type="button" class="btn-sf" onclick="goTo(2)">
+                                Next Step <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Panel 2: Visit Details -->
+                        <div class="panel" id="p2">
+                            <div class="step-title">Mission</div>
+                            <div class="step-desc">Nature of the visit and authorization details.</div>
+
+                            <div class="mb-4">
+                                <label class="small fw-bold text-uppercase opacity-50 mb-3 d-block">Purpose of
+                                    Entry</label>
+                                <div class="purpose-grid">
+                                    <div class="purpose-item" onclick="setPurpose(this, 'Meeting')">
+                                        <i class="bi bi-people"></i><span>Meeting</span>
+                                    </div>
+                                    <div class="purpose-item" onclick="setPurpose(this, 'Delivery')">
+                                        <i class="bi bi-box-seam"></i><span>Delivery</span>
+                                    </div>
+                                    <div class="purpose-item" onclick="setPurpose(this, 'Service')">
+                                        <i class="bi bi-tools"></i><span>Service</span>
+                                    </div>
+                                    <div class="purpose-item" onclick="setPurpose(this, 'Interview')">
+                                        <i class="bi bi-briefcase"></i><span>Interview</span>
+                                    </div>
+                                    <div class="purpose-item" onclick="setPurpose(this, 'Vendor')">
+                                        <i class="bi bi-shop"></i><span>Vendor</span>
+                                    </div>
+                                    <div class="purpose-item" onclick="setPurpose(this, 'Other')">
+                                        <i class="bi bi-three-dots"></i><span>Other</span>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="f_purpose" name="purpose">
+                            </div>
+
+                            <div class="input-wrap">
+                                <input type="text" class="input-field" id="f_host" placeholder=" " required>
+                                <label class="input-label">Internal Host Name / Department</label>
+                            </div>
+
+                            <button type="button" class="btn-sf" onclick="goTo(3)">
+                                Finalize Request <i class="bi bi-shield-lock-fill"></i>
+                            </button>
+                            <a href="javascript:void(0)" class="btn-sf-back" onclick="goTo(1)">Previous Step</a>
+                        </div>
+
+                        <!-- Panel 3: Confirmation -->
+                        <div class="panel" id="p3">
+                            <div class="step-title">Authorization</div>
+                            <div class="step-desc">Review your credentials for digital authorization.</div>
+
+                            <div class="review-box" id="reviewSummary"
+                                style="background:rgba(255,255,255,0.03); border-radius:24px; padding:24px; margin-bottom: 25px;">
+                                <!-- Filled by JS -->
+                            </div>
+
+                            <!-- Hidden fields for submission -->
+                            <input type="hidden" name="visitor_name" id="h_name">
+                            <input type="hidden" name="phone" id="h_phone">
+                            <input type="hidden" name="company" id="h_company">
+                            <input type="hidden" name="person_to_meet" id="h_host">
+                            <input type="hidden" name="status" value="PRE_REGISTERED">
+                            <input type="hidden" name="kiosk_self_registered" value="1">
+
+                            <button type="submit" class="btn-sf" style="background: var(--secondary); color: white;">
+                                Confirm & Request Entry <i class="bi bi-arrow-right-circle-fill"></i>
+                            </button>
+                            <a href="javascript:void(0)" class="btn-sf-back" onclick="goTo(2)">Edit Details</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPurpose = '';
+
+        function updateKioskClock() {
+            const now = new Date();
+            if (document.getElementById('kioskClock')) {
+                document.getElementById('kioskClock').textContent = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            }
+            if (document.getElementById('kioskDate')) {
+                document.getElementById('kioskDate').textContent = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+            }
+        }
+        setInterval(updateKioskClock, 1000); updateKioskClock();
+
+        function goTo(n) {
+            if (n === 2) {
+                const name = document.getElementById('f_name').value.trim();
+                const phone = document.getElementById('f_phone').value.trim();
+                const company = document.getElementById('f_company').value.trim();
+                if (!name || !phone || !company) {
+                    alert("Please provide all identification details.");
+                    return;
+                }
+            }
+            if (n === 3) {
+                const host = document.getElementById('f_host').value.trim();
+                if (!currentPurpose) { alert("Please select a purpose for your visit."); return; }
+                if (!host) { alert("Please specify the host you are meeting."); return; }
+                syncData();
+                renderReview();
+            }
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.getElementById('p' + n).classList.add('active');
+        }
+
+        function setPurpose(el, val) {
+            document.querySelectorAll('.purpose-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            currentPurpose = val;
+            document.getElementById('f_purpose').value = val;
+        }
+
+        function syncData() {
+            document.getElementById('h_name').value = document.getElementById('f_name').value;
+            document.getElementById('h_phone').value = document.getElementById('f_phone').value;
+            document.getElementById('h_company').value = document.getElementById('f_company').value;
+            document.getElementById('h_host').value = document.getElementById('f_host').value;
+        }
+
+        function renderReview() {
+            const data = [
+                { l: 'Identity', v: document.getElementById('f_name').value },
+                { l: 'Organization', v: document.getElementById('f_company').value },
+                { l: 'Intent', v: currentPurpose },
+                { l: 'Internal Host', v: document.getElementById('f_host').value }
+            ];
+            let html = '';
+            data.forEach(item => {
+                html += `
+                    <div class="mb-3">
+                        <div class="small fw-bold text-uppercase opacity-40" style="font-size: 0.65rem; letter-spacing: 1px;">${item.l}</div>
+                        <div class="fw-bold" style="font-size: 1.1rem;">${item.v}</div>
+                    </div>
+                `;
+            });
+            document.getElementById('reviewSummary').innerHTML = html;
+        }
+    </script>
+</body>
+
+</html>

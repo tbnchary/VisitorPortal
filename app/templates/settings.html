@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Settings & Configuration</h1>
+        <p class="page-subtitle">Manage system preferences and form fields</p>
+    </div>
+    <a href="{{ url_for('main.index') }}" class="btn-premium btn-premium-secondary">
+        <i class="bi bi-arrow-left"></i> Back
+    </a>
+</div>
+
+<div class="dashboard-container pt-0">
+    <div class="row mx-4">
+        <div class="col-lg-8">
+
+            <div class="glass-card mb-4">
+                <div class="d-flex align-items-center gap-4 mb-4">
+                    <div class="sidebar-brand-icon" style="width: 56px; height: 56px; border-radius: 16px;">
+                        <i class="bi bi-envelope-at-fill"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-800 mb-1 text-main">SMTP Server Setup</h4>
+                        <p class="text-sub small mb-0">Required for digital badge delivery via email.</p>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    <input type="hidden" name="form_type" value="smtp">
+                    <div class="row g-4">
+                        <!-- SMTP Server -->
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">SMTP Server Host</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i
+                                        class="bi bi-hdd-network"></i></span>
+                                <input type="text" name="server" class="form-control bg-light border-0"
+                                    placeholder="e.g. smtp.gmail.com" value="{{ settings.server if settings else '' }}"
+                                    required>
+                            </div>
+                        </div>
+
+                        <!-- Port -->
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Port</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-plug"></i></span>
+                                <input type="number" name="port" class="form-control bg-light border-0"
+                                    placeholder="587" value="{{ settings.port if settings else '587' }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Username -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Sender Email (Username)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-person-at"></i></span>
+                                <input type="email" name="username" class="form-control bg-light border-0"
+                                    placeholder="your-email@gmail.com"
+                                    value="{{ settings.username if settings else '' }}" required>
+                            </div>
+                        </div>
+
+                        <!-- Password -->
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">App Password / Secret</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0"><i class="bi bi-key-fill"></i></span>
+                                <input type="password" name="password" class="form-control bg-light border-0"
+                                    placeholder="••••••••••••••••" value="{{ settings.password if settings else '' }}"
+                                    required>
+                            </div>
+                            <div class="form-text mt-2 text-warning">
+                                <i class="bi bi-info-circle me-1"></i> For Gmail, use a 16-character **App Password**,
+                                not your regular login password.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-12 text-end mt-4">
+                        <button type="submit" class="btn-premium btn-premium-primary px-5 ms-auto">
+                            Save SMTP Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+
+
+            <div class="glass-card mt-4">
+                <div class="d-flex align-items-center gap-4 mb-4">
+                    <div class="sidebar-brand-icon"
+                        style="width: 56px; height: 56px; border-radius: 16px; background: #10b981;">
+                        <i class="bi bi-layout-text-window-reverse"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-800 mb-1 text-main">Visitor Form Configuration</h4>
+                        <p class="text-sub small mb-0">Control mandatory fields and visibility for registration.</p>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    <input type="hidden" name="form_type" value="visitor_fields">
+                    <div class="table-container m-0 border-0 shadow-none">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Field Name</th>
+                                    <th>Section</th>
+                                    <th class="text-center">Visible</th>
+                                    <th class="text-center">Mandatory</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for field in field_settings %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-bold text-main">{{ field.field_label }}</div>
+                                        <div class="text-sub" style="font-size: 0.7rem;">Key:
+                                            <code>{{ field.field_key }}</code>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge-status"
+                                            style="background: var(--surface-3); color: var(--text-sub);">
+                                            {{ field.section }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="form-check form-switch d-inline-block">
+                                            <input class="form-check-input" type="checkbox"
+                                                name="vis_{{ field.field_key }}" {% if field.is_visible %}checked{%
+                                                endif %} {% if field.field_key in ['visitor_name', 'phone' , 'purpose'
+                                                , 'person_to_meet' ] %}disabled{% endif %}>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="form-check form-switch d-inline-block">
+                                            <input class="form-check-input" type="checkbox"
+                                                name="req_{{ field.field_key }}" {% if field.is_required %}checked{%
+                                                endif %} {% if field.field_key in ['visitor_name', 'phone' , 'purpose'
+                                                , 'person_to_meet' ] %}disabled{% endif %}>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="p-3 rounded-4 mt-3 d-flex align-items-center gap-3"
+                        style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2);">
+                        <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                        <div class="small text-sub">
+                            Note: System-critical fields (Name, Phone, Purpose, Host) are <strong>required by
+                                default</strong> to ensure database integrity and cannot be disabled.
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="submit" class="btn-premium btn-premium-primary px-5">
+                            <i class="bi bi-shield-check"></i> Update Form Policy
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="glass-card mt-4">
+                <div class="d-flex align-items-center gap-4 mb-4">
+                    <div class="sidebar-brand-icon"
+                        style="width: 56px; height: 56px; border-radius: 16px; background: var(--primary);">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-800 mb-1 text-main">Navigation & Menu</h4>
+                        <p class="text-sub small mb-0">Customize which features are visible in the sidebar.</p>
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-4 mb-4 d-flex align-items-center gap-3"
+                    style="background: rgba(99, 102, 241, 0.05); border: 1px solid rgba(99, 102, 241, 0.2);">
+                    <i class="bi bi-info-circle-fill text-primary fs-5"></i>
+                    <div class="small text-sub">
+                        Enable or disable modules like CoE, Visitor Groups, or Data Migration Tool to simplify
+                        the interface for your team.
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <a href="{{ url_for('main.menu_maintenance') }}" class="btn-premium btn-premium-primary px-5">
+                        <i class="bi bi-sliders"></i> Manage Menu Items
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-4 animate-in" style="animation-delay: 0.2s;">
+            <div class="alert alert-info border-0 rounded-4 shadow-sm p-4">
+                <h5 class="fw-bold"><i class="bi bi-question-circle-fill me-2"></i> Need help?</h5>
+                <p class="mb-0">Common SMTP Settings:</p>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-white bg-opacity-50 p-3 rounded-4 mb-2">
+                            <strong class="d-block mb-1"><i class="bi bi-google"></i> Gmail</strong>
+                            <code class="small text-dark">Host: smtp.gmail.com</code><br>
+                            <code class="small text-dark">Port: 587 (TLS)</code>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 bg-white bg-opacity-50 p-3 rounded-4 mb-2">
+                            <strong class="d-block mb-1"><i class="bi bi-microsoft"></i> Office 365</strong>
+                            <code class="small text-dark">Host: smtp.office365.com</code><br>
+                            <code class="small text-dark">Port: 587</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

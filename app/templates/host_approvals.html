@@ -1,0 +1,712 @@
+{% extends "base.html" %}
+{% block title %}Visitor Portal - Approval Center{% endblock %}
+
+{% block extra_css %}
+<style>
+    .approval-center {
+        padding: 28px;
+        max-width: 1500px;
+        margin: 0 auto;
+    }
+
+    /* Top summary bar */
+    .summary-bar {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-bottom: 28px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 18px;
+        padding: 20px 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: transform 0.2s;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .summary-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .summary-card .num {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1;
+    }
+
+    .summary-card .lbl {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Filter tabs */
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 24px;
+        background: white;
+        padding: 8px;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        width: fit-content;
+    }
+
+    .filter-tab {
+        padding: 8px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.88rem;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: #6b7280;
+        transition: all 0.2s;
+    }
+
+    .filter-tab.active {
+        background: #6366f1;
+        color: white;
+    }
+
+    /* Grid */
+    .approvals-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 20px;
+    }
+
+    /* Approval card */
+    .apcard {
+        background: white;
+        border-radius: 22px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        transition: all 0.3s;
+        border-left: 4px solid transparent;
+        position: relative;
+    }
+
+    .apcard:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .apcard.pending {
+        border-left-color: #f59e0b;
+    }
+
+    .apcard.approved {
+        border-left-color: #10b981;
+    }
+
+    .apcard.rejected {
+        border-left-color: #ef4444;
+    }
+
+    .apcard.checked_in {
+        border-left-color: #3b82f6;
+    }
+
+    .apcard-header {
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .visitor-ava {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    }
+
+    .visitor-ava.kiosk-ava {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    .visitor-meta h4 {
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .visitor-meta p {
+        margin: 2px 0 0;
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+
+    .badge-pill {
+        padding: 5px 12px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-left: auto;
+        flex-shrink: 0;
+    }
+
+    .badge-pill.pending {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .badge-pill.approved {
+        background: #d1fae5;
+        color: #059669;
+    }
+
+    .badge-pill.rejected {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .badge-pill.checked_in {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    .badge-pill.kiosk {
+        background: #fff7ed;
+        color: #ea580c;
+        border: 1px solid #fed7aa;
+        font-size: 0.7rem;
+    }
+
+    .apcard-body {
+        padding: 16px 20px;
+    }
+
+    .detail-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        padding: 5px 11px;
+        font-size: 0.8rem;
+        color: #374151;
+        font-weight: 600;
+    }
+
+    .chip i {
+        font-size: 0.9rem;
+        color: #6b7280;
+    }
+
+    /* Timeline */
+    .timeline {
+        margin: 12px 0 16px;
+    }
+
+    .tl-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 6px 0;
+        position: relative;
+    }
+
+    .tl-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        border: 2px solid;
+    }
+
+    .tl-dot.done {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+    }
+
+    .tl-dot.active {
+        background: #f59e0b;
+        border-color: #f59e0b;
+        color: white;
+    }
+
+    .tl-dot.wait {
+        background: #f1f5f9;
+        border-color: #e5e7eb;
+        color: #9ca3af;
+    }
+
+    .tl-dot.rejected-dot {
+        background: #ef4444;
+        border-color: #ef4444;
+        color: white;
+    }
+
+    .tl-content {
+        flex: 1;
+    }
+
+    .tl-content .tl-label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .tl-content .tl-time {
+        font-size: 0.73rem;
+        color: #9ca3af;
+    }
+
+    /* Approval notes */
+    .notes-approved {
+        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        border-left: 3px solid #10b981;
+        border-radius: 0 10px 10px 0;
+        padding: 10px 14px;
+        margin: 10px 0;
+        font-size: 0.85rem;
+        color: #065f46;
+    }
+
+    .notes-rejected {
+        background: linear-gradient(135deg, #fef2f2, #fee2e2);
+        border-left: 3px solid #ef4444;
+        border-radius: 0 10px 10px 0;
+        padding: 10px 14px;
+        margin: 10px 0;
+        font-size: 0.85rem;
+        color: #7f1d1d;
+    }
+
+    /* Action area */
+    .apcard-actions {
+        padding: 14px 20px;
+        background: #fafafa;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    /* Reject with reason modal-inline */
+    .reject-form {
+        display: none;
+        margin-bottom: 10px;
+    }
+
+    .reject-form textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 0.9rem;
+        resize: none;
+        font-family: inherit;
+        margin-bottom: 8px;
+    }
+
+    .reject-form textarea:focus {
+        outline: none;
+        border-color: #ef4444;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-ap {
+        flex: 1;
+        padding: 11px;
+        border-radius: 11px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        transition: all 0.2s;
+    }
+
+    .btn-ap-approve {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+    }
+
+    .btn-ap-approve:hover {
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        transform: translateY(-1px);
+    }
+
+    .btn-ap-reject {
+        background: white;
+        color: #ef4444;
+        border: 2px solid #fecaca;
+    }
+
+    .btn-ap-reject:hover {
+        background: #fff5f5;
+    }
+
+    .btn-ap-checkin {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+    }
+
+    .btn-ap-checkin:hover {
+        box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        transform: translateY(-1px);
+    }
+
+    /* Empty */
+    .empty-state {
+        grid-column: 1/-1;
+        text-align: center;
+        padding: 80px 40px;
+        background: white;
+        border-radius: 22px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: #d1d5db;
+        margin-bottom: 16px;
+        display: block;
+    }
+
+    /* Top bar */
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .top-bar h1 {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: #111827;
+        margin: 0;
+    }
+
+    .top-bar p {
+        font-size: 0.9rem;
+        color: #6b7280;
+        margin: 4px 0 0;
+    }
+
+    .kiosk-tag {
+        background: linear-gradient(135deg, #fff7ed, #fed7aa);
+        border: 1px solid #fdba74;
+        color: #c2410c;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 20px;
+        display: inline-block;
+        margin-top: 4px;
+        letter-spacing: 0.3px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="approval-center">
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <div>
+            <h1><i class="bi bi-person-check-fill text-primary me-2"></i>Approval Center</h1>
+            <p>Multi-stage visitor approval workflow — Kiosk Self-Registered & Pre-Registered visitors</p>
+        </div>
+        <a href="/kiosk" target="_blank" class="btn btn-outline-primary rounded-pill px-4" style="font-weight:600;">
+            <i class="bi bi-layout-text-window me-1"></i>Open Visitor Kiosk
+        </a>
+    </div>
+
+    <!-- Summary Bar -->
+    <div class="summary-bar">
+        <div class="summary-card">
+            <div class="summary-icon" style="background:#fef3c7;color:#d97706;"><i class="bi bi-hourglass-split"></i>
+            </div>
+            <div>
+                <div class="num">{{ visitors | rejectattr('status', 'equalto', 'IN') |
+                    selectattr('host_approval_status', 'equalto', 'PENDING') | list | length }}
+                </div>
+                <div class="lbl">Awaiting Approval</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon" style="background:#d1fae5;color:#059669;"><i class="bi bi-check-circle-fill"></i>
+            </div>
+            <div>
+                <div class="num">{{ visitors | rejectattr('status', 'equalto', 'IN') |
+                    selectattr('host_approval_status', 'equalto', 'APPROVED') | list | length }}</div>
+                <div class="lbl">Approved</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon" style="background:#dbeafe;color:#2563eb;"><i class="bi bi-person-badge"></i></div>
+            <div>
+                <div class="num">{{ visitors | selectattr('status','equalto','IN') | list | length }}</div>
+                <div class="lbl">Checked In</div>
+            </div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon" style="background:#fee2e2;color:#dc2626;"><i class="bi bi-x-circle-fill"></i>
+            </div>
+            <div>
+                <div class="num">{{ visitors | selectattr('host_approval_status','equalto','REJECTED') | list | length
+                    }}</div>
+                <div class="lbl">Rejected</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterCards('all',this)">All</button>
+        <button class="filter-tab" onclick="filterCards('pending',this)">⏳ Pending</button>
+        <button class="filter-tab" onclick="filterCards('approved',this)">✅ Approved</button>
+        <button class="filter-tab" onclick="filterCards('checked_in',this)">🔵 Checked In</button>
+        <button class="filter-tab" onclick="filterCards('rejected',this)">❌ Rejected</button>
+        <button class="filter-tab" onclick="filterCards('kiosk',this)">🖥️ Kiosk</button>
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="approvals-grid" id="appGrid">
+        {% for v in visitors %}
+        {% set card_status = 'checked_in' if v.status == 'IN' else v.host_approval_status | lower %}
+        <div class="apcard {{ card_status }}" data-status="{{ card_status }}"
+            data-kiosk="{{ '1' if v.kiosk_self_registered else '0' }}">
+
+            <!-- Card Header -->
+            <div class="apcard-header">
+                <div class="visitor-ava {{ 'kiosk-ava' if v.kiosk_self_registered }}">
+                    {{ v.visitor_name[:1] | upper }}
+                </div>
+                <div class="visitor-meta">
+                    <h4>{{ v.visitor_name }}
+                        {% if v.kiosk_self_registered %}
+                        <span class="kiosk-tag ms-1">🖥️ Self Kiosk</span>
+                        {% endif %}
+                    </h4>
+                    <p><i class="bi bi-building me-1"></i>{{ v.company or 'N/A' }}</p>
+                </div>
+                <div class="badge-pill {{ card_status }}">
+                    {% if card_status == 'pending' %}<i class="bi bi-hourglass-split"></i> Pending
+                    {% elif card_status == 'approved' %}<i class="bi bi-check-circle-fill"></i> Approved
+                    {% elif card_status == 'checked_in' %}<i class="bi bi-person-badge"></i> Checked In
+                    {% else %}<i class="bi bi-x-circle-fill"></i> Rejected{% endif %}
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="apcard-body">
+                <!-- Detail chips -->
+                <div class="detail-chips">
+                    <span class="chip"><i class="bi bi-journal-text"></i>{{ v.purpose or 'General' }}</span>
+                    <span class="chip"><i class="bi bi-person-badge"></i>{{ v.person_to_meet }}</span>
+                    {% if v.phone %}<span class="chip"><i class="bi bi-telephone"></i>{{ v.phone }}</span>{% endif %}
+                    {% if v.expected_duration %}<span class="chip"><i class="bi bi-clock"></i>{{ v.expected_duration
+                        }}</span>{% endif %}
+                </div>
+
+                <!-- Approval Timeline -->
+                <div class="timeline">
+                    <!-- Stage 1: Submitted -->
+                    <div class="tl-item">
+                        <div class="tl-dot done"><i class="bi bi-check-lg"></i></div>
+                        <div class="tl-content">
+                            <div class="tl-label">Request Submitted</div>
+                            <div class="tl-time">{{ v.check_in.strftime('%d %b %Y at %H:%M') if v.check_in else 'Just
+                                now' }}</div>
+                        </div>
+                    </div>
+                    <!-- Stage 2: Host Approval -->
+                    <div class="tl-item">
+                        <div
+                            class="tl-dot {{ 'done' if v.host_approval_status == 'APPROVED' or v.status == 'IN' else 'rejected-dot' if v.host_approval_status == 'REJECTED' else 'active' }}">
+                            {% if v.host_approval_status == 'APPROVED' or v.status == 'IN' %}<i
+                                class="bi bi-check-lg"></i>
+                            {% elif v.host_approval_status == 'REJECTED' %}<i class="bi bi-x-lg"></i>
+                            {% else %}<i class="bi bi-hourglass-split"></i>{% endif %}
+                        </div>
+                        <div class="tl-content">
+                            <div class="tl-label">Host Approval
+                                {% if v.approved_by %}— by {{ v.approved_by }}{% endif %}
+                            </div>
+                            <div class="tl-time">
+                                {{ v.approved_at.strftime('%d %b %Y at %H:%M') if v.approved_at else 'Ready' if v.status
+                                == 'IN' else 'Waiting...' }}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Stage 3: Security Check-In -->
+                    <div class="tl-item">
+                        <div class="tl-dot {{ 'done' if v.status == 'IN' else 'wait' }}">
+                            {% if v.status == 'IN' %}<i class="bi bi-check-lg"></i>
+                            {% else %}<i class="bi bi-shield"></i>{% endif %}
+                        </div>
+                        <div class="tl-content">
+                            <div class="tl-label">Security Badge & Check-In</div>
+                            <div class="tl-time">
+                                {% if v.security_checkin_at %}{{ v.security_checkin_at.strftime('%d %b %Y at %H:%M') }}
+                                {% elif v.host_approval_status == 'APPROVED' %}Ready for check-in
+                                {% else %}Pending approval{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approval notes -->
+                {% if v.approval_notes and v.host_approval_status == 'APPROVED' %}
+                <div class="notes-approved"><i class="bi bi-chat-quote me-1"></i><strong>Note:</strong> {{
+                    v.approval_notes }}</div>
+                {% elif v.rejected_reason %}
+                <div class="notes-rejected"><i class="bi bi-exclamation-triangle me-1"></i><strong>Reason:</strong> {{
+                    v.rejected_reason }}</div>
+                {% endif %}
+            </div>
+
+            <!-- Actions -->
+            {% if v.host_approval_status == 'PENDING' and v.status != 'IN' and role in ['ADMIN', 'HOST', 'SECURITY',
+            'RECEPTION'] %}
+            <div class="apcard-actions">
+                <!-- Reject form (shown inline) -->
+                <div class="reject-form" id="rf_{{ v.id }}">
+                    <form action="{{ url_for('main.host_approve_visitor', visitor_id=v.id) }}" method="POST">
+                        <input type="hidden" name="action" value="reject">
+                        <textarea name="rejected_reason" rows="2"
+                            placeholder="Reason for rejection (optional)..."></textarea>
+                        <div class="action-btns">
+                            <button type="button" class="btn-ap" style="background:#f1f5f9;color:#374151;"
+                                onclick="hideReject({{ v.id }})">Cancel</button>
+                            <button type="submit" class="btn-ap" style="background:#ef4444;color:white;">Confirm
+                                Reject</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Approve form -->
+                <form action="{{ url_for('main.host_approve_visitor', visitor_id=v.id) }}" method="POST"
+                    id="af_{{ v.id }}">
+                    <input type="hidden" name="action" value="approve">
+                    <input type="text" name="approval_notes" placeholder="Add an approval note (optional)..."
+                        style="width:100%;padding:9px 14px;border:1px solid #e5e7eb;border-radius:10px;font-size:0.88rem;margin-bottom:10px;font-family:inherit;outline:none;">
+                    <div class="action-btns">
+                        <button type="button" class="btn-ap btn-ap-reject" onclick="showReject({{ v.id }})">
+                            <i class="bi bi-x-circle"></i> Reject
+                        </button>
+                        <button type="submit" class="btn-ap btn-ap-approve">
+                            <i class="bi bi-check-circle-fill"></i> Approve & Notify
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {% elif v.host_approval_status == 'APPROVED' and v.status != 'IN' and role in ['ADMIN', 'SECURITY',
+            'RECEPTION'] %}
+            <div class="apcard-actions">
+                <form action="{{ url_for('main.host_approve_visitor', visitor_id=v.id) }}" method="POST">
+                    <input type="hidden" name="action" value="checkin">
+                    <button type="submit" class="btn-ap btn-ap-checkin" style="width:100%;">
+                        <i class="bi bi-person-badge"></i> Assign Badge & Check-In Now
+                    </button>
+                </form>
+            </div>
+
+            {% elif v.status == 'IN' %}
+            <div class="apcard-actions">
+                <form action="{{ url_for('main.checkout', id=v.id) }}" method="POST">
+                    <button type="submit" class="btn-ap"
+                        style="width:100%;background:linear-gradient(135deg,#ef4444,#b91c1c);color:white;">
+                        <i class="bi bi-box-arrow-right"></i> Check-Out Visitor
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox-fill"></i>
+            <h4 style="color:#374151;font-weight:800;">All Clear!</h4>
+            <p style="color:#6b7280;">No pending approval requests at the moment.</p>
+            <a href="/kiosk" class="btn btn-primary rounded-pill mt-3" target="_blank">
+                <i class="bi bi-layout-text-window me-1"></i>Open Visitor Kiosk
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function filterCards(status, btn) {
+        document.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.apcard').forEach(card => {
+            if (status === 'all') { card.style.display = ''; return; }
+            if (status === 'kiosk') { card.style.display = card.dataset.kiosk === '1' ? '' : 'none'; return; }
+            card.style.display = card.dataset.status === status ? '' : 'none';
+        });
+    }
+
+    function showReject(id) {
+        document.getElementById('rf_' + id).style.display = 'block';
+        document.getElementById('af_' + id).style.display = 'none';
+    }
+    function hideReject(id) {
+        document.getElementById('rf_' + id).style.display = 'none';
+        document.getElementById('af_' + id).style.display = '';
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => { if (document.hidden) return; location.reload(); }, 30000);
+
+    // Live timer on pending cards
+    function updateTimers() {
+        document.querySelectorAll('[data-submitted]').forEach(el => {
+            const diff = Math.floor((Date.now() - parseInt(el.dataset.submitted)) / 60000);
+            el.textContent = diff < 1 ? 'Just now' : `${diff} min ago`;
+        });
+    }
+    setInterval(updateTimers, 60000);
+</script>
+{% endblock %}

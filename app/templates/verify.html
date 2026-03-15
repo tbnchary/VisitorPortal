@@ -1,0 +1,682 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    /* verify.html styles extracted */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    html {
+        overflow-x: hidden;
+        width: 100%;
+    }
+
+    .verify-wrapper {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #020617 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem;
+        position: relative;
+        overflow-x: hidden;
+        width: 100%;
+    }
+
+    /* Animated Background Elements */
+    .verify-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+        border-radius: 50%;
+        top: -200px;
+        right: -200px;
+        animation: float_verify 15s ease-in-out infinite;
+    }
+
+    .verify-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        bottom: -100px;
+        left: -100px;
+        animation: float_verify 12s ease-in-out infinite reverse;
+    }
+
+    @keyframes float_verify {
+
+        0%,
+        100% {
+            transform: translate(0, 0) scale(1);
+        }
+
+        50% {
+            transform: translate(30px, 30px) scale(1.1);
+        }
+    }
+
+    .verify-container {
+        width: 100%;
+        max-width: 500px;
+        position: relative;
+        z-index: 10;
+    }
+
+    /* Desktop View Enhancement */
+    @media (min-width: 768px) {
+        .verify-container {
+            max-width: 900px;
+        }
+    }
+
+    /* Verification Card */
+    .verify-card {
+        background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 24px;
+        overflow: hidden;
+        box-shadow: 0 50px 100px -20px rgba(0, 0, 0, 0.5),
+            0 30px 60px -30px rgba(0, 0, 0, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        animation: slideUp_verify 0.5s ease-out;
+    }
+
+    @keyframes slideUp_verify {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Header */
+    .verify-header {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        padding: 2.5rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .verify-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -30%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .verify-icon {
+        width: 90px;
+        height: 90px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.25rem;
+        position: relative;
+        z-index: 1;
+        backdrop-filter: blur(10px);
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .verify-icon i {
+        font-size: 3rem;
+        color: white;
+        animation: checkPulse_verify 2s ease-in-out infinite;
+    }
+
+    @keyframes checkPulse_verify {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
+    .verify-title {
+        font-size: 2.1rem;
+        font-weight: 900;
+        color: white;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+        letter-spacing: -0.5px;
+    }
+
+    .verify-subtitle {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.95);
+        position: relative;
+        z-index: 1;
+        font-weight: 500;
+    }
+
+    /* Body */
+    .verify-body {
+        padding: 2.5rem 2rem;
+    }
+
+    /* Desktop Grid Layout */
+    @media (min-width: 768px) {
+        .verify-body {
+            padding: 3rem;
+        }
+
+        .desktop-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .visitor-profile {
+            border-bottom: none !important;
+            border-right: 2px dashed #e2e8f0;
+            padding-right: 2rem !important;
+            padding-bottom: 0 !important;
+            margin-bottom: 0 !important;
+        }
+
+        .details-section {
+            padding-left: 0.5rem;
+        }
+    }
+
+    /* Visitor Profile */
+    .visitor-profile {
+        text-align: center;
+        padding-bottom: 2rem;
+        border-bottom: 2px dashed #e2e8f0;
+        margin-bottom: 2rem;
+    }
+
+    .visitor-avatar {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: white;
+        margin: 0 auto 1.25rem;
+        box-shadow: 0 12px 32px rgba(37, 99, 235, 0.4);
+        position: relative;
+        animation: avatarPop_verify 0.6s ease-out 0.2s both;
+    }
+
+    @keyframes avatarPop_verify {
+        0% {
+            transform: scale(0);
+        }
+
+        50% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .visitor-avatar::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 3px solid #2563eb;
+        opacity: 0.3;
+    }
+
+    .visitor-name {
+        font-size: 2rem;
+        font-weight: 900;
+        color: #0f172a;
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.75px;
+        line-height: 1.2;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+
+    .visitor-id {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(145deg, #f1f5f9 0%, #e2e8f0 100%);
+        padding: 0.625rem 1.25rem;
+        border-radius: 10px;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: #475569;
+        font-family: 'Monaco', 'Consolas', monospace;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Details Section */
+    .detail-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 1.25rem;
+        padding: 1.25rem;
+        background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 14px;
+        margin-bottom: 1rem;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+        animation: fadeInUp_verify 0.5s ease-out both;
+    }
+
+    @keyframes fadeInUp_verify {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .detail-row:hover {
+        transform: translateX(6px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        border-color: #cbd5e1;
+    }
+
+    .detail-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .detail-icon.blue {
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+        color: #2563eb;
+    }
+
+    .detail-icon.purple {
+        background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+        color: #7c3aed;
+    }
+
+    .detail-icon.amber {
+        background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        color: #d97706;
+    }
+
+    .detail-icon.green {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        color: #16a34a;
+    }
+
+    .detail-icon.red {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        color: #dc2626;
+    }
+
+    .detail-icon.slate {
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        color: #475569;
+    }
+
+    .detail-content {
+        flex: 1;
+    }
+
+    .detail-label {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.75px;
+        margin-bottom: 6px;
+    }
+
+    .detail-value {
+        font-size: 1.0625rem;
+        font-weight: 700;
+        color: #1e293b;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        line-height: 1.4;
+        max-width: 100%;
+    }
+
+    /* Status Badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0.625rem 1.25rem;
+        border-radius: 50px;
+        font-size: 0.9375rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.75px;
+    }
+
+    .status-badge.active {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.15) 100%);
+        color: #16a34a;
+        border: 2px solid rgba(34, 197, 94, 0.4);
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+    }
+
+    .status-badge.departed {
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.2) 0%, rgba(220, 38, 38, 0.15) 100%);
+        color: #dc2626;
+        border: 2px solid rgba(220, 38, 38, 0.4);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+    }
+
+    /* Footer */
+    .verify-footer {
+        background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
+        padding: 1.75rem 2rem;
+        text-align: center;
+        border-top: 2px solid #e2e8f0;
+    }
+
+    .footer-timestamp {
+        font-size: 0.875rem;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        font-weight: 600;
+    }
+
+    .footer-timestamp i {
+        color: #94a3b8;
+        font-size: 1.125rem;
+    }
+
+    /* Mobile Optimizations */
+    @media (max-width: 767px) {
+        .verify-wrapper {
+            padding: 0.5rem;
+            align-items: flex-start;
+            padding-top: 1rem;
+        }
+
+        .verify-container {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        .verify-card {
+            border-radius: 16px;
+            width: 100%;
+        }
+
+        .verify-header {
+            padding: 1.5rem 1rem;
+        }
+
+        .verify-title {
+            font-size: 1.375rem;
+            line-height: 1.3;
+        }
+
+        .verify-subtitle {
+            font-size: 0.8125rem;
+        }
+
+        .verify-icon {
+            width: 65px;
+            height: 65px;
+        }
+
+        .verify-icon i {
+            font-size: 2rem;
+        }
+
+        .verify-body {
+            padding: 1.5rem 1rem;
+        }
+
+        .visitor-profile {
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .visitor-avatar {
+            width: 85px;
+            height: 85px;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .visitor-name {
+            font-size: 1.375rem;
+            line-height: 1.3;
+            margin-bottom: 0.5rem;
+        }
+
+        .visitor-id {
+            font-size: 0.8125rem;
+            padding: 0.5rem 0.875rem;
+        }
+
+        .detail-row {
+            padding: 0.875rem;
+            gap: 0.875rem;
+            margin-bottom: 0.75rem;
+            border-radius: 12px;
+        }
+
+        .detail-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.125rem;
+            border-radius: 10px;
+        }
+
+        .detail-label {
+            font-size: 0.6875rem;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            font-size: 0.9375rem;
+            line-height: 1.4;
+        }
+
+        .status-badge {
+            font-size: 0.8125rem;
+            padding: 0.5rem 0.875rem;
+        }
+
+        .verify-footer {
+            padding: 1.25rem 1rem;
+        }
+
+        .footer-timestamp {
+            font-size: 0.75rem;
+            flex-direction: column;
+            gap: 6px;
+            text-align: center;
+        }
+
+        .footer-timestamp i {
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="verify-wrapper">
+    <div class="verify-container">
+        <div class="verify-card">
+            <!-- Header -->
+            <div class="verify-header"
+                style="{{ 'background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);' if visitor.status == 'OUT' else '' }}">
+                <div class="verify-icon">
+                    <i class="bi bi-shield-{{ 'x' if visitor.status == 'OUT' else 'fill-check' }}"></i>
+                </div>
+                <div class="verify-title">{{ 'EXPIRED PASS' if visitor.status == 'OUT' else 'Verified Visitor' }}</div>
+                <div class="verify-subtitle">{{ 'Entry Not Authorized' if visitor.status == 'OUT' else 'Security Access
+                    Confirmation' }}</div>
+            </div>
+
+            <!-- Body -->
+            <div class="verify-body">
+                <!-- Desktop Grid Layout -->
+                <div class="desktop-grid">
+                    <!-- Visitor Profile -->
+                    <div class="visitor-profile">
+                        <div class="visitor-avatar">
+                            {% if visitor.photo %}
+                            <img src="{{ visitor.photo }}" alt="{{ visitor.visitor_name }}"
+                                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                            {% else %}
+                            {{ visitor.visitor_name[:1]|default('?', true)|upper }}
+                            {% endif %}
+                        </div>
+                        <div class="visitor-name">{{ visitor.visitor_name }}</div>
+                        <div class="visitor-id">
+                            <i class="bi bi-hash"></i>
+                            VIS-{{ "%06d"|format(visitor.id) }}
+                        </div>
+                    </div>
+
+                    <!-- Details Section -->
+                    <div class="details-section">
+                        <div class="detail-row">
+                            <div class="detail-icon blue">
+                                <i class="bi bi-buildings"></i>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">Company / Organization</div>
+                                <div class="detail-value">{{ visitor.company }}</div>
+                            </div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-icon amber">
+                                <i class="bi bi-person-badge"></i>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">Meeting With</div>
+                                <div class="detail-value">{{ visitor.person_to_meet }}</div>
+                            </div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-icon green">
+                                <i class="bi bi-clock-history"></i>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">Check-In Time</div>
+                                <div class="detail-value">
+                                    {{ visitor.check_in.strftime('%d %B %Y at %H:%M') }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-icon purple">
+                                <i class="bi bi-journal-text"></i>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">Purpose of Visit</div>
+                                <div class="detail-value">{{ visitor.purpose }}</div>
+                            </div>
+                        </div>
+
+                        <div class="detail-row">
+                            <div class="detail-icon slate">
+                                <i class="bi bi-info-circle"></i>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">Status</div>
+                                <div class="detail-value">
+                                    {% if visitor.status == 'IN' %}
+                                    <div class="status-badge active">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Access Active
+                                    </div>
+                                    {% else %}
+                                    <div class="status-badge departed">
+                                        <i class="bi bi-x-circle-fill"></i>
+                                        Departed
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if visitor.status == 'OUT' and visitor.check_out %}
+                        <div class="detail-row">
+                            <div class="detail-icon red">
+                                <i class="bi bi-box-arrow-right"></i>
+                            </div>
+                            <div class="detail-content">
+                                <div class="detail-label">Check-Out Time</div>
+                                <div class="detail-value">
+                                    {{ visitor.check_out.strftime('%d %B %Y at %H:%M') }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if visitor.status == 'IN' %}
+                        <div class="mt-4 pt-3">
+                            <form action="{{ url_for('main.checkout', id=visitor.id) }}" method="POST">
+                                <button type="submit" class="btn btn-danger w-100 py-3 rounded-4 fw-bold shadow-lg"
+                                    style="font-size: 1.125rem; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); border: none;">
+                                    <i class="bi bi-box-arrow-right me-2"></i>
+                                    Process Check-Out
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="verify-footer">
+                <div class="footer-timestamp">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    Verified via Visitor Portal Security System
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

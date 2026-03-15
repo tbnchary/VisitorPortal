@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security Portal — {{ username }}</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #f0f4f8;
+            --surface: #ffffff;
+            --surface-2: #f8fafc;
+            --border: #e2e8f0;
+            --border-2: #cbd5e1;
+            --sidebar-bg: #1e293b;
+            --sidebar-bd: rgba(255, 255, 255, 0.06);
+            --blue: #2563eb;
+            --blue-light: #eff6ff;
+            --blue-mid: #bfdbfe;
+            --green: #16a34a;
+            --green-light: #f0fdf4;
+            --green-mid: #bbf7d0;
+            --amber: #d97706;
+            --amber-light: #fffbeb;
+            --amber-mid: #fde68a;
+            --red: #dc2626;
+            --red-light: #fef2f2;
+            --purple: #7c3aed;
+            --purple-light: #f5f3ff;
+            --text-1: #0f172a;
+            --text-2: #475569;
+            --text-3: #94a3b8;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 10px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        html,
+        body {
+            height: 100vh;
+            overflow: hidden;
+            background: var(--bg);
+            color: var(--text-1);
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ═══════════ LAYOUT ═══════════ */
+        .layout {
+            display: grid;
+            grid-template-columns: 272px 1fr;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ═══════════ SIDEBAR ═══════════ */
+        .sidebar {
+            background: var(--sidebar-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .sidebar-brand {
+            padding: 26px 20px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .brand-chip {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 14px;
+            padding: 11px 14px;
+            margin-bottom: 18px;
+        }
+
+        .brand-shield {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.05rem;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .brand-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #93c5fd;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+        }
+
+        .brand-name {
+            font-size: 0.94rem;
+            font-weight: 800;
+            color: #fff;
+        }
+
+        /* Officer Card */
+        .officer-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .officer-ava {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: white;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+
+        .officer-name {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #f1f5f9;
+        }
+
+        .officer-role {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+            font-size: 0.62rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        .officer-unit {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        .officer-unit span {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* Sidebar Nav */
+        .sidebar-nav {
+            flex: 1;
+            padding: 18px 12px;
+            overflow-y: auto;
+        }
+
+        .nav-section-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 0 10px;
+            margin-bottom: 8px;
+            margin-top: 18px;
+        }
+
+        .nav-section-label:first-child {
+            margin-top: 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 11px 13px;
+            border-radius: 11px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: all 0.18s;
+            margin-bottom: 3px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+            color: #e2e8f0;
+        }
+
+        .nav-item.active {
+            background: rgba(37, 99, 235, 0.2);
+            color: #93c5fd;
+            border: 1px solid rgba(37, 99, 235, 0.25);
+        }
+
+        .nav-item i {
+            font-size: 1.05rem;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            padding: 2px 8px;
+            background: #d97706;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: 800;
+            border-radius: 20px;
+        }
+
+        /* Sidebar Footer */
+        .sidebar-footer {
+            padding: 14px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sf {
+            flex: 1;
+            padding: 9px 8px;
+            border-radius: 10px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.18s;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #94a3b8;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .btn-sf:hover {
+            color: #fca5a5;
+            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        .btn-sf.primary {
+            background: #2563eb;
+            color: white;
+            border-color: transparent;
+        }
+
+        .btn-sf.primary:hover {
+            background: #1d4ed8;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
+
+        /* ═══════════ MAIN ═══════════ */
+        .main {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ═══════════ SECURITY INTELLIGENCE CENTER (ALERTS) ═══════════ */
+        .alert-hub {
+            padding: 0 28px;
+            margin-top: -12px;
+            position: relative;
+            z-index: 100;
+        }
+
+        .alert-container {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 12px 0;
+            scrollbar-width: none;
+        }
+
+        .alert-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .alert-glass {
+            min-width: 320px;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 16px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+            animation: alertSlideIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s ease;
+        }
+
+        .alert-glass:hover {
+            transform: translateY(-4px) scale(1.02);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        @keyframes alertSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .alert-icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .alert-glass.SUCCESS .alert-icon-box {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .alert-glass.INFO .alert-icon-box {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .alert-glass.WARNING .alert-icon-box {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .alert-glass.CRITICAL .alert-icon-box {
+            background: #fee2e2;
+            color: #dc2626;
+            animation: pulseRed 2s infinite;
+        }
+
+        @keyframes pulseRed {
+            0% {
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+            }
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .alert-title {
+            font-size: 0.85rem;
+            font-weight: 800;
+            color: var(--text-1);
+            letter-spacing: -0.2px;
+        }
+
+        .alert-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-3);
+            font-weight: 600;
+        }
+
+        .alert-msg {
+            font-size: 0.78rem;
+            color: var(--text-2);
+            line-height: 1.4;
+        }
+
+        .alert-actions {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-alert-action {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-alert-action:hover {
+            background: var(--blue);
+            color: white;
+            border-color: var(--blue);
+        }
+
+        .alert-dismiss {
+            cursor: pointer;
+            color: var(--text-3);
+            transition: color 0.2s;
+        }
+
+        .alert-dismiss:hover {
+            color: var(--red);
+        }
+
+        /* Empty State Hub */
+        .hub-placeholder {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            color: var(--text-3);
+            font-size: 0.82rem;
+            font-weight: 500;
+        }
+
+        .hub-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #94a3b8;
+            opacity: 0.5;
+        }
+
+        /* Topbar Enhancements */
+        .topbar {
+            background: rgba(255, 255, 255, 0.8) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* Topbar */
+        .topbar {
+            padding: 14px 28px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+            box-shadow: var(--shadow);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .duty-badge {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: var(--green-light);
+            border: 1px solid var(--green-mid);
+            border-radius: 20px;
+            padding: 6px 14px;
+        }
+
+        .duty-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 6px rgba(22, 163, 74, 0.5);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.3)
+            }
+        }
+
+        .duty-text {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--green);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .clock-block {}
+
+        .clock-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--blue);
+            letter-spacing: 2px;
+        }
+
+        .clock-date {
+            font-size: 0.76rem;
+            color: var(--text-3);
+            margin-top: 1px;
+        }
+
+        /* Body */
+        .main-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 26px 28px 48px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        /* Stats */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.22s;
+            cursor: default;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+        }
+
+        .stat-card.amber::after {
+            background: linear-gradient(90deg, var(--amber), transparent);
+        }
+
+        .stat-card.green::after {
+            background: linear-gradient(90deg, var(--green), transparent);
+        }
+
+        .stat-card.blue::after {
+            background: linear-gradient(90deg, var(--blue), transparent);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .stat-card.amber .stat-icon {
+            background: var(--amber-light);
+            color: var(--amber);
+        }
+
+        .stat-card.green .stat-icon {
+            background: var(--green-light);
+            color: var(--green);
+        }
+
+        .stat-card.blue .stat-icon {
+            background: var(--blue-light);
+            color: var(--blue);
+        }
+
+        .stat-num {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--text-1);
+            line-height: 1;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            margin-top: 3px;
+        }
+
+        /* Action Banner */
+        .action-banner {
+            background: linear-gradient(135deg, #1e3a5f 0%, #1d4ed8 60%, #4f46e5 100%);
+            border-radius: 18px;
+            padding: 26px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 20px;
+            box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-banner::before {
+            content: '🛡️';
+            position: absolute;
+            right: 140px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 6rem;
+            opacity: 0.07;
+            pointer-events: none;
+        }
+
+        .banner-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .banner-desc {
+            font-size: 0.83rem;
+            color: rgba(255, 255, 255, 0.75);
+            max-width: 420px;
+            line-height: 1.55;
+        }
+
+        .btn-add-visitor {
+            background: white;
+            color: #1d4ed8;
+            padding: 13px 26px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            flex-shrink: 0;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s;
+        }
+
+        .btn-add-visitor:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+            color: #1d4ed8;
+        }
+
+        /* Panels */
+        .panel-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 460px;
+            box-shadow: var(--shadow);
+        }
+
+        .panel-head {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--surface-2);
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--text-1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-count {
+            font-size: 0.68rem;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .panel-count.green {
+            background: var(--green-light);
+            color: var(--green);
+            border: 1px solid var(--green-mid);
+        }
+
+        .panel-count.blue {
+            background: var(--blue-light);
+            color: var(--blue);
+            border: 1px solid var(--blue-mid);
+        }
+
+        .panel-count.amber {
+            background: var(--amber-light);
+            color: var(--amber);
+            border: 1px solid var(--amber-mid);
+        }
+
+        .panel-count.purple {
+            background: var(--purple-light);
+            color: var(--purple);
+            border: 1px solid #ddd6fe;
+        }
+
+        .panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        /* Badge Ready Cards */
+        .badge-card {
+            background: var(--green-light);
+            border: 1px solid var(--green-mid);
+            border-radius: 12px;
+            padding: 13px 15px;
+            margin-bottom: 9px;
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            transition: all 0.18s;
+        }
+
+        .badge-card:hover {
+            background: #dcfce7;
+            transform: translateX(3px);
+        }
+
+        .badge-card:first-child {
+            animation: cardGlow 3s infinite;
+        }
+
+        @keyframes cardGlow {
+
+            0%,
+            100% {
+                box-shadow: none;
+            }
+
+            50% {
+                box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+            }
+        }
+
+        .badge-ava {
+            width: 44px;
+            height: 44px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 900;
+            color: white;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+
+        .badge-ava.kiosk {
+            background: linear-gradient(135deg, #d97706, #b45309);
+        }
+
+        .badge-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .badge-name {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .badge-meta {
+            font-size: 0.74rem;
+            color: var(--text-3);
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-approved {
+            font-size: 0.71rem;
+            color: var(--green);
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 600;
+        }
+
+        .kiosk-tag {
+            font-size: 0.62rem;
+            font-weight: 700;
+            background: var(--amber-light);
+            color: var(--amber);
+            border: 1px solid var(--amber-mid);
+            padding: 1px 6px;
+            border-radius: 5px;
+            margin-left: 5px;
+        }
+
+        .btn-print {
+            padding: 9px 15px;
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.78rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            text-decoration: none;
+            white-space: nowrap;
+            font-family: inherit;
+        }
+
+        .btn-print:hover {
+            box-shadow: 0 6px 16px rgba(22, 163, 74, 0.3);
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        /* Today Log */
+        .log-row {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 13px;
+            border-radius: 11px;
+            margin-bottom: 4px;
+            transition: all 0.15s;
+        }
+
+        .log-row:hover {
+            background: var(--surface-2);
+        }
+
+        .log-ava {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: white;
+            flex-shrink: 0;
+            text-transform: uppercase;
+        }
+
+        .log-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .log-name {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .log-sub {
+            font-size: 0.73rem;
+            color: var(--text-3);
+            margin-top: 2px;
+        }
+
+        .status-chip {
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.67rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .status-chip.in {
+            background: var(--green-light);
+            color: var(--green);
+            border: 1px solid var(--green-mid);
+        }
+
+        .status-chip.pending {
+            background: var(--amber-light);
+            color: var(--amber);
+            border: 1px solid var(--amber-mid);
+        }
+
+        .status-chip.ready {
+            background: var(--blue-light);
+            color: var(--blue);
+            border: 1px solid var(--blue-mid);
+        }
+
+        .status-chip.rejected {
+            background: var(--red-light);
+            color: var(--red);
+            border: 1px solid #fecaca;
+        }
+
+        .status-chip.other {
+            background: var(--purple-light);
+            color: var(--purple);
+            border: 1px solid #ddd6fe;
+        }
+
+        /* Panel Footer */
+        .panel-foot {
+            padding: 11px 14px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            background: var(--surface-2);
+            flex-shrink: 0;
+        }
+
+        .btn-pf {
+            padding: 7px 14px;
+            border-radius: 9px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            border: 1px solid var(--border);
+            color: var(--text-2);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            transition: all 0.18s;
+            font-family: inherit;
+        }
+
+        .btn-pf:hover {
+            border-color: var(--border-2);
+            color: var(--text-1);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-pf.kiosk {
+            background: var(--amber-light);
+            border-color: var(--amber-mid);
+            color: var(--amber);
+        }
+
+        .btn-pf.kiosk:hover {
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.15);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 36px 20px;
+            color: var(--text-3);
+        }
+
+        .empty-state i {
+            font-size: 2.2rem;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.35;
+        }
+
+        .empty-state p {
+            font-size: 0.84rem;
+            line-height: 1.6;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-2);
+            border-radius: 10px;
+        }
+
+        @media(max-width:768px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .panel-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="layout">
+
+        <!-- ═══════════ SIDEBAR ═══════════ -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-chip">
+                    <div class="brand-shield">🛡️</div>
+                    <div>
+                        <div class="brand-label">Secured Access</div>
+                        <div class="brand-name">Security Portal</div>
+                    </div>
+                </div>
+                <div class="officer-card">
+                    <div class="officer-ava">{{ username[:1]|upper }}</div>
+                    <div>
+                        <div class="officer-name">{{ username|title }}</div>
+                        <div class="officer-role"><i class="bi bi-shield-fill-check"></i> Security Officer</div>
+                        {% if unit %}<div class="officer-unit">Unit: <span>{{ unit }}</span></div>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-label">Operations</div>
+                <a href="{{ url_for('main.security_dashboard') }}" class="nav-item active">
+                    <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('main.add_visitor') }}" class="nav-item">
+                    <i class="bi bi-person-plus-fill"></i><span>Register Visitor</span>
+                </a>
+                <a href="{{ url_for('main.host_approvals') }}" class="nav-item">
+                    <i class="bi bi-patch-check-fill"></i><span>Approval Queue</span>
+                    {% if pending_count > 0 %}<span class="nav-badge">{{ pending_count }}</span>{% endif %}
+                </a>
+                <a href="{{ url_for('main.logs') }}" class="nav-item">
+                    <i class="bi bi-journal-text"></i><span>Visitor Logs</span>
+                </a>
+
+                <div class="nav-section-label">Verification</div>
+                <a href="{{ url_for('main.logs') }}?status=IN" class="nav-item">
+                    <i class="bi bi-qr-code-scan"></i><span>Scan / Verify QR</span>
+                </a>
+                <a href="/kiosk" target="_blank" class="nav-item">
+                    <i class="bi bi-layout-text-window"></i><span>Open Kiosk</span>
+                </a>
+
+                <div class="nav-section-label">Account</div>
+                <a href="{{ url_for('main.profile') }}" class="nav-item">
+                    <i class="bi bi-person-circle"></i><span>My Profile</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('main.add_visitor') }}" class="btn-sf primary">
+                    <i class="bi bi-person-plus-fill"></i> Add Visitor
+                </a>
+                <a href="{{ url_for('main.logout') }}" class="btn-sf">
+                    <i class="bi bi-box-arrow-left"></i> Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- ═══════════ MAIN ═══════════ -->
+        <main class="main">
+
+            <!-- Security Intelligence Center (Dynamic Alert Hub) -->
+            <div class="alert-hub">
+                <div class="alert-container" id="alertHub">
+                    <!-- Dynamic Alerts will be injected here -->
+                    <div class="hub-placeholder">
+                        <div class="hub-dot"></div>
+                        Scanning Security Intelligence Feed...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Topbar -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <div class="duty-badge">
+                        <div class="duty-dot"></div>
+                        <span class="duty-text">On Duty</span>
+                    </div>
+                    <div class="clock-block">
+                        <div class="clock-time" id="secClock">--:--:--</div>
+                        <div class="clock-date" id="secDate">Loading…</div>
+                    </div>
+                </div>
+
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div
+                    style="padding:8px 16px;border-radius:10px;font-size:0.82rem;font-weight:600;max-width:380px;
+                background:{% if category=='success' %}#f0fdf4{% elif category=='danger' %}#fef2f2{% else %}#fffbeb{% endif %};
+                border:1px solid {% if category=='success' %}#bbf7d0{% elif category=='danger' %}#fecaca{% else %}#fde68a{% endif %};
+                color:{% if category=='success' %}#16a34a{% elif category=='danger' %}#dc2626{% else %}#d97706{% endif %};">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Body -->
+            <div class="main-body">
+
+                <!-- Stats -->
+                <div class="stats-row">
+                    <div class="stat-card amber">
+                        <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+                        <div>
+                            <div class="stat-num">{{ pending_count }}</div>
+                            <div class="stat-label">Awaiting Host Approval</div>
+                        </div>
+                    </div>
+                    <div class="stat-card green">
+                        <div class="stat-icon"><i class="bi bi-patch-check-fill"></i></div>
+                        <div>
+                            <div class="stat-num">{{ badge_ready_count }}</div>
+                            <div class="stat-label">Badge Ready to Print</div>
+                        </div>
+                    </div>
+                    <div class="stat-card blue">
+                        <div class="stat-icon"><i class="bi bi-person-check-fill"></i></div>
+                        <div>
+                            <div class="stat-num">{{ checked_in_today }}</div>
+                            <div class="stat-label">Checked In Today</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Banner -->
+                <div class="action-banner">
+                    <div>
+                        <div class="banner-title"><i class="bi bi-person-plus-fill" style="color:#93c5fd;"></i>
+                            &nbsp;Register a New Visitor</div>
+                        <div class="banner-desc">Fill in visitor details, capture photo &amp; signature, then click
+                            <strong>"Pre-Register"</strong> to submit for host approval. Once approved, the badge queue
+                            will update automatically.
+                        </div>
+                    </div>
+                    <a href="{{ url_for('main.add_visitor') }}" class="btn-add-visitor">
+                        <i class="bi bi-person-plus-fill"></i> Add New Visitor
+                    </a>
+                </div>
+
+                <!-- Panels -->
+                <div class="panel-grid">
+
+                    <!-- Badge Ready -->
+                    <div class="panel">
+                        <div class="panel-head">
+                            <div class="panel-title"><i class="bi bi-patch-check-fill" style="color:var(--green);"></i>
+                                Approved — Badge Ready</div>
+                            <span class="panel-count green">{{ badge_ready_count }}</span>
+                        </div>
+                        <div class="panel-body">
+                            {% if ready_for_badge %}
+                            {% for v in ready_for_badge %}
+                            <div class="badge-card">
+                                <div class="badge-ava {{ 'kiosk' if v.kiosk_self_registered }}">{{
+                                    v.visitor_name[:1]|upper }}</div>
+                                <div class="badge-info">
+                                    <div class="badge-name">
+                                        {{ v.visitor_name }}
+                                        {% if v.kiosk_self_registered %}<span class="kiosk-tag">🖥️ Kiosk</span>{% endif
+                                        %}
+                                    </div>
+                                    <div class="badge-meta">
+                                        <i class="bi bi-building"></i> {{ v.company or 'N/A' }}
+                                        &nbsp;·&nbsp;
+                                        <i class="bi bi-person-badge"></i> {{ v.person_to_meet }}
+                                    </div>
+                                    <div class="badge-approved">
+                                        <i class="bi bi-check-circle-fill"></i>
+                                        Approved by <strong>{{ v.approved_by or '—' }}</strong>
+                                        {% if v.approved_at %} at {{ v.approved_at.strftime('%H:%M, %d %b') }}{% endif
+                                        %}
+                                    </div>
+                                </div>
+                                <form action="{{ url_for('main.host_approve_visitor', visitor_id=v.id) }}"
+                                    method="POST">
+                                    <input type="hidden" name="action" value="checkin">
+                                    <button type="submit" class="btn-print">
+                                        <i class="bi bi-printer-fill"></i> Print Badge
+                                    </button>
+                                </form>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-hourglass"></i>
+                                <p>No approved visitors waiting for badge.<br><small>Register a visitor and wait for
+                                        host approval.</small></p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="panel-foot">
+                            <a href="{{ url_for('main.host_approvals') }}" class="btn-pf">
+                                <i class="bi bi-list-check"></i> Full Approval Queue
+                            </a>
+                            <a href="/kiosk" target="_blank" class="btn-pf kiosk">
+                                <i class="bi bi-layout-text-window"></i> Open Kiosk
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Today's Visitors -->
+                    <div class="panel">
+                        <div class="panel-head">
+                            <div class="panel-title"><i class="bi bi-journal-text" style="color:var(--blue);"></i>
+                                Today's Visitors</div>
+                            <span class="panel-count blue">{{ today_visitors | length }}</span>
+                        </div>
+                        <div class="panel-body">
+                            {% if today_visitors %}
+                            {% for v in today_visitors %}
+                            <div class="log-row">
+                                <div class="log-ava">{{ v.visitor_name[:1]|upper }}</div>
+                                <div class="log-info">
+                                    <div class="log-name">{{ v.visitor_name }}</div>
+                                    <div class="log-sub">{{ v.company or '—' }} · {{ v.purpose or 'General' }}</div>
+                                </div>
+                                {% if v.status == 'IN' %}
+                                <span class="status-chip in">✅ On-Site</span>
+                                {% elif v.status == 'PRE_REGISTERED' %}
+                                {% if v.host_approval_status == 'APPROVED' %}
+                                <span class="status-chip ready">🎫 Badge Ready</span>
+                                {% else %}
+                                <span class="status-chip pending">⏳ Awaiting</span>
+                                {% endif %}
+                                {% elif v.status == 'REJECTED' %}
+                                <span class="status-chip rejected">❌ Rejected</span>
+                                {% else %}
+                                <span class="status-chip other">{{ v.status }}</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="empty-state">
+                                <i class="bi bi-calendar-x"></i>
+                                <p>No visitors registered today yet.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="panel-foot">
+                            <a href="{{ url_for('main.logs') }}" class="btn-pf">
+                                <i class="bi bi-list-ul"></i> View All Logs
+                            </a>
+                        </div>
+                    </div>
+
+                </div><!-- /panel-grid -->
+            </div><!-- /main-body -->
+        </main>
+    </div>
+
+    <script>
+        // --- Core Time Update ---
+        function updateClock() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+            const clockEl = document.getElementById('secClock');
+            if (clockEl) clockEl.textContent = timeStr;
+
+            const dateEl = document.getElementById('secDate');
+            if (dateEl) dateEl.textContent = dateStr;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // --- Security Intelligence (Alerts) System ---
+        let existingAlertIds = new Set();
+
+        async function fetchSecurityAlerts() {
+            try {
+                const response = await fetch('/api/security/alerts');
+                const alerts = await response.json();
+
+                const hub = document.getElementById('alertHub');
+                if (!hub) return;
+
+                if (alerts.length === 0) {
+                    if (hub.children.length === 0 || hub.querySelector('.hub-placeholder')) {
+                        hub.innerHTML = `
+                            <div class="hub-placeholder">
+                                <div class="hub-dot"></div>
+                                Digital Shield Active. No immediate threats or tasks.
+                            </div>`;
+                    }
+                    return;
+                }
+
+                // Remove placeholder if present
+                const placeholder = hub.querySelector('.hub-placeholder');
+                if (placeholder) placeholder.remove();
+
+                alerts.forEach(alert => {
+                    if (!existingAlertIds.has(alert.id)) {
+                        renderAlert(alert);
+                        existingAlertIds.add(alert.id);
+                    }
+                });
+            } catch (err) {
+                console.error("Alert Fetch Error:", err);
+            }
+        }
+
+        function renderAlert(alert) {
+            const hub = document.getElementById('alertHub');
+            const alertEl = document.createElement('div');
+            alertEl.className = `alert-glass ${alert.type}`;
+            alertEl.id = `alert-${alert.id}`;
+
+            let icon = 'bi-info-circle-fill';
+            if (alert.type === 'SUCCESS') icon = 'bi-patch-check-fill';
+            if (alert.type === 'WARNING') icon = 'bi-exclamation-triangle-fill';
+            if (alert.type === 'CRITICAL') icon = 'bi-shield-fill-exclamation';
+
+            alertEl.innerHTML = `
+                <div class="alert-icon-box"><i class="bi ${icon}"></i></div>
+                <div class="alert-content">
+                    <div class="alert-header">
+                        <span class="alert-title">${alert.title}</span>
+                        <span class="alert-time">${alert.created_at_str}</span>
+                    </div>
+                    <div class="alert-msg">${alert.message}</div>
+                    <div class="alert-actions">
+                        ${alert.action_url ? `<a href="${alert.action_url}" class="btn-alert-action">Go to Action</a>` : ''}
+                        <button class="btn-alert-action" onclick="dismissAlert(${alert.id})">Dismiss</button>
+                    </div>
+                </div>
+                <div class="alert-dismiss" onclick="dismissAlert(${alert.id})"><i class="bi bi-x-lg"></i></div>
+            `;
+
+            // Prepend to show newest first
+            hub.insertBefore(alertEl, hub.firstChild);
+        }
+
+        async function dismissAlert(id) {
+            const alertEl = document.getElementById(`alert-${id}`);
+            if (alertEl) {
+                alertEl.style.opacity = '0';
+                alertEl.style.transform = 'translateY(-20px) scale(0.9)';
+                setTimeout(() => alertEl.remove(), 300);
+            }
+
+            try {
+                await fetch(`/api/security/alerts/read/${id}`, { method: 'POST' });
+                existingAlertIds.delete(id);
+            } catch (err) {
+                console.error("Dismiss Error:", err);
+            }
+        }
+
+        // --- DASHBOARD POLLING ---
+        // We poll every 5 seconds for alerts
+        setInterval(fetchSecurityAlerts, 5000);
+        fetchSecurityAlerts();
+
+        // Optional: Periodic full refresh for safety (less frequent now)
+        setInterval(() => { if (!document.hidden) window.location.reload(); }, 120000); // 2 minutes
+    </script>
+</body>
+
+</html>
