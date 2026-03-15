@@ -999,25 +999,25 @@
     window.visitors = [
         {% for v in visitors %}
     {
-        "id": { { v.id | default (0) } },
-        "name": { { (v.visitor_name or "") | tojson } },
-        "company": { { (v.company or "") | tojson } },
-        "phone": { { (v.phone or "") | tojson } },
-        "email": { { (v.email or "") | tojson } },
-        "host": { { (v.person_to_meet or "") | tojson } },
-        "hostPhone": { { (v.host_phone or "") | tojson } },
-        "purpose": { { (v.purpose or "") | tojson } },
-        "status": { { v.status | tojson } },
-        "checkIn": { { (v.check_in.strftime('%Y-%m-%d %H:%M:%S') if v.check_in else "") | tojson } },
-        "checkOut": { { (v.check_out.strftime('%Y-%m-%d %H:%M:%S') if v.check_out else "") | tojson } },
-        "customQR": { { (v.custom_qr or "") | tojson } },
-        "priority": { { (v.visit_priority or "Normal") | tojson } },
-        "laptopSerial": { { (v.laptop_serial or "") | tojson } },
-        "groupCount": { { (v.additional_visitors_count or 0) | int } },
-        "isRegular": { { (v.regular_id is not none) | tojson } },
-        "groupName": { { (v.group_name or "") | tojson } },
-        "visitCount": { { (v.visit_count or 1) | int } }
-    } {% if not loop.last %}, {% endif %}
+        "id": {{ v.id | default(0) }},
+        "name": {{ (v.visitor_name or "") | tojson }},
+        "company": {{ (v.company or "") | tojson }},
+        "phone": {{ (v.phone or "") | tojson }},
+        "email": {{ (v.email or "") | tojson }},
+        "host": {{ (v.person_to_meet or "") | tojson }},
+        "hostPhone": {{ (v.host_phone or "") | tojson }},
+        "purpose": {{ (v.purpose or "") | tojson }},
+        "status": {{ v.status | tojson }},
+        "checkIn": {{ (v.check_in.strftime('%Y-%m-%d %H:%M:%S') if v.check_in else "") | tojson }},
+        "checkOut": {{ (v.check_out.strftime('%Y-%m-%d %H:%M:%S') if v.check_out else "") | tojson }},
+        "customQR": {{ (v.custom_qr or "") | tojson }},
+        "priority": {{ (v.visit_priority or "Normal") | tojson }},
+        "laptopSerial": {{ (v.laptop_serial or "") | tojson }},
+        "groupCount": {{ (v.additional_visitors_count or 0) | int }},
+        "isRegular": {{ (v.regular_id is not none) | tojson }},
+        "groupName": {{ (v.group_name or "") | tojson }},
+        "visitCount": {{ (v.visit_count or 1) | int }}
+    }{% if not loop.last %}, {% endif %}
     {% endfor %}
     ];
 
@@ -1628,8 +1628,7 @@
         setInterval(fetchHubAlerts, 5000);
         fetchHubAlerts();
 
-        let lastMaxId = {{ visitors | map(attribute = 'id') | max if visitors else 0
-    }};
+        let lastMaxId = {{ visitors | map(attribute='id') | max if visitors else 0 }};
     setInterval(async () => {
         try {
             const res = await fetch('/api/security/alerts?limit=1');
@@ -1658,6 +1657,28 @@
         });
     }
     });
+
+    function exportWithFilters() {
+        // Get current filter values
+        const status = document.getElementById('statusFilter').value;
+        const company = document.getElementById('companyFilter').value;
+        const host = document.getElementById('hostFilter').value;
+        const purpose = document.getElementById('purposeFilter').value;
+        const date = document.getElementById('dateFilter').value;
+        const search = document.getElementById('searchInput').value;
+
+        // Build export URL with filters
+        const params = new URLSearchParams();
+        if (status !== 'ALL') params.append('status', status);
+        if (company !== 'ALL') params.append('company', company);
+        if (host !== 'ALL') params.append('host', host);
+        if (purpose !== 'ALL') params.append('purpose', purpose);
+        if (date) params.append('date', date);
+        if (search) params.append('search', search);
+
+        const exportUrl = `/api/export-visitors?${params.toString()}`;
+        window.open(exportUrl, '_blank');
+    }
 
     function sortColumn(index) {
         const tbody = document.getElementById('tableBody');

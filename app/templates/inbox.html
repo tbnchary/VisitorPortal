@@ -265,9 +265,14 @@
 <div class="inbox-wrapper">
     <!-- Sidebar -->
     <div class="inbox-sidebar">
-        <button class="btn-compose" onclick="location.href='{{ url_for('main.add_visitor') }}'">
+        <button class="btn-compose" onclick="window.location.href='{{ url_for('main.add_visitor') }}'">
             <i class="bi bi-pencil-square fs-4"></i>
-            <span>Register</span>
+            <span>New Visitor</span>
+        </button>
+
+        <button class="btn-compose" style="background: #f3f4f6; color: #374151;" onclick="window.location.href='{{ url_for('main.register') }}'">
+            <i class="bi bi-person-plus fs-4"></i>
+            <span>New User</span>
         </button>
 
         <a href="?filter=inbox" class="nav-item-inbox {% if current_filter == 'inbox' %}active{% endif %}">
@@ -312,7 +317,10 @@
             <div class="toolbar-left d-flex align-items-center gap-2">
                 <div class="inbox-search">
                     <i class="bi bi-search text-sub"></i>
-                    <input type="text" placeholder="Search in intelligence" id="inboxSearchInput">
+                    <input type="text" placeholder="Search in intelligence..." id="inboxSearchInput">
+                    <button class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleAdvancedSearch()">
+                        <i class="bi bi-funnel"></i> Filter
+                    </button>
                 </div>
             </div>
             <div class="toolbar-right">
@@ -321,9 +329,9 @@
                 <button class="btn-icon-gmail" title="Settings"
                     onclick="location.href='{{ url_for('main.settings') }}'"><i class="bi bi-gear"></i></button>
                 <div class="ms-3 d-flex align-items-center gap-2">
-                    <span class="small text-sub">1-{{ items|length }} of {{ items|length }}</span>
-                    <button class="btn-icon-gmail btn-sm"><i class="bi bi-chevron-left"></i></button>
-                    <button class="btn-icon-gmail btn-sm"><i class="bi bi-chevron-right"></i></button>
+                    <span class="small text-sub" id="resultCount">1-{{ items|length }} of {{ total_items or items|length }}</span>
+                    <button class="btn-icon-gmail btn-sm" onclick="refreshInbox()"><i class="bi bi-arrow-clockwise"></i></button>
+                    <button class="btn-icon-gmail btn-sm" onclick="toggleSettings()"><i class="bi bi-gear"></i></button>
                 </div>
             </div>
         </div>
@@ -539,5 +547,17 @@
             row.style.display = text.includes(term) ? 'flex' : 'none';
         });
     });
+
+    function toggleAdvancedSearch() {
+        Swal.fire('Advanced Search', 'Advanced filtering options coming soon!', 'info');
+    }
+
+    function refreshInbox() {
+        location.reload();
+    }
+
+    function toggleSettings() {
+        window.location.href = '{{ url_for("main.settings") }}';
+    }
 </script>
 {% endblock %}

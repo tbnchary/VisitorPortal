@@ -455,11 +455,16 @@
     <div class="top-bar">
         <div>
             <h1><i class="bi bi-person-check-fill text-primary me-2"></i>Approval Center</h1>
-            <p>Multi-stage visitor approval workflow — Kiosk Self-Registered & Pre-Registered visitors</p>
+            <p>Multi-stage visitor approval workflow — Professional access management</p>
         </div>
-        <a href="/kiosk" target="_blank" class="btn btn-outline-primary rounded-pill px-4" style="font-weight:600;">
-            <i class="bi bi-layout-text-window me-1"></i>Open Visitor Kiosk
-        </a>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary rounded-pill px-4" style="font-weight:600;" onclick="exportApprovals()">
+                <i class="bi bi-download me-1"></i>Export Report
+            </button>
+            <a href="/kiosk" target="_blank" class="btn btn-primary rounded-pill px-4" style="font-weight:600;">
+                <i class="bi bi-layout-text-window me-1"></i>Open Visitor Kiosk
+            </a>
+        </div>
     </div>
 
     <!-- Summary Bar -->
@@ -469,9 +474,10 @@
             </div>
             <div>
                 <div class="num">{{ visitors | rejectattr('status', 'equalto', 'IN') |
-                    selectattr('host_approval_status', 'equalto', 'PENDING') | list | length }}
-                </div>
+                    selectattr('host_approval_status', 'equalto', 'PENDING') | list | length }}</div>
                 <div class="lbl">Awaiting Approval</div>
+                <div class="small text-muted">{{ visitors | rejectattr('status', 'equalto', 'IN') |
+                    selectattr('host_approval_status', 'equalto', 'PENDING') | selectattr('kiosk_self_registered', 'equalto', 1) | list | length }} from Kiosk</div>
             </div>
         </div>
         <div class="summary-card">
@@ -481,6 +487,7 @@
                 <div class="num">{{ visitors | rejectattr('status', 'equalto', 'IN') |
                     selectattr('host_approval_status', 'equalto', 'APPROVED') | list | length }}</div>
                 <div class="lbl">Approved</div>
+                <div class="small text-muted">Ready for check-in</div>
             </div>
         </div>
         <div class="summary-card">
@@ -488,6 +495,7 @@
             <div>
                 <div class="num">{{ visitors | selectattr('status','equalto','IN') | list | length }}</div>
                 <div class="lbl">Checked In</div>
+                <div class="small text-muted">Currently on-site</div>
             </div>
         </div>
         <div class="summary-card">
@@ -497,6 +505,7 @@
                 <div class="num">{{ visitors | selectattr('host_approval_status','equalto','REJECTED') | list | length
                     }}</div>
                 <div class="lbl">Rejected</div>
+                <div class="small text-muted">Access denied</div>
             </div>
         </div>
     </div>
@@ -708,5 +717,12 @@
         });
     }
     setInterval(updateTimers, 60000);
+
+    // Export approval data
+    function exportApprovals() {
+        const status = document.querySelector('.filter-tab.active').textContent.toLowerCase();
+        const url = `/api/export-approvals?status=${status}`;
+        window.open(url, '_blank');
+    }
 </script>
 {% endblock %}
