@@ -121,14 +121,21 @@
         z-index: 1;
     }
 
+    .message-row.selected {
+        background: #e8f0fe;
+    }
+
+    .message-row.important {
+        border-left: 3px solid #f59e0b;
+    }
+
+    .message-row.flagged {
+        border-left: 3px solid #ef4444;
+    }
+
     .message-row.unread {
         background: white;
         font-weight: 700;
-    }
-
-    .message-row.unread .message-sender,
-    .message-row.unread .message-subject {
-        color: var(--gmail-text);
     }
 
     .message-checkbox {
@@ -233,6 +240,7 @@
         gap: 10px;
         width: 100%;
         max-width: 720px;
+        position: relative;
     }
 
     .inbox-search input {
@@ -241,6 +249,81 @@
         outline: none;
         width: 100%;
         font-size: 1rem;
+    }
+
+    .advanced-search-panel {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        padding: 1rem;
+        z-index: 1000;
+        display: none;
+    }
+
+    .advanced-search-panel.show {
+        display: block;
+    }
+
+    .search-filters {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .search-filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .search-filter-group label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+    }
+
+    .search-filter-group select,
+    .search-filter-group input {
+        padding: 0.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 0.9rem;
+    }
+
+    .tag-cloud {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .tag-item {
+        background: #f3f4f6;
+        color: #374151;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+    }
+
+    .tag-item:hover {
+        background: #e5e7eb;
+    }
+
+    .tag-item.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
     }
 
     .btn-icon-gmail {
@@ -259,6 +342,119 @@
     .btn-icon-gmail:hover {
         background: rgba(60, 64, 67, 0.08);
         color: var(--gmail-text);
+    }
+
+    .btn-icon-gmail.active {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .compose-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .compose-modal.show {
+        display: flex;
+    }
+
+    .compose-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .compose-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .compose-body {
+        padding: 1.5rem;
+    }
+
+    .compose-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .compose-field {
+        margin-bottom: 1rem;
+    }
+
+    .compose-field label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    .compose-field input,
+    .compose-field textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 0.875rem;
+    }
+
+    .compose-field textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .priority-selector {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .priority-btn {
+        padding: 0.5rem 1rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+        cursor: pointer;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+    }
+
+    .priority-btn:hover {
+        background: #f9fafb;
+    }
+
+    .priority-btn.active {
+        background: #3b82f6;
+        color: white;
+        border-color: #3b82f6;
+    }
+
+    .priority-btn.high.active {
+        background: #ef4444;
+        border-color: #ef4444;
+    }
+
+    .priority-btn.low.active {
+        background: #10b981;
+        border-color: #10b981;
     }
 </style>
 
@@ -321,6 +517,55 @@
                     <button class="btn btn-sm btn-outline-secondary ms-2" onclick="toggleAdvancedSearch()">
                         <i class="bi bi-funnel"></i> Filter
                     </button>
+                    
+                    <!-- Advanced Search Panel -->
+                    <div class="advanced-search-panel" id="advancedSearchPanel">
+                        <div class="search-filters">
+                            <div class="search-filter-group">
+                                <label>Type</label>
+                                <select id="searchType">
+                                    <option value="">All Types</option>
+                                    <option value="VISITOR_APPROVAL">Visitor Approval</option>
+                                    <option value="FLEET_APPROVAL">Fleet Approval</option>
+                                    <option value="SECURITY_ALERT">Security Alert</option>
+                                </select>
+                            </div>
+                            <div class="search-filter-group">
+                                <label>Status</label>
+                                <select id="searchStatus">
+                                    <option value="">All Status</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="APPROVED">Approved</option>
+                                    <option value="REJECTED">Rejected</option>
+                                </select>
+                            </div>
+                            <div class="search-filter-group">
+                                <label>Date Range</label>
+                                <input type="date" id="searchDateFrom" placeholder="From">
+                            </div>
+                            <div class="search-filter-group">
+                                <label>&nbsp;</label>
+                                <input type="date" id="searchDateTo" placeholder="To">
+                            </div>
+                        </div>
+                        
+                        <div class="search-filter-group">
+                            <label>Quick Tags</label>
+                            <div class="tag-cloud">
+                                <span class="tag-item" onclick="toggleTag(this)">Urgent</span>
+                                <span class="tag-item" onclick="toggleTag(this)">VIP</span>
+                                <span class="tag-item" onclick="toggleTag(this)">Security</span>
+                                <span class="tag-item" onclick="toggleTag(this)">Fleet</span>
+                                <span class="tag-item" onclick="toggleTag(this)">Regular</span>
+                                <span class="tag-item" onclick="toggleTag(this)">Group</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-3">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="clearSearchFilters()">Clear</button>
+                            <button class="btn btn-sm btn-primary" onclick="applyAdvancedSearch()">Apply Filters</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="toolbar-right">
@@ -427,6 +672,70 @@
                 <p>This folder is empty.</p>
             </div>
             {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Compose Modal -->
+<div class="compose-modal" id="composeModal">
+    <div class="compose-content">
+        <div class="compose-header">
+            <h5 class="mb-0 fw-bold">New Intelligence Message</h5>
+            <button class="btn btn-sm btn-outline-secondary" onclick="closeComposeModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <div class="compose-body">
+            <div class="compose-field">
+                <label>Recipients</label>
+                <input type="text" id="composeRecipients" placeholder="Enter email addresses, separated by commas">
+            </div>
+            
+            <div class="compose-field">
+                <label>Subject</label>
+                <input type="text" id="composeSubject" placeholder="Enter subject">
+            </div>
+            
+            <div class="compose-field">
+                <label>Priority</label>
+                <div class="priority-selector">
+                    <button class="priority-btn" data-priority="low" onclick="setPriority('low')">
+                        <i class="bi bi-arrow-down-circle"></i> Low
+                    </button>
+                    <button class="priority-btn active" data-priority="normal" onclick="setPriority('normal')">
+                        <i class="bi bi-dash-circle"></i> Normal
+                    </button>
+                    <button class="priority-btn" data-priority="high" onclick="setPriority('high')">
+                        <i class="bi bi-arrow-up-circle"></i> High
+                    </button>
+                </div>
+            </div>
+            
+            <div class="compose-field">
+                <label>Message</label>
+                <textarea id="composeMessage" placeholder="Enter your message..."></textarea>
+            </div>
+            
+            <div class="compose-field">
+                <label>Attachments</label>
+                <input type="file" id="composeAttachments" multiple class="form-control">
+            </div>
+        </div>
+        
+        <div class="compose-footer">
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-secondary" onclick="saveDraft()">
+                    <i class="bi bi-file-earmark-text me-1"></i> Save Draft
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="closeComposeModal()">
+                    Cancel
+                </button>
+            </div>
+            
+            <button class="btn btn-primary" onclick="sendMessage()">
+                <i class="bi bi-send me-1"></i> Send Message
+            </button>
         </div>
     </div>
 </div>
@@ -549,7 +858,124 @@
     });
 
     function toggleAdvancedSearch() {
-        Swal.fire('Advanced Search', 'Advanced filtering options coming soon!', 'info');
+        const panel = document.getElementById('advancedSearchPanel');
+        panel.classList.toggle('show');
+    }
+
+    function toggleTag(tagElement) {
+        tagElement.classList.toggle('active');
+    }
+
+    function clearSearchFilters() {
+        document.getElementById('searchType').value = '';
+        document.getElementById('searchStatus').value = '';
+        document.getElementById('searchDateFrom').value = '';
+        document.getElementById('searchDateTo').value = '';
+        document.querySelectorAll('.tag-item').forEach(tag => tag.classList.remove('active'));
+    }
+
+    function applyAdvancedSearch() {
+        const type = document.getElementById('searchType').value;
+        const status = document.getElementById('searchStatus').value;
+        const dateFrom = document.getElementById('searchDateFrom').value;
+        const dateTo = document.getElementById('searchDateTo').value;
+        const activeTags = Array.from(document.querySelectorAll('.tag-item.active')).map(tag => tag.textContent);
+        
+        // Apply filters to message rows
+        document.querySelectorAll('.message-row').forEach(row => {
+            let show = true;
+            
+            if (type && row.dataset.type !== type) show = false;
+            if (status && !row.textContent.includes(status)) show = false;
+            if (dateFrom || dateTo) {
+                // Add date filtering logic here
+            }
+            
+            row.style.display = show ? 'flex' : 'none';
+        });
+        
+        toggleAdvancedSearch();
+    }
+
+    function openComposeModal() {
+        document.getElementById('composeModal').classList.add('show');
+    }
+
+    function closeComposeModal() {
+        document.getElementById('composeModal').classList.remove('show');
+        // Clear form
+        document.getElementById('composeRecipients').value = '';
+        document.getElementById('composeSubject').value = '';
+        document.getElementById('composeMessage').value = '';
+        document.getElementById('composeAttachments').value = '';
+        setPriority('normal');
+    }
+
+    function setPriority(priority) {
+        document.querySelectorAll('.priority-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.priority === priority) {
+                btn.classList.add('active');
+            }
+        });
+    }
+
+    function sendMessage() {
+        const recipients = document.getElementById('composeRecipients').value;
+        const subject = document.getElementById('composeSubject').value;
+        const message = document.getElementById('composeMessage').value;
+        const priority = document.querySelector('.priority-btn.active').dataset.priority;
+        
+        if (!recipients || !subject || !message) {
+            Swal.fire('Error', 'Please fill in all required fields.', 'error');
+            return;
+        }
+        
+        // Simulate sending message
+        Swal.fire({
+            icon: 'success',
+            title: 'Message Sent',
+            text: 'Your intelligence message has been sent successfully.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+        
+        closeComposeModal();
+    }
+
+    function saveDraft() {
+        Swal.fire({
+            icon: 'info',
+            title: 'Draft Saved',
+            text: 'Your message has been saved as a draft.',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    }
+
+    function markAllAsRead() {
+        document.querySelectorAll('.message-row.unread').forEach(row => {
+            row.classList.remove('unread');
+        });
+        Swal.fire({
+            icon: 'success',
+            title: 'Marked as Read',
+            timer: 1000,
+            showConfirmButton: false
+        });
+    }
+
+    function selectAllItems() {
+        document.getElementById('selectAll').checked = true;
+        document.querySelectorAll('.row-check').forEach(cb => cb.checked = true);
+    }
+
+    function exportSelected() {
+        Swal.fire('Export', 'Export functionality coming soon!', 'info');
+    }
+
+    function printSelected() {
+        Swal.fire('Print', 'Print functionality coming soon!', 'info');
     }
 
     function refreshInbox() {
