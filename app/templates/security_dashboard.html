@@ -58,10 +58,16 @@
 
         /* ═══════════ LAYOUT ═══════════ */
         .layout {
-            display: grid;
-            grid-template-columns: 272px 1fr;
+            display: flex;
             height: 100vh;
             overflow: hidden;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+            overflow-y: auto;
+            position: relative;
         }
 
         /* ═══════════ SIDEBAR ═══════════ */
@@ -1107,64 +1113,7 @@
     <div class="layout">
 
         <!-- ═══════════ SIDEBAR ═══════════ -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-chip">
-                    <div class="brand-shield">🛡️</div>
-                    <div>
-                        <div class="brand-label">Secured Access</div>
-                        <div class="brand-name">Security Portal</div>
-                    </div>
-                </div>
-                <div class="officer-card">
-                    <div class="officer-ava">{{ username[:1]|upper }}</div>
-                    <div>
-                        <div class="officer-name">{{ username|title }}</div>
-                        <div class="officer-role"><i class="bi bi-shield-fill-check"></i> Security Officer</div>
-                        {% if unit %}<div class="officer-unit">Unit: <span>{{ unit }}</span></div>{% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <nav class="sidebar-nav">
-                <div class="nav-section-label">Operations</div>
-                <a href="{{ url_for('main.security_dashboard') }}" class="nav-item active">
-                    <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
-                </a>
-                <a href="{{ url_for('main.add_visitor') }}" class="nav-item">
-                    <i class="bi bi-person-plus-fill"></i><span>Register Visitor</span>
-                </a>
-                <a href="{{ url_for('main.host_approvals') }}" class="nav-item">
-                    <i class="bi bi-patch-check-fill"></i><span>Approval Queue</span>
-                    {% if pending_count > 0 %}<span class="nav-badge">{{ pending_count }}</span>{% endif %}
-                </a>
-                <a href="{{ url_for('main.logs') }}" class="nav-item">
-                    <i class="bi bi-journal-text"></i><span>Visitor Logs</span>
-                </a>
-
-                <div class="nav-section-label">Verification</div>
-                <a href="{{ url_for('main.logs') }}?status=IN" class="nav-item">
-                    <i class="bi bi-qr-code-scan"></i><span>Scan / Verify QR</span>
-                </a>
-                <a href="/kiosk" target="_blank" class="nav-item">
-                    <i class="bi bi-layout-text-window"></i><span>Open Kiosk</span>
-                </a>
-
-                <div class="nav-section-label">Account</div>
-                <a href="{{ url_for('main.profile') }}" class="nav-item">
-                    <i class="bi bi-person-circle"></i><span>My Profile</span>
-                </a>
-            </nav>
-
-            <div class="sidebar-footer">
-                <a href="{{ url_for('main.add_visitor') }}" class="btn-sf primary">
-                    <i class="bi bi-person-plus-fill"></i> Add Visitor
-                </a>
-                <a href="{{ url_for('main.logout') }}" class="btn-sf">
-                    <i class="bi bi-box-arrow-left"></i> Logout
-                </a>
-            </div>
-        </aside>
+        {% include "sidebar.html" %}
 
         <!-- ═══════════ MAIN ═══════════ -->
         <main class="main">

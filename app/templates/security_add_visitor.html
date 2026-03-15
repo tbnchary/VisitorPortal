@@ -51,21 +51,18 @@
 
         /* ═══════════ LAYOUT ═══════════ */
         .layout {
-            display: grid;
-            grid-template-columns: 260px 1fr;
+            display: flex;
             min-height: 100vh;
+            overflow: hidden;
         }
 
-        /* ═══════════ SIDEBAR ═══════════ */
-        .sidebar {
-            background: var(--sidebar-bg);
+        .main-container {
+            flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
-            position: sticky;
-            top: 0;
             height: 100vh;
-            overflow: hidden;
-            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+            overflow-y: auto;
         }
 
         .sidebar-brand {
@@ -1063,495 +1060,455 @@
 <body>
     <div class="layout">
 
-        <!-- ═══════════ SIDEBAR ═══════════ -->
-        <aside class="sidebar">
-            <div class="sidebar-brand">
-                <div class="brand-chip">
-                    <div class="brand-shield">🛡️</div>
-                    <div>
-                        <div class="brand-label">Secured Access</div>
-                        <div class="brand-name">Security Portal</div>
-                    </div>
-                </div>
-                <div class="officer-card">
-                    <div class="officer-ava">{{ username[:1]|upper }}</div>
-                    <div>
-                        <div class="officer-name">{{ username|title }}</div>
-                        <div class="officer-role"><i class="bi bi-shield-fill-check"></i> Security Officer</div>
-                    </div>
-                </div>
-            </div>
-
-            <nav class="sidebar-nav">
-                <div class="nav-label">Operations</div>
-                <a href="{{ url_for('main.security_dashboard') }}" class="nav-item">
-                    <i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span>
-                </a>
-                <a href="{{ url_for('main.add_visitor') }}" class="nav-item active">
-                    <i class="bi bi-person-plus-fill"></i><span>Register Visitor</span>
-                </a>
-                <a href="{{ url_for('main.host_approvals') }}" class="nav-item">
-                    <i class="bi bi-patch-check-fill"></i><span>Approval Queue</span>
-                </a>
-                <a href="{{ url_for('main.logs') }}" class="nav-item">
-                    <i class="bi bi-journal-text"></i><span>Visitor Logs</span>
-                </a>
-                <div class="nav-label">Account</div>
-                <a href="{{ url_for('main.profile') }}" class="nav-item">
-                    <i class="bi bi-person-circle"></i><span>My Profile</span>
-                </a>
-            </nav>
-
-            <div class="sidebar-foot">
-                <a href="{{ url_for('main.security_dashboard') }}" class="btn-sf">
-                    <i class="bi bi-arrow-left"></i> Back
-                </a>
-                <a href="{{ url_for('main.logout') }}" class="btn-sf">
-                    <i class="bi bi-box-arrow-left"></i> Logout
-                </a>
-            </div>
-        </aside>
+        {% include "sidebar.html" %}
 
         <!-- ═══════════ MAIN ═══════════ -->
-        <!-- Integrated Security Hub -->
-        <div class="alert-hub">
-            <div class="alert-container" id="alertHub">
-                <div
-                    style="font-size:0.75rem; color:var(--text-3); display:flex; align-items:center; gap:8px; padding:6px 0;">
+        <div class="main-container">
+            <!-- Integrated Security Hub -->
+            <div class="alert-hub">
+                <div class="alert-container" id="alertHub">
                     <div
-                        style="width:6px; height:6px; background:var(--blue); border-radius:50%; animation: pulse 1.5s infinite;">
+                        style="font-size:0.75rem; color:var(--text-3); display:flex; align-items:center; gap:8px; padding:6px 0;">
+                        <div
+                            style="width:6px; height:6px; background:var(--blue); border-radius:50%; animation: pulse 1.5s infinite;">
+                        </div>
+                        Security Intelligence Active — Monitoring Events...
                     </div>
-                    Security Intelligence Active — Monitoring Events...
+                </div>
+            </div>
+
+            <!-- Smart Notifications Layer -->
+            <div class="smart-notify" id="smartNotify"></div>
+
+            <main class="main">
+
+                <!-- Topbar -->
+                <div class="topbar">
+                    <div class="breadcrumb">
+                        <a href="{{ url_for('main.security_dashboard') }}"><i class="bi bi-house-door"></i></a>
+                        <span class="sep">/</span>
+                        <span class="cur">Register New Visitor</span>
+                    </div>
+                    <div class="info-pill">
+                        <i class="bi bi-info-circle-fill"></i>
+                        Visitor will require Host Approval before check-in
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="main-content">
+
+                    <!-- Flash messages -->
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="flash {{ category }}">
+                        <i
+                            class="bi bi-{% if category=='success' %}check-circle-fill{% elif category=='danger' %}x-circle-fill{% elif category=='warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %}"></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+
+                    <!-- Heading -->
+                    <div class="page-head">
+                        <h1>
+                            <div class="head-icon">👤</div>
+                            Register New Visitor
+                        </h1>
+                        <p>Fill in the visitor's details and submit for host approval.</p>
+                    </div>
+
+                    <!-- Workflow note -->
+                    <div class="workflow-note">
+                        <div class="wn-icon"><i class="bi bi-shield-lock-fill"></i></div>
+                        <div>
+                            <div class="wn-title">Approval Workflow Active</div>
+                            <div class="wn-desc">
+                                Registrations you submit go into a <b>Pre-Registration</b> queue. The host will be
+                                notified
+                                for approval.
+                                Once approved, the visitor appears in the <strong>Badge Ready</strong> queue on your
+                                dashboard.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form -->
+                    <form method="POST" action="{{ url_for('main.add_visitor') }}" id="secForm">
+                        <input type="hidden" name="action" value="pre_register">
+                        <input type="hidden" name="photo" id="photoData">
+                        <input type="hidden" name="signature" id="sigData">
+
+                        <div class="form-card">
+
+                            <!-- Visitor Info -->
+                            <div class="form-section">
+                                <div class="sec-title"><i class="bi bi-person-fill"></i> Visitor Information</div>
+
+                                <div class="field-row">
+                                    <div class="field-grp">
+                                        <label class="field-label">Full Name <span class="req">*</span></label>
+                                        <div class="inp-wrap">
+                                            <i class="bi bi-person inp-icon"></i>
+                                            <input type="text" name="visitor_name" class="field-inp" id="nameInp"
+                                                placeholder="e.g. John Smith" value="{{ prefill_name }}" required>
+                                        </div>
+                                    </div>
+                                    <div class="field-grp">
+                                        <label class="field-label">Phone Number <span class="req">*</span></label>
+                                        <div class="inp-wrap">
+                                            <i class="bi bi-phone inp-icon"></i>
+                                            <input type="tel" name="phone" class="field-inp" id="phoneInp"
+                                                placeholder="+91 98765 43210" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field-row" style="margin-top:15px;">
+                                    <div class="field-grp">
+                                        <label class="field-label">Email Address</label>
+                                        <div class="inp-wrap">
+                                            <i class="bi bi-envelope inp-icon"></i>
+                                            <input type="email" name="email" class="field-inp"
+                                                placeholder="visitor@company.com">
+                                        </div>
+                                    </div>
+                                    <div class="field-grp">
+                                        <label class="field-label">Company / Organisation</label>
+                                        <div class="inp-wrap">
+                                            <i class="bi bi-building inp-icon"></i>
+                                            <input type="text" name="company" class="field-inp" id="companyInp"
+                                                placeholder="Company Name">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field-row" style="margin-top:15px;">
+                                    <div class="field-grp">
+                                        <label class="field-label">Visitor Type</label>
+                                        <div class="inp-wrap">
+                                            <i class="bi bi-tag inp-icon"></i>
+                                            <select name="visitor_type" class="field-inp">
+                                                <option value="Guest">Guest</option>
+                                                <option value="Vendor">Vendor</option>
+                                                <option value="Contractor">Contractor</option>
+                                                <option value="Government">Government Official</option>
+                                                <option value="Courier">Courier / Delivery</option>
+                                                <option value="Interview">Interview Candidate</option>
+                                                <option value="VIP">VIP</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="field-grp">
+                                        <label class="field-label">Vehicle Number</label>
+                                        <div class="inp-wrap">
+                                            <i class="bi bi-truck inp-icon"></i>
+                                            <input type="text" name="vehicle_number" class="field-inp"
+                                                placeholder="e.g. TN 01 AB 1234">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Visit Details -->
+                            <div class="form-section">
+                                <div class="sec-title"><i class="bi bi-calendar-check"></i> Visit Details</div>
+
+                                <div class="field-row">
+                                    <div class="field-grp">
+                                        <label class="field-label">Host / Person to Meet <span
+                                                class="req">*</span></label>
+                                        <div class="inp-wrap">
+                                            <i class="bi bi-person-badge inp-icon"></i>
+                                            <input type="text" name="person_to_meet" class="field-inp" id="hostInp"
+                                                placeholder="Employee name or dept." required>
+                                        </div>
+                                    </div>
+                                    <div class="field-grp">
+                                        <label class="field-label">Purpose of Visit <span class="req">*</span></label>
+                                        <div class="inp-wrap">
+                                            <i class="bi bi-chat-left-text inp-icon"></i>
+                                            <select name="purpose" class="field-inp" required>
+                                                <option value="" disabled selected>Select purpose…</option>
+                                                <option value="Meeting">Meeting</option>
+                                                <option value="Interview">Interview</option>
+                                                <option value="Delivery">Delivery</option>
+                                                <option value="Maintenance">Maintenance</option>
+                                                <option value="Audit">Audit / Inspection</option>
+                                                <option value="General">General</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="field-row" style="margin-top:15px;">
+                                    <div class="field-grp">
+                                        <label class="field-label">ID Type</label>
+                                        <div class="inp-wrap">
+                                            <i class="bi bi-credit-card inp-icon"></i>
+                                            <select name="id_type" class="field-inp">
+                                                <option value="National ID">National ID</option>
+                                                <option value="Passport">Passport</option>
+                                                <option value="Driving License">Driving License</option>
+                                                <option value="Employee ID">Employee ID</option>
+                                                <option value="Other">Other</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="field-grp">
+                                        <label class="field-label">Expected Duration</label>
+                                        <div class="inp-wrap">
+                                            <i class="bi bi-clock inp-icon"></i>
+                                            <select name="expected_duration" class="field-inp">
+                                                <option value="">Select…</option>
+                                                <option value="30 mins">30 minutes</option>
+                                                <option value="1 hour">1 hour</option>
+                                                <option value="2 hours">2 hours</option>
+                                                <option value="Half Day">Half Day</option>
+                                                <option value="Full Day">Full Day</option>
+                                                <option value="Multi-Day">Multi-Day</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Photo -->
+                            <div class="form-section">
+                                <div class="sec-title"><i class="bi bi-camera-fill"></i> Photo Identification</div>
+                                <div class="photo-zone">
+                                    <div class="photo-ring" onclick="openCam()">
+                                        <img id="photoPreview" src="" alt="">
+                                        <div id="photoPlaceholder">
+                                            <i class="bi bi-person-bounding-box ph-ico"></i>
+                                            <span class="ph-txt">Tap to capture</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="photo-btns">
+                                            <button type="button" class="photo-btn cam" onclick="openCam()">
+                                                <i class="bi bi-camera-fill"></i> Open Camera
+                                            </button>
+                                            <label class="photo-btn" style="cursor:pointer;">
+                                                <i class="bi bi-upload"></i> Upload Photo
+                                                <input type="file" accept="image/*" style="display:none;"
+                                                    onchange="uploadPhoto(event)">
+                                            </label>
+                                        </div>
+                                        <div class="photo-note">Optional — recommended for identity verification</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Signature -->
+                            <div class="form-section">
+                                <div class="sec-title"><i class="bi bi-pen-fill"></i> Visitor Acknowledgement /
+                                    Signature
+                                </div>
+                                <p style="font-size:0.77rem;color:var(--text-3);margin-bottom:10px;">Visitor signs to
+                                    acknowledge the visit.</p>
+                                <canvas id="sigCanvas" width="800" height="120"></canvas>
+                                <div class="sig-actions">
+                                    <button type="button" class="sig-btn" onclick="clearSig()"><i
+                                            class="bi bi-trash3"></i>
+                                        Clear</button>
+                                    <button type="button" class="sig-btn" onclick="saveSig()"><i
+                                            class="bi bi-check2-circle"></i> Save Signature</button>
+                                    <span id="sigSaved"><i class="bi bi-check-circle-fill"></i> Saved</span>
+                                </div>
+                            </div>
+
+                            <!-- Submit Bar -->
+                            <div class="submit-bar">
+                                <div class="submit-note">Submitting as <b>Pre-Registration</b> — host will be notified
+                                    for
+                                    approval.</div>
+                                <div class="submit-actions">
+                                    <a href="{{ url_for('main.security_dashboard') }}" class="btn-cancel">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </a>
+                                    <button type="submit" class="btn-submit" id="btnSub">
+                                        <i class="bi bi-send-fill"></i> Submit for Approval
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </main>
+        </div>
+
+        <!-- Camera Modal -->
+        <div class="cam-modal" id="camModal">
+            <div class="cam-box">
+                <div class="cam-hd">
+                    <div class="cam-title"><i class="bi bi-camera-video-fill"></i> Capture Visitor Photo</div>
+                    <button class="cam-x" onclick="closeCam()"><i class="bi bi-x"></i></button>
+                </div>
+                <video id="camVideo" autoplay playsinline></video>
+                <div class="cam-ft">
+                    <button class="btn-snap" onclick="snapPhoto()"><i class="bi bi-camera-fill"></i> Capture
+                        Photo</button>
                 </div>
             </div>
         </div>
 
-        <!-- Smart Notifications Layer -->
-        <div class="smart-notify" id="smartNotify"></div>
+        <script>
+            // ── Signature ──
+            const canvas = document.getElementById('sigCanvas');
+            const ctx = canvas.getContext('2d');
+            let drawing = false;
 
-        <main class="main">
+            function setStyle() { ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; }
+            setStyle();
 
-            <!-- Topbar -->
-            <div class="topbar">
-                <div class="breadcrumb">
-                    <a href="{{ url_for('main.security_dashboard') }}"><i class="bi bi-house-door"></i></a>
-                    <span class="sep">/</span>
-                    <span class="cur">Register New Visitor</span>
-                </div>
-                <div class="info-pill">
-                    <i class="bi bi-info-circle-fill"></i>
-                    Visitor will require Host Approval before check-in
-                </div>
-            </div>
+            function pos(e, c) {
+                const r = c.getBoundingClientRect();
+                const sx = c.width / r.width, sy = c.height / r.height;
+                if (e.touches) return { x: (e.touches[0].clientX - r.left) * sx, y: (e.touches[0].clientY - r.top) * sy };
+                return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
+            }
 
-            <!-- Content -->
-            <div class="main-content">
+            canvas.addEventListener('mousedown', e => { drawing = true; const p = pos(e, canvas); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+            canvas.addEventListener('mousemove', e => { if (!drawing) return; setStyle(); const p = pos(e, canvas); ctx.lineTo(p.x, p.y); ctx.stroke(); });
+            canvas.addEventListener('mouseup', () => drawing = false);
+            canvas.addEventListener('mouseleave', () => drawing = false);
+            canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; const p = pos(e, canvas); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, { passive: false });
+            canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; setStyle(); const p = pos(e, canvas); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
+            canvas.addEventListener('touchend', () => drawing = false);
 
-                <!-- Flash messages -->
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                {% for category, message in messages %}
-                <div class="flash {{ category }}">
-                    <i
-                        class="bi bi-{% if category=='success' %}check-circle-fill{% elif category=='danger' %}x-circle-fill{% elif category=='warning' %}exclamation-triangle-fill{% else %}info-circle-fill{% endif %}"></i>
-                    {{ message }}
-                </div>
-                {% endfor %}
-                {% endif %}
-                {% endwith %}
+            function clearSig() { ctx.clearRect(0, 0, canvas.width, canvas.height); document.getElementById('sigData').value = ''; document.getElementById('sigSaved').style.display = 'none'; }
+            function saveSig() { document.getElementById('sigData').value = canvas.toDataURL('image/png'); document.getElementById('sigSaved').style.display = 'inline-flex'; }
 
-                <!-- Heading -->
-                <div class="page-head">
-                    <h1>
-                        <div class="head-icon">👤</div>
-                        Register New Visitor
-                    </h1>
-                    <p>Fill in the visitor's details and submit for host approval.</p>
-                </div>
+            // ── Camera ──
+            let stream = null;
 
-                <!-- Workflow note -->
-                <div class="workflow-note">
-                    <div class="wn-icon"><i class="bi bi-shield-lock-fill"></i></div>
-                    <div>
-                        <div class="wn-title">Approval Workflow Active</div>
-                        <div class="wn-desc">
-                            Registrations you submit go into a <b>Pre-Registration</b> queue. The host will be notified
-                            for approval.
-                            Once approved, the visitor appears in the <strong>Badge Ready</strong> queue on your
-                            dashboard.
-                        </div>
-                    </div>
-                </div>
+            function openCam() {
+                document.getElementById('camModal').classList.add('open');
+                navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
+                    .then(s => { stream = s; document.getElementById('camVideo').srcObject = s; })
+                    .catch(() => { alert('Camera unavailable. Please upload a photo instead.'); closeCam(); });
+            }
+            function closeCam() {
+                if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+                document.getElementById('camModal').classList.remove('open');
+            }
+            function snapPhoto() {
+                const video = document.getElementById('camVideo');
+                const c = document.createElement('canvas');
+                c.width = video.videoWidth || 640; c.height = video.videoHeight || 480;
+                const x = c.getContext('2d');
+                x.save(); x.scale(-1, 1); x.drawImage(video, -c.width, 0, c.width, c.height); x.restore();
+                setPhoto(c.toDataURL('image/jpeg', 0.85));
+                closeCam();
+            }
+            function uploadPhoto(e) {
+                const f = e.target.files[0]; if (!f) return;
+                const r = new FileReader();
+                r.onload = ev => setPhoto(ev.target.result);
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = document.getElementById('photoPreview'); // Changed from photoPrev to photoPreview
+                    img.src = e.target.result;
+                    img.classList.add('vis');
+                    document.getElementById('photoData').value = e.target.result; // Changed from photoInput to photoData, and removed split
 
-                <!-- Form -->
-                <form method="POST" action="{{ url_for('main.add_visitor') }}" id="secForm">
-                    <input type="hidden" name="action" value="pre_register">
-                    <input type="hidden" name="photo" id="photoData">
-                    <input type="hidden" name="signature" id="sigData">
+                    // Smart UI update
+                    smartNotify('Camera Active', 'Photo captured and processed successfully.', 'bi-camera-fill');
+                };
+                reader.readAsDataURL(f); // Changed from blob to f
+                // stopCamera(); // This function is not defined in the provided context
+                closeCam();
+            }
+            function setPhoto(data) {
+                const img = document.getElementById('photoPreview');
+                img.src = data; img.classList.add('vis');
+                document.getElementById('photoPlaceholder').style.display = 'none';
+                document.getElementById('photoData').value = data;
+            }
 
-                    <div class="form-card">
-
-                        <!-- Visitor Info -->
-                        <div class="form-section">
-                            <div class="sec-title"><i class="bi bi-person-fill"></i> Visitor Information</div>
-
-                            <div class="field-row">
-                                <div class="field-grp">
-                                    <label class="field-label">Full Name <span class="req">*</span></label>
-                                    <div class="inp-wrap">
-                                        <i class="bi bi-person inp-icon"></i>
-                                        <input type="text" name="visitor_name" class="field-inp" id="nameInp"
-                                            placeholder="e.g. John Smith" value="{{ prefill_name }}" required>
-                                    </div>
-                                </div>
-                                <div class="field-grp">
-                                    <label class="field-label">Phone Number <span class="req">*</span></label>
-                                    <div class="inp-wrap">
-                                        <i class="bi bi-phone inp-icon"></i>
-                                        <input type="tel" name="phone" class="field-inp" id="phoneInp"
-                                            placeholder="+91 98765 43210" required>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="field-row" style="margin-top:15px;">
-                                <div class="field-grp">
-                                    <label class="field-label">Email Address</label>
-                                    <div class="inp-wrap">
-                                        <i class="bi bi-envelope inp-icon"></i>
-                                        <input type="email" name="email" class="field-inp"
-                                            placeholder="visitor@company.com">
-                                    </div>
-                                </div>
-                                <div class="field-grp">
-                                    <label class="field-label">Company / Organisation</label>
-                                    <div class="inp-wrap">
-                                        <i class="bi bi-building inp-icon"></i>
-                                        <input type="text" name="company" class="field-inp" id="companyInp"
-                                            placeholder="Company Name">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="field-row" style="margin-top:15px;">
-                                <div class="field-grp">
-                                    <label class="field-label">Visitor Type</label>
-                                    <div class="inp-wrap">
-                                        <i class="bi bi-tag inp-icon"></i>
-                                        <select name="visitor_type" class="field-inp">
-                                            <option value="Guest">Guest</option>
-                                            <option value="Vendor">Vendor</option>
-                                            <option value="Contractor">Contractor</option>
-                                            <option value="Government">Government Official</option>
-                                            <option value="Courier">Courier / Delivery</option>
-                                            <option value="Interview">Interview Candidate</option>
-                                            <option value="VIP">VIP</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="field-grp">
-                                    <label class="field-label">Vehicle Number</label>
-                                    <div class="inp-wrap">
-                                        <i class="bi bi-truck inp-icon"></i>
-                                        <input type="text" name="vehicle_number" class="field-inp"
-                                            placeholder="e.g. TN 01 AB 1234">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Visit Details -->
-                        <div class="form-section">
-                            <div class="sec-title"><i class="bi bi-calendar-check"></i> Visit Details</div>
-
-                            <div class="field-row">
-                                <div class="field-grp">
-                                    <label class="field-label">Host / Person to Meet <span class="req">*</span></label>
-                                    <div class="inp-wrap">
-                                        <i class="bi bi-person-badge inp-icon"></i>
-                                        <input type="text" name="person_to_meet" class="field-inp" id="hostInp"
-                                            placeholder="Employee name or dept." required>
-                                    </div>
-                                </div>
-                                <div class="field-grp">
-                                    <label class="field-label">Purpose of Visit <span class="req">*</span></label>
-                                    <div class="inp-wrap">
-                                        <i class="bi bi-chat-left-text inp-icon"></i>
-                                        <select name="purpose" class="field-inp" required>
-                                            <option value="" disabled selected>Select purpose…</option>
-                                            <option value="Meeting">Meeting</option>
-                                            <option value="Interview">Interview</option>
-                                            <option value="Delivery">Delivery</option>
-                                            <option value="Maintenance">Maintenance</option>
-                                            <option value="Audit">Audit / Inspection</option>
-                                            <option value="General">General</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="field-row" style="margin-top:15px;">
-                                <div class="field-grp">
-                                    <label class="field-label">ID Type</label>
-                                    <div class="inp-wrap">
-                                        <i class="bi bi-credit-card inp-icon"></i>
-                                        <select name="id_type" class="field-inp">
-                                            <option value="National ID">National ID</option>
-                                            <option value="Passport">Passport</option>
-                                            <option value="Driving License">Driving License</option>
-                                            <option value="Employee ID">Employee ID</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="field-grp">
-                                    <label class="field-label">Expected Duration</label>
-                                    <div class="inp-wrap">
-                                        <i class="bi bi-clock inp-icon"></i>
-                                        <select name="expected_duration" class="field-inp">
-                                            <option value="">Select…</option>
-                                            <option value="30 mins">30 minutes</option>
-                                            <option value="1 hour">1 hour</option>
-                                            <option value="2 hours">2 hours</option>
-                                            <option value="Half Day">Half Day</option>
-                                            <option value="Full Day">Full Day</option>
-                                            <option value="Multi-Day">Multi-Day</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Photo -->
-                        <div class="form-section">
-                            <div class="sec-title"><i class="bi bi-camera-fill"></i> Photo Identification</div>
-                            <div class="photo-zone">
-                                <div class="photo-ring" onclick="openCam()">
-                                    <img id="photoPreview" src="" alt="">
-                                    <div id="photoPlaceholder">
-                                        <i class="bi bi-person-bounding-box ph-ico"></i>
-                                        <span class="ph-txt">Tap to capture</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="photo-btns">
-                                        <button type="button" class="photo-btn cam" onclick="openCam()">
-                                            <i class="bi bi-camera-fill"></i> Open Camera
-                                        </button>
-                                        <label class="photo-btn" style="cursor:pointer;">
-                                            <i class="bi bi-upload"></i> Upload Photo
-                                            <input type="file" accept="image/*" style="display:none;"
-                                                onchange="uploadPhoto(event)">
-                                        </label>
-                                    </div>
-                                    <div class="photo-note">Optional — recommended for identity verification</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Signature -->
-                        <div class="form-section">
-                            <div class="sec-title"><i class="bi bi-pen-fill"></i> Visitor Acknowledgement / Signature
-                            </div>
-                            <p style="font-size:0.77rem;color:var(--text-3);margin-bottom:10px;">Visitor signs to
-                                acknowledge the visit.</p>
-                            <canvas id="sigCanvas" width="800" height="120"></canvas>
-                            <div class="sig-actions">
-                                <button type="button" class="sig-btn" onclick="clearSig()"><i class="bi bi-trash3"></i>
-                                    Clear</button>
-                                <button type="button" class="sig-btn" onclick="saveSig()"><i
-                                        class="bi bi-check2-circle"></i> Save Signature</button>
-                                <span id="sigSaved"><i class="bi bi-check-circle-fill"></i> Saved</span>
-                            </div>
-                        </div>
-
-                        <!-- Submit Bar -->
-                        <div class="submit-bar">
-                            <div class="submit-note">Submitting as <b>Pre-Registration</b> — host will be notified for
-                                approval.</div>
-                            <div class="submit-actions">
-                                <a href="{{ url_for('main.security_dashboard') }}" class="btn-cancel">
-                                    <i class="bi bi-x-circle"></i> Cancel
-                                </a>
-                                <button type="submit" class="btn-submit" id="btnSub">
-                                    <i class="bi bi-send-fill"></i> Submit for Approval
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </main>
-    </div>
-
-    <!-- Camera Modal -->
-    <div class="cam-modal" id="camModal">
-        <div class="cam-box">
-            <div class="cam-hd">
-                <div class="cam-title"><i class="bi bi-camera-video-fill"></i> Capture Visitor Photo</div>
-                <button class="cam-x" onclick="closeCam()"><i class="bi bi-x"></i></button>
-            </div>
-            <video id="camVideo" autoplay playsinline></video>
-            <div class="cam-ft">
-                <button class="btn-snap" onclick="snapPhoto()"><i class="bi bi-camera-fill"></i> Capture Photo</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // ── Signature ──
-        const canvas = document.getElementById('sigCanvas');
-        const ctx = canvas.getContext('2d');
-        let drawing = false;
-
-        function setStyle() { ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; }
-        setStyle();
-
-        function pos(e, c) {
-            const r = c.getBoundingClientRect();
-            const sx = c.width / r.width, sy = c.height / r.height;
-            if (e.touches) return { x: (e.touches[0].clientX - r.left) * sx, y: (e.touches[0].clientY - r.top) * sy };
-            return { x: (e.clientX - r.left) * sx, y: (e.clientY - r.top) * sy };
-        }
-
-        canvas.addEventListener('mousedown', e => { drawing = true; const p = pos(e, canvas); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
-        canvas.addEventListener('mousemove', e => { if (!drawing) return; setStyle(); const p = pos(e, canvas); ctx.lineTo(p.x, p.y); ctx.stroke(); });
-        canvas.addEventListener('mouseup', () => drawing = false);
-        canvas.addEventListener('mouseleave', () => drawing = false);
-        canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing = true; const p = pos(e, canvas); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, { passive: false });
-        canvas.addEventListener('touchmove', e => { e.preventDefault(); if (!drawing) return; setStyle(); const p = pos(e, canvas); ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
-        canvas.addEventListener('touchend', () => drawing = false);
-
-        function clearSig() { ctx.clearRect(0, 0, canvas.width, canvas.height); document.getElementById('sigData').value = ''; document.getElementById('sigSaved').style.display = 'none'; }
-        function saveSig() { document.getElementById('sigData').value = canvas.toDataURL('image/png'); document.getElementById('sigSaved').style.display = 'inline-flex'; }
-
-        // ── Camera ──
-        let stream = null;
-
-        function openCam() {
-            document.getElementById('camModal').classList.add('open');
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
-                .then(s => { stream = s; document.getElementById('camVideo').srcObject = s; })
-                .catch(() => { alert('Camera unavailable. Please upload a photo instead.'); closeCam(); });
-        }
-        function closeCam() {
-            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-            document.getElementById('camModal').classList.remove('open');
-        }
-        function snapPhoto() {
-            const video = document.getElementById('camVideo');
-            const c = document.createElement('canvas');
-            c.width = video.videoWidth || 640; c.height = video.videoHeight || 480;
-            const x = c.getContext('2d');
-            x.save(); x.scale(-1, 1); x.drawImage(video, -c.width, 0, c.width, c.height); x.restore();
-            setPhoto(c.toDataURL('image/jpeg', 0.85));
-            closeCam();
-        }
-        function uploadPhoto(e) {
-            const f = e.target.files[0]; if (!f) return;
-            const r = new FileReader();
-            r.onload = ev => setPhoto(ev.target.result);
-            const reader = new FileReader();
-            reader.onload = e => {
-                const img = document.getElementById('photoPreview'); // Changed from photoPrev to photoPreview
-                img.src = e.target.result;
-                img.classList.add('vis');
-                document.getElementById('photoData').value = e.target.result; // Changed from photoInput to photoData, and removed split
-
-                // Smart UI update
-                smartNotify('Camera Active', 'Photo captured and processed successfully.', 'bi-camera-fill');
-            };
-            reader.readAsDataURL(f); // Changed from blob to f
-            // stopCamera(); // This function is not defined in the provided context
-            closeCam();
-        }
-        function setPhoto(data) {
-            const img = document.getElementById('photoPreview');
-            img.src = data; img.classList.add('vis');
-            document.getElementById('photoPlaceholder').style.display = 'none';
-            document.getElementById('photoData').value = data;
-        }
-
-        // --- SMART FEATURES ---
-        function smartNotify(title, desc, icon = 'bi-info-circle-fill') {
-            const container = document.getElementById('smartNotify');
-            const toast = document.createElement('div');
-            toast.className = 'toast-glass';
-            toast.innerHTML = `
+            // --- SMART FEATURES ---
+            function smartNotify(title, desc, icon = 'bi-info-circle-fill') {
+                const container = document.getElementById('smartNotify');
+                const toast = document.createElement('div');
+                toast.className = 'toast-glass';
+                toast.innerHTML = `
                 <div class="toast-ico"><i class="bi ${icon}"></i></div>
                 <div class="toast-body">
                     <div class="toast-title">${title}</div>
                     <div class="toast-desc">${desc}</div>
                 </div>
             `;
-            container.appendChild(toast);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateX(50px)';
-                setTimeout(() => toast.remove(), 500);
-            }, 5000);
-        }
-
-        // --- REAL-TIME VISITOR DETECTION ---
-        const phoneInp = document.getElementById('phoneInp');
-        let lookupTimer;
-
-        phoneInp.addEventListener('input', (e) => {
-            // Auto Format Phone
-            let val = e.target.value.replace(/\D/g, '').substring(0, 10);
-            if (val.length > 5) val = val.substring(0, 5) + ' ' + val.substring(5);
-            e.target.value = val;
-
-            clearTimeout(lookupTimer);
-            if (val.replace(/\s/g, '').length === 10) {
-                lookupTimer = setTimeout(() => detectReturningVisitor(val.replace(/\s/g, '')), 600);
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateX(50px)';
+                    setTimeout(() => toast.remove(), 500);
+                }, 5000);
             }
-        });
 
-        async function detectReturningVisitor(phone) {
-            try {
-                const res = await fetch(`/api/quick_visitors?q=${phone}`);
-                const data = await res.json();
+            // --- REAL-TIME VISITOR DETECTION ---
+            const phoneInp = document.getElementById('phoneInp');
+            let lookupTimer;
 
-                if (data && data.length > 0) {
-                    const visitor = data[0];
-                    smartNotify(
-                        'Returning Visitor Detected!',
-                        `Found record for <b>${visitor.visitor_name}</b>. Details linked automatically.`,
-                        'bi-person-check-fill'
-                    );
+            phoneInp.addEventListener('input', (e) => {
+                // Auto Format Phone
+                let val = e.target.value.replace(/\D/g, '').substring(0, 10);
+                if (val.length > 5) val = val.substring(0, 5) + ' ' + val.substring(5);
+                e.target.value = val;
 
-                    // Optional: Autofill
-                    document.getElementById('nameInp').value = visitor.visitor_name;
-                    document.getElementById('companyInp').value = visitor.company;
-                    document.getElementById('hostInp').value = visitor.person_to_meet;
-
-                    // Visual feedback
-                    document.querySelectorAll('.field-inp').forEach(i => {
-                        if (i.value) i.style.borderColor = 'var(--green-mid)';
-                    });
+                clearTimeout(lookupTimer);
+                if (val.replace(/\s/g, '').length === 10) {
+                    lookupTimer = setTimeout(() => detectReturningVisitor(val.replace(/\s/g, '')), 600);
                 }
-            } catch (err) {
-                console.error("Lookup error:", err);
+            });
+
+            async function detectReturningVisitor(phone) {
+                try {
+                    const res = await fetch(`/api/quick_visitors?q=${phone}`);
+                    const data = await res.json();
+
+                    if (data && data.length > 0) {
+                        const visitor = data[0];
+                        smartNotify(
+                            'Returning Visitor Detected!',
+                            `Found record for <b>${visitor.visitor_name}</b>. Details linked automatically.`,
+                            'bi-person-check-fill'
+                        );
+
+                        // Optional: Autofill
+                        document.getElementById('nameInp').value = visitor.visitor_name;
+                        document.getElementById('companyInp').value = visitor.company;
+                        document.getElementById('hostInp').value = visitor.person_to_meet;
+
+                        // Visual feedback
+                        document.querySelectorAll('.field-inp').forEach(i => {
+                            if (i.value) i.style.borderColor = 'var(--green-mid)';
+                        });
+                    }
+                } catch (err) {
+                    console.error("Lookup error:", err);
+                }
             }
-        }
 
-        // --- DYNAMIC ALERT POLLING (Intelligence Hub) ---
-        let existingAlertIds = new Set();
-        async function fetchHubAlerts() {
-            try {
-                const response = await fetch('/api/security/alerts');
-                const alerts = await response.json();
-                const container = document.getElementById('alertHub');
-                if (!container || alerts.length === 0) return;
+            // --- DYNAMIC ALERT POLLING (Intelligence Hub) ---
+            let existingAlertIds = new Set();
+            async function fetchHubAlerts() {
+                try {
+                    const response = await fetch('/api/security/alerts');
+                    const alerts = await response.json();
+                    const container = document.getElementById('alertHub');
+                    if (!container || alerts.length === 0) return;
 
-                alerts.forEach(alert => {
-                    if (!existingAlertIds.has(alert.id)) {
-                        const div = document.createElement('div');
-                        div.className = `alert-glass ${alert.type}`;
-                        div.id = `hub-alert-${alert.id}`;
-                        div.innerHTML = `
+                    alerts.forEach(alert => {
+                        if (!existingAlertIds.has(alert.id)) {
+                            const div = document.createElement('div');
+                            div.className = `alert-glass ${alert.type}`;
+                            div.id = `hub-alert-${alert.id}`;
+                            div.innerHTML = `
                             <div class="alert-icon-box"><i class="bi bi-shield-fill-check"></i></div>
                             <div class="alert-content">
                                 <span class="alert-title">${alert.title}</span>
@@ -1559,27 +1516,27 @@
                             </div>
                             <div class="alert-dismiss" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></div>
                         `;
-                        container.insertBefore(div, container.firstChild);
-                        existingAlertIds.add(alert.id);
-                    }
-                });
-            } catch (e) { }
-        }
-        setInterval(fetchHubAlerts, 5000);
-        fetchHubAlerts();
+                            container.insertBefore(div, container.firstChild);
+                            existingAlertIds.add(alert.id);
+                        }
+                    });
+                } catch (e) { }
+            }
+            setInterval(fetchHubAlerts, 5000);
+            fetchHubAlerts();
 
-        // --- Name Auto-Capitalization ---
-        document.getElementById('nameInp').addEventListener('blur', (e) => {
-            e.target.value = e.target.value.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
-        });
+            // --- Name Auto-Capitalization ---
+            document.getElementById('nameInp').addEventListener('blur', (e) => {
+                e.target.value = e.target.value.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            });
 
-        // ── Submit ──
-        document.getElementById('secForm').addEventListener('submit', function () {
-            const b = document.getElementById('btnSub');
-            b.innerHTML = '<i class="bi bi-hourglass-split"></i> Submitting…';
-            b.disabled = true;
-        });
-    </script>
+            // ── Submit ──
+            document.getElementById('secForm').addEventListener('submit', function () {
+                const b = document.getElementById('btnSub');
+                b.innerHTML = '<i class="bi bi-hourglass-split"></i> Submitting…';
+                b.disabled = true;
+            });
+        </script>
 </body>
 
 </html>

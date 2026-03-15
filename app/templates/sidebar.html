@@ -1,0 +1,483 @@
+<style>
+/* 
+    ADVANCED UNIFIED SIDEBAR STYLES 
+    Premium glassmorphism, dynamic animations, modern aesthetic.
+*/
+:root {
+    --adv-sidebar-width: 270px;
+    --adv-sidebar-collapsed-width: 80px;
+    --adv-sidebar-bg: #ffffff;
+    --adv-sidebar-hover: #f1f5f9;
+    --adv-sidebar-active-bg: #eef2ff;
+    --adv-sidebar-active-text: #4f46e5;
+    --adv-sidebar-text: #475569;
+    --adv-sidebar-border: #e2e8f0;
+    --adv-sidebar-radius: 14px;
+    --adv-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.adv-sidebar {
+    width: var(--adv-sidebar-width);
+    background: var(--adv-sidebar-bg);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    transition: var(--adv-transition);
+    z-index: 1050;
+    border-right: 1px solid var(--adv-sidebar-border);
+    position: relative;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.02);
+}
+
+.adv-sidebar.collapsed {
+    width: var(--adv-sidebar-collapsed-width);
+}
+
+/* Brand Section */
+.adv-brand {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: var(--adv-transition);
+}
+
+.adv-brand-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    background: linear-gradient(135deg, #4f46e5, #3b82f6);
+    color: white;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    transition: transform 0.2s;
+}
+
+.adv-brand:hover .adv-brand-icon {
+    transform: rotate(-10deg) scale(1.05);
+}
+
+.adv-brand-text {
+    color: #0f172a;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.2s;
+}
+
+.adv-sidebar.collapsed .adv-brand-text {
+    opacity: 0;
+    display: none;
+}
+.adv-sidebar.collapsed .adv-brand {
+    padding: 1.5rem 1rem;
+    justify-content: center;
+}
+
+/* Search Bar */
+.adv-search-container {
+    padding: 0 1.25rem 1rem;
+    position: relative;
+    transition: var(--adv-transition);
+}
+
+.adv-sidebar.collapsed .adv-search-container {
+    opacity: 0;
+    pointer-events: none;
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.adv-search-input {
+    width: 100%;
+    background: #f8fafc;
+    border: 1px solid var(--adv-sidebar-border);
+    border-radius: var(--adv-sidebar-radius);
+    padding: 10px 12px 10px 38px;
+    font-size: 0.85rem;
+    color: var(--adv-sidebar-text);
+    transition: all 0.2s;
+}
+
+.adv-search-input:focus {
+    outline: none;
+    border-color: #93c5fd;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.2);
+}
+
+.adv-search-icon {
+    position: absolute;
+    left: 28px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+/* Navigation Links */
+.adv-nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0.5rem 1rem;
+    scrollbar-width: thin;
+    list-style: none;
+    margin: 0;
+}
+.adv-nav::-webkit-scrollbar { width: 4px; }
+.adv-nav::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+.adv-section-title {
+    padding: 1rem 0.75rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: var(--adv-transition);
+}
+
+.adv-sidebar.collapsed .adv-section-title {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+}
+
+.adv-nav-item {
+    margin-bottom: 4px;
+}
+
+.adv-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 14px;
+    color: var(--adv-sidebar-text);
+    text-decoration: none !important;
+    font-size: 0.9rem;
+    font-weight: 600;
+    border-radius: var(--adv-sidebar-radius);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+}
+
+.adv-nav-link i {
+    font-size: 1.25rem;
+    min-width: 24px;
+    display: flex;
+    justify-content: center;
+    color: #64748b;
+    transition: color 0.2s;
+    z-index: 2;
+}
+
+.adv-nav-link span {
+    z-index: 2;
+}
+
+.adv-nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: var(--adv-sidebar-hover);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1;
+    border-radius: var(--adv-sidebar-radius);
+}
+
+.adv-nav-link:hover::before {
+    transform: translateX(0);
+}
+.adv-nav-link:hover i {
+    color: #334155;
+}
+
+.adv-nav-link.active {
+    background: var(--adv-sidebar-active-bg);
+    color: var(--adv-sidebar-active-text);
+    font-weight: 700;
+}
+.adv-nav-link.active i {
+    color: var(--adv-sidebar-active-text);
+}
+.adv-nav-link.active::before { display: none; }
+
+.adv-sidebar.collapsed .adv-nav-link {
+    padding: 12px;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 8px;
+}
+.adv-sidebar.collapsed .adv-nav-link span,
+.adv-sidebar.collapsed .adv-nav-link .nav-badge {
+    display: none;
+}
+
+/* Badges */
+.adv-badge {
+    background: #ef4444;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    margin-left: auto;
+    z-index: 2;
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+}
+
+/* User Footer Section */
+.adv-footer {
+    padding: 1.25rem;
+    border-top: 1px solid var(--adv-sidebar-border);
+    transition: var(--adv-transition);
+    background: #f8fafc;
+}
+
+.adv-user-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--adv-sidebar-text);
+}
+
+.adv-user-avatar {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+}
+
+.adv-user-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.adv-user-name {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.adv-user-role {
+    font-size: 0.75rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.adv-logout-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ef4444;
+    background: #fef2f2;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+.adv-logout-btn:hover {
+    background: #ef4444;
+    color: white;
+}
+
+.adv-sidebar.collapsed .adv-footer {
+    padding: 1rem 0;
+    display: flex;
+    justify-content: center;
+}
+.adv-sidebar.collapsed .adv-user-info,
+.adv-sidebar.collapsed .adv-logout-btn {
+    display: none;
+}
+
+/* Toggle Button */
+.adv-toggle-btn {
+    position: absolute;
+    right: -14px;
+    top: 2rem;
+    width: 28px;
+    height: 28px;
+    background: white;
+    border: 1px solid var(--adv-sidebar-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 1060;
+    color: #64748b;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+.adv-toggle-btn:hover {
+    color: #4f46e5;
+    border-color: #4f46e5;
+}
+.adv-sidebar.collapsed .adv-toggle-btn {
+    transform: rotate(180deg);
+}
+
+/* Tooltip for collapsed state */
+.sidebar-tooltip {
+    position: absolute;
+    left: calc(100% + 10px);
+    background: #1e293b;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    pointer-events: none;
+    opacity: 0;
+    white-space: nowrap;
+    transform: translateX(-10px);
+    transition: all 0.2s;
+    z-index: 9999;
+}
+.adv-sidebar.collapsed .adv-nav-link:hover .sidebar-tooltip {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+</style>
+
+<aside class="adv-sidebar" id="advancedSidebar">
+    <!-- Collapse Toggle -->
+    <button class="adv-toggle-btn" id="advSidebarToggle" onclick="toggleAdvSidebar()">
+        <i class="bi bi-chevron-left"></i>
+    </button>
+
+    <!-- Brand -->
+    <a href="{{ url_for('main.index') }}" class="adv-brand">
+        <div class="adv-brand-icon">
+            <i class="bi bi-shield-check"></i>
+        </div>
+        <span class="adv-brand-text">Visitor Portal</span>
+    </a>
+
+    <!-- Smart Search -->
+    <div class="adv-search-container">
+        <i class="bi bi-search adv-search-icon"></i>
+        <input type="text" class="adv-search-input" id="advSidebarSearch" placeholder="Find module..." onkeyup="filterSidebarItems()">
+    </div>
+
+    <!-- Navigation List -->
+    <ul class="adv-nav" id="advNavList">
+        <div class="adv-section-title">Main Menu</div>
+        
+        {% for item in sidebar_menu_items %}
+            {% if item.enabled %}
+                <li class="adv-nav-item" data-name="{{ item.label|lower }}">
+                    {% set is_active = (request.path == item.url) or (request.endpoint == item.name) or (item.name in request.path) %}
+                    
+                    <a href="{{ item.url }}" class="adv-nav-link {% if is_active %}active{% endif %}" title="{{ item.label }}">
+                        <i class="{{ item.icon }}"></i>
+                        <span>{{ item.label }}</span>
+                        
+                        {# Add specific badges for modules if needed #}
+                        {% if item.name == 'host_approvals' and pending_count is defined and pending_count > 0 %}
+                            <span class="adv-badge">{{ pending_count }}</span>
+                        {% elif item.name == 'dashboard' and session.get('active_count') %}
+                            <span class="adv-badge">{{ session.get('active_count') }}</span>
+                        {% endif %}
+                        
+                        <div class="sidebar-tooltip">{{ item.label }}</div>
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+
+    <!-- User Section -->
+    <div class="adv-footer">
+        <div class="adv-user-card">
+            <div class="adv-user-avatar">
+                {{ session.get('username', 'U')[:1]|upper }}
+            </div>
+            <div class="adv-user-info">
+                <span class="adv-user-name">{{ session.get('username', 'User')|title }}</span>
+                <span class="adv-user-role">{{ session.get('role', 'Standard')|title }}</span>
+            </div>
+            <a href="{{ url_for('main.logout') }}" class="adv-logout-btn" title="Logout">
+                <i class="bi bi-power"></i>
+            </a>
+        </div>
+    </div>
+</aside>
+
+<script>
+    // Advanced Sidebar Interactions
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('advancedSidebar');
+        
+        // Restore state from localStorage
+        const isCollapsed = localStorage.getItem('adv_sidebar_collapsed') === 'true';
+        if (isCollapsed && window.innerWidth > 992) {
+            sidebar.classList.add('collapsed');
+            document.body.classList.add('sidebar-collapsed-body');
+        }
+
+        // Search Filter function
+        window.filterSidebarItems = function() {
+            const query = document.getElementById('advSidebarSearch').value.toLowerCase();
+            const items = document.querySelectorAll('.adv-nav-item');
+            
+            items.forEach(item => {
+                const name = item.getAttribute('data-name');
+                if (name.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        };
+
+        // Toggle function
+        window.toggleAdvSidebar = function() {
+            const sidebar = document.getElementById('advancedSidebar');
+            sidebar.classList.toggle('collapsed');
+            
+            // Adjust main content optionally
+            if(sidebar.classList.contains('collapsed')) {
+                localStorage.setItem('adv_sidebar_collapsed', 'true');
+                document.body.classList.add('sidebar-collapsed-body');
+            } else {
+                localStorage.setItem('adv_sidebar_collapsed', 'false');
+                document.body.classList.remove('sidebar-collapsed-body');
+            }
+        };
+    });
+</script>
