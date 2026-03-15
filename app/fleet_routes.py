@@ -215,7 +215,8 @@ def department_approvals():
     bookings = cursor.fetchall()
     cursor.close()
     
-    return render_template('department_approvals.html', bookings=bookings)
+    from datetime import datetime
+    return render_template('department_approvals.html', bookings=bookings, now=datetime.now())
 
 @bp.route('/api/fleet/approve_booking/<int:booking_id>', methods=['POST'])
 @login_required

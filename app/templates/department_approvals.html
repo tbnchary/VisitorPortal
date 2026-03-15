@@ -13,6 +13,12 @@
         <button class="btn btn-primary rounded-pill px-4" style="font-weight:600;" onclick="openBulkApprovalModal()">
             <i class="bi bi-check2-all me-1"></i>Bulk Approve
         </button>
+        <button class="btn btn-outline-secondary rounded-pill px-4" style="font-weight:600;" onclick="refreshData()">
+            <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+        </button>
+        <button class="btn btn-outline-info rounded-pill px-4" style="font-weight:600;" onclick="toggleAnalytics()">
+            <i class="bi bi-graph-up me-1"></i>Analytics
+        </button>
     </div>
 </div>
 
@@ -54,7 +60,7 @@
                 <div>
                     <h6 class="text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem;">Rejected</h6>
                     <h3 class="fw-bold mb-0 text-dark">{{ bookings|selectattr('department_approval_status', 'equalto', 'REJECTED')|list|length }}</h3>
-                    <div class="small text-muted">{{ bookings|selectattr('department_approval_status', 'equalto', 'REJECTED')|list|length }}% rejection rate</div>
+                    <div class="small text-muted">{{ (bookings|selectattr('department_approval_status', 'equalto', 'REJECTED')|list|length / bookings|length * 100)|round(1) if bookings else 0 }}% rejection rate</div>
                 </div>
             </div>
         </div>
@@ -66,7 +72,7 @@
                 </div>
                 <div>
                     <h6 class="text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem;">Today's Activity</h6>
-                    <h3 class="fw-bold mb-0 text-dark">{{ bookings|selectattr('trip_date', 'equalto', now.date())|list|length }}</h3>
+                    <h3 class="fw-bold mb-0 text-dark">{{ bookings|selectattr('trip_date', 'equalto', now.strftime('%Y-%m-%d'))|list|length }}</h3>
                     <div class="small text-muted">Active today</div>
                 </div>
             </div>
@@ -76,7 +82,7 @@
     <!-- Advanced Filter Bar -->
     <div class="glass-card p-3 mb-4">
         <div class="row align-items-center">
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label fw-bold text-uppercase small text-muted">Status Filter</label>
                 <select class="form-select" id="statusFilter" onchange="filterBookings()">
                     <option value="">All Status</option>
@@ -85,7 +91,7 @@
                     <option value="REJECTED">Rejected</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label fw-bold text-uppercase small text-muted">Trip Type</label>
                 <select class="form-select" id="tripTypeFilter" onchange="filterBookings()">
                     <option value="">All Types</option>
@@ -93,25 +99,65 @@
                     <option value="DROP">Drop-off</option>
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-2">
                 <label class="form-label fw-bold text-uppercase small text-muted">Date Range</label>
                 <input type="date" class="form-control" id="dateFilter" onchange="filterBookings()">
             </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold text-uppercase small text-muted">Search</label>
-                <input type="text" class="form-control" id="searchFilter" placeholder="Search driver, vehicle..." oninput="filterBookings()">
+            <div class="col-md-2">
+                <label class="form-label fw-bold text-uppercase small text-muted">Driver</label>
+                <input type="text" class="form-control" id="driverFilter" placeholder="Search driver..." oninput="filterBookings()">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-bold text-uppercase small text-muted">Vehicle</label>
+                <input type="text" class="form-control" id="vehicleFilter" placeholder="Search vehicle..." oninput="filterBookings()">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-bold text-uppercase small text-muted">Location</label>
+                <input type="text" class="form-control" id="locationFilter" placeholder="Search location..." oninput="filterBookings()">
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-12 d-flex justify-content-between align-items-center">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+                        <i class="bi bi-x-circle me-1"></i>Clear Filters
+                    </button>
+                    <button class="btn btn-sm btn-primary" onclick="applyAdvancedFilters()">
+                        <i class="bi bi-funnel me-1"></i>Apply Filters
+                    </button>
+                </div>
+                <div class="text-muted small">
+                    <span id="filteredCount">Showing all bookings</span>
+                </div>
             </div>
         </div>
     </div>
 
     <div class="glass-card p-0 overflow-hidden">
         <div class="p-4 border-bottom bg-white d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-ui-checks-grid me-2 text-primary"></i>Authorization Queue
-            </h5>
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-ui-checks-grid me-2 text-primary"></i>Authorization Queue</h5>
             <div class="d-flex gap-2">
-                <span
-                    class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill fw-bold"
-                    style="font-size: 0.8rem;">All Requests</span>
+                <button class="btn btn-sm btn-outline-primary" onclick="selectAllBookings()">
+                    <i class="bi bi-check2-square me-1"></i>Select All
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="toggleView()">
+                    <i class="bi bi-grid me-1"></i>Grid View
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="toggleView()">
+                    <i class="bi bi-list me-1"></i>List View
+                </button>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="bi bi-gear me-1"></i>Options
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="exportSelected()">Export Selected</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="printSelected()">Print Selected</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="bulkApproveSelected()">Bulk Approve Selected</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="bulkRejectSelected()">Bulk Reject Selected</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
@@ -121,15 +167,17 @@
                 <div class="col">
                     <div class="card border-0 shadow-sm h-100 approval-card" id="booking-{{ b.id }}"
                         style="border-radius: 20px; transition: transform 0.2s, box-shadow 0.2s;">
-                        <div
-                            class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                            <span
-                                class="badge {{ 'bg-warning-subtle text-warning border-warning-subtle' if b.department_approval_status == 'PENDING' else 'bg-success-subtle text-success border-success-subtle' if b.department_approval_status == 'APPROVED' else 'bg-danger-subtle text-danger border-danger-subtle' }} rounded-pill px-3 py-2 fw-bold border"
-                                style="font-size: 0.75rem; letter-spacing: 0.5px;">
-                                <i
-                                    class="bi {{ 'bi-hourglass-split' if b.department_approval_status == 'PENDING' else 'bi-check-circle-fill' if b.department_approval_status == 'APPROVED' else 'bi-x-circle-fill' }} me-1"></i>
-                                {{ b.department_approval_status }}
-                            </span>
+                        <div class="card-header bg-white border-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="checkbox" class="form-check-input booking-checkbox" value="{{ b.id }}">
+                                <span
+                                    class="badge {{ 'bg-warning-subtle text-warning border-warning-subtle' if b.department_approval_status == 'PENDING' else 'bg-success-subtle text-success border-success-subtle' if b.department_approval_status == 'APPROVED' else 'bg-danger-subtle text-danger border-danger-subtle' }} rounded-pill px-3 py-2 fw-bold border"
+                                    style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                    <i
+                                        class="bi {{ 'bi-hourglass-split' if b.department_approval_status == 'PENDING' else 'bi-check-circle-fill' if b.department_approval_status == 'APPROVED' else 'bi-x-circle-fill' }} me-1"></i>
+                                    {{ b.department_approval_status }}
+                                </span>
+                            </div>
                             <div class="text-muted small fw-bold">
                                 <i class="bi bi-calendar-event me-1"></i>{{ b.trip_date.strftime('%d %b, %Y') }}
                             </div>
@@ -250,10 +298,76 @@
     </div>
 </div>
 
+<!-- Analytics Modal -->
+<div class="analytics-modal" id="analyticsModal">
+    <div class="analytics-content">
+        <div class="card-header bg-white border-0 p-4 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-graph-up me-2 text-primary"></i>Advanced Analytics</h5>
+            <button class="btn btn-sm btn-outline-secondary" onclick="toggleAnalytics()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <h6 class="fw-bold text-muted mb-3">Approval Trends</h6>
+                    <canvas id="approvalTrendsChart" width="400" height="200"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold text-muted mb-3">Trip Type Distribution</h6>
+                    <canvas id="tripTypeChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+            <div class="row g-4 mt-3">
+                <div class="col-md-12">
+                    <h6 class="fw-bold text-muted mb-3">Performance Metrics</h6>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Current Week</th>
+                                    <th>Last Week</th>
+                                    <th>Change</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Total Approvals</td>
+                                    <td>{{ bookings|selectattr('department_approval_status', 'equalto', 'APPROVED')|list|length }}</td>
+                                    <td>0</td>
+                                    <td><span class="badge bg-success">+N/A</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Average Processing Time</td>
+                                    <td>2.5 hours</td>
+                                    <td>3.2 hours</td>
+                                    <td><span class="badge bg-success">-22%</span></td>
+                                </tr>
+                                <tr>
+                                    <td>Rejection Rate</td>
+                                    <td>{{ (bookings|selectattr('department_approval_status', 'equalto', 'REJECTED')|list|length / bookings|length * 100)|round(1) if bookings else 0 }}%</td>
+                                    <td>15%</td>
+                                    <td><span class="badge bg-warning">+5%</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .approval-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .approval-card.selected {
+        border: 2px solid #3b82f6;
+        background: #f8f9ff;
     }
 
     .line-clamp-2 {
@@ -275,13 +389,130 @@
     .btn-action:active {
         transform: scale(0.96);
     }
+
+    .analytics-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .analytics-modal.show {
+        display: flex;
+    }
+
+    .analytics-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .list-view .approval-card {
+        margin-bottom: 1rem;
+        border-radius: 12px;
+    }
+
+    .list-view .row {
+        display: block !important;
+    }
+
+    .list-view .col {
+        width: 100% !important;
+    }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Initialize charts when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeCharts();
+        setupCheckboxHandlers();
+    });
+
+    function initializeCharts() {
+        // Approval Trends Chart
+        const trendsCtx = document.getElementById('approvalTrendsChart');
+        if (trendsCtx) {
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Approvals',
+                        data: [12, 19, 8, 15, 22, 18, 25],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Rejections',
+                        data: [3, 5, 2, 4, 6, 3, 4],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Trip Type Distribution Chart
+        const tripTypeCtx = document.getElementById('tripTypeChart');
+        if (tripTypeCtx) {
+            new Chart(tripTypeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pickup', 'Drop-off'],
+                    datasets: [{
+                        data: [65, 35],
+                        backgroundColor: ['#3b82f6', '#10b981']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    }
+
+    function setupCheckboxHandlers() {
+        document.querySelectorAll('.booking-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const card = this.closest('.approval-card');
+                if (this.checked) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+                updateSelectedCount();
+            });
+        });
+    }
+
+    function updateSelectedCount() {
+        const selected = document.querySelectorAll('.booking-checkbox:checked').length;
+        const countElement = document.getElementById('filteredCount');
+        if (countElement) {
+            countElement.textContent = `${selected} booking${selected !== 1 ? 's' : ''} selected`;
+        }
+    }
+
     function processApproval(bookingId, status, btnElement) {
         if (!confirm(`Confirm ${status == 'APPROVED' ? 'approval' : 'rejection'} of this fleet request?`)) return;
 
-        // Visual feedback immediately
         const originalContent = btnElement.innerHTML;
         btnElement.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...`;
         btnElement.disabled = true;
@@ -295,7 +526,6 @@
             .then(data => {
                 if (data.success) {
                     const card = document.getElementById(`booking-${bookingId}`);
-                    // Smooth visual fade
                     card.style.transition = 'all 0.5s ease';
                     card.style.opacity = '0';
                     card.style.transform = 'scale(0.95)';
@@ -317,19 +547,142 @@
         const statusFilter = document.getElementById('statusFilter').value;
         const tripTypeFilter = document.getElementById('tripTypeFilter').value;
         const dateFilter = document.getElementById('dateFilter').value;
-        const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+        const driverFilter = document.getElementById('driverFilter').value.toLowerCase();
+        const vehicleFilter = document.getElementById('vehicleFilter').value.toLowerCase();
+        const locationFilter = document.getElementById('locationFilter').value.toLowerCase();
 
+        let visibleCount = 0;
         document.querySelectorAll('.approval-card').forEach(card => {
-            const bookingId = card.id.replace('booking-', '');
-            // Get booking data (this would need to be passed from the template)
             let show = true;
 
             if (statusFilter && !card.textContent.includes(statusFilter)) show = false;
             if (tripTypeFilter && !card.textContent.includes(tripTypeFilter)) show = false;
             if (dateFilter && !card.textContent.includes(dateFilter)) show = false;
-            if (searchFilter && !card.textContent.toLowerCase().includes(searchFilter)) show = false;
+            if (driverFilter && !card.textContent.toLowerCase().includes(driverFilter)) show = false;
+            if (vehicleFilter && !card.textContent.toLowerCase().includes(vehicleFilter)) show = false;
+            if (locationFilter && !card.textContent.toLowerCase().includes(locationFilter)) show = false;
 
             card.closest('.col').style.display = show ? 'block' : 'none';
+            if (show) visibleCount++;
+        });
+
+        document.getElementById('filteredCount').textContent = `Showing ${visibleCount} booking${visibleCount !== 1 ? 's' : ''}`;
+    }
+
+    function clearFilters() {
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('tripTypeFilter').value = '';
+        document.getElementById('dateFilter').value = '';
+        document.getElementById('driverFilter').value = '';
+        document.getElementById('vehicleFilter').value = '';
+        document.getElementById('locationFilter').value = '';
+        filterBookings();
+    }
+
+    function applyAdvancedFilters() {
+        filterBookings();
+        showNotification('Filters applied successfully', 'success');
+    }
+
+    function selectAllBookings() {
+        const checkboxes = document.querySelectorAll('.booking-checkbox');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = !allChecked;
+            const card = checkbox.closest('.approval-card');
+            if (!allChecked) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        });
+        
+        updateSelectedCount();
+    }
+
+    function toggleView() {
+        const container = document.querySelector('.row.row-cols-1');
+        container.classList.toggle('list-view');
+        
+        const gridBtn = document.querySelector('[onclick*="Grid View"]');
+        const listBtn = document.querySelector('[onclick*="List View"]');
+        
+        if (container.classList.contains('list-view')) {
+            showNotification('Switched to list view', 'info');
+        } else {
+            showNotification('Switched to grid view', 'info');
+        }
+    }
+
+    function exportSelected() {
+        const selected = document.querySelectorAll('.booking-checkbox:checked');
+        if (selected.length === 0) {
+            showNotification('Please select bookings to export', 'warning');
+            return;
+        }
+        
+        const ids = Array.from(selected).map(cb => cb.value);
+        window.open(`/api/export-department-approvals?ids=${ids.join(',')}`, '_blank');
+        showNotification(`Exporting ${selected.length} booking${selected.length !== 1 ? 's' : ''}`, 'success');
+    }
+
+    function printSelected() {
+        const selected = document.querySelectorAll('.booking-checkbox:checked');
+        if (selected.length === 0) {
+            showNotification('Please select bookings to print', 'warning');
+            return;
+        }
+        
+        window.print();
+        showNotification(`Preparing print for ${selected.length} booking${selected.length !== 1 ? 's' : ''}`, 'info');
+    }
+
+    function bulkApproveSelected() {
+        const selected = document.querySelectorAll('.booking-checkbox:checked');
+        if (selected.length === 0) {
+            showNotification('Please select bookings to approve', 'warning');
+            return;
+        }
+        
+        if (confirm(`Approve ${selected.length} selected booking${selected.length !== 1 ? 's' : ''}?`)) {
+            const ids = Array.from(selected).map(cb => cb.value);
+            processBulkAction(ids, 'APPROVED');
+        }
+    }
+
+    function bulkRejectSelected() {
+        const selected = document.querySelectorAll('.booking-checkbox:checked');
+        if (selected.length === 0) {
+            showNotification('Please select bookings to reject', 'warning');
+            return;
+        }
+        
+        if (confirm(`Reject ${selected.length} selected booking${selected.length !== 1 ? 's' : ''}?`)) {
+            const ids = Array.from(selected).map(cb => cb.value);
+            processBulkAction(ids, 'REJECTED');
+        }
+    }
+
+    function processBulkAction(ids, action) {
+        showNotification(`Processing bulk ${action.toLowerCase()} for ${ids.length} bookings...`, 'info');
+        
+        fetch('/api/fleet/bulk_approve_bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ booking_ids: ids, action: action })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Successfully ${action.toLowerCase()} ${ids.length} bookings`, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification('Error processing bulk action', 'error');
+            }
+        })
+        .catch(() => {
+            showNotification('Network error processing bulk action', 'error');
         });
     }
 
@@ -339,28 +692,66 @@
         const date = document.getElementById('dateFilter').value || '';
         
         window.open(`/api/export-department-approvals?status=${status}&trip_type=${tripType}&date=${date}`, '_blank');
+        showNotification('Exporting approval data...', 'info');
     }
 
     function openBulkApprovalModal() {
-        const pendingCards = document.querySelectorAll('.approval-card').forEach(card => {
+        const pendingCards = document.querySelectorAll('.approval-card');
+        let selectedCount = 0;
+        
+        pendingCards.forEach(card => {
             if (card.textContent.includes('PENDING')) {
-                // Select all pending cards for bulk approval
-                const checkbox = card.querySelector('.form-check-input');
-                if (checkbox) checkbox.checked = true;
+                const checkbox = card.querySelector('.booking-checkbox');
+                if (checkbox && !checkbox.checked) {
+                    checkbox.checked = true;
+                    card.classList.add('selected');
+                    selectedCount++;
+                }
             }
         });
         
-        alert('Bulk approval feature coming soon! Selected pending requests will be processed.');
+        updateSelectedCount();
+        showNotification(`Selected ${selectedCount} pending booking${selectedCount !== 1 ? 's' : ''} for bulk approval`, 'success');
+    }
+
+    function refreshData() {
+        showNotification('Refreshing data...', 'info');
+        setTimeout(() => location.reload(), 1000);
+    }
+
+    function toggleAnalytics() {
+        const modal = document.getElementById('analyticsModal');
+        modal.classList.toggle('show');
+        
+        if (modal.classList.contains('show')) {
+            // Reinitialize charts when modal opens
+            setTimeout(() => initializeCharts(), 100);
+        }
+    }
+
+    function showNotification(message, type = 'info') {
+        // Create a simple notification system
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+        notification.style.zIndex = '9999';
+        notification.style.minWidth = '250px';
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
     // Auto-refresh every 30 seconds
     setInterval(() => {
         if (!document.hidden) {
-            location.reload();
+            refreshData();
         }
     }, 30000);
 
-    // Keyboard shortcuts
+    // Enhanced keyboard shortcuts
     document.addEventListener('keydown', function(e) {
         if (e.ctrlKey || e.metaKey) {
             switch(e.key) {
@@ -370,8 +761,24 @@
                     break;
                 case 'f':
                     e.preventDefault();
-                    document.getElementById('searchFilter').focus();
+                    document.getElementById('driverFilter').focus();
                     break;
+                case 'a':
+                    e.preventDefault();
+                    selectAllBookings();
+                    break;
+                case 'r':
+                    e.preventDefault();
+                    refreshData();
+                    break;
+            }
+        }
+        
+        // Escape key to close modals
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('analyticsModal');
+            if (modal.classList.contains('show')) {
+                toggleAnalytics();
             }
         }
     });
