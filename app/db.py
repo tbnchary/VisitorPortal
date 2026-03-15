@@ -3,12 +3,20 @@ from flask import current_app, g
 
 def get_db():
     if 'db' not in g:
-        g.db = mysql.connector.connect(
-            host=current_app.config['MYSQL_HOST'],
-            user=current_app.config['MYSQL_USER'],
-            password=current_app.config['MYSQL_PASSWORD'],
-            database=current_app.config['MYSQL_DB']
-        )
+        connect_args = {
+            'host': current_app.config['MYSQL_HOST'],
+            'user': current_app.config['MYSQL_USER'],
+            'password': current_app.config['MYSQL_PASSWORD'],
+            'database': current_app.config['MYSQL_DB']
+        }
+        
+        # TiDB Cloud requires SSL to be enabled
+        if 'gateway' in connect_args['host'] or 'tidb' in connect_args['host']:
+            connect_args['ssl_disabled'] = False
+            connect_args['ssl_verify_cert'] = False
+            connect_args['ssl_verify_identity'] = False
+
+        g.db = mysql.connector.connect(**connect_args)
     return g.db
 
 def close_db(e=None):
