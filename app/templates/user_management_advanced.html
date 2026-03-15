@@ -1,0 +1,860 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Advanced Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title"><i class="bi bi-people-fill text-primary me-2"></i>User Management</h1>
+        <p class="page-subtitle">Advanced user administration with analytics and bulk operations</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-primary rounded-pill px-4" style="font-weight:600;" onclick="openAddUserModal()">
+            <i class="bi bi-person-plus me-1"></i>Add User
+        </button>
+        <button class="btn btn-outline-secondary rounded-pill px-4" style="font-weight:600;" onclick="exportUsers()">
+            <i class="bi bi-download me-1"></i>Export
+        </button>
+        <button class="btn btn-outline-info rounded-pill px-4" style="font-weight:600;" onclick="toggleAnalytics()">
+            <i class="bi bi-graph-up me-1"></i>Analytics
+        </button>
+    </div>
+</div>
+
+<div class="container-fluid px-4 pb-5">
+    <!-- Advanced Statistics Dashboard -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3 mb-md-0">
+            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0 border-start border-4 border-warning">
+                <div class="bg-warning-subtle text-warning p-3 rounded-circle fs-3 d-flex align-items-center justify-content-center"
+                    style="width: 60px; height: 60px;">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem;">Pending Approvals</h6>
+                    <h3 class="fw-bold mb-0 text-dark">{{ pending_users|length }}</h3>
+                    <div class="small text-muted">{{ pending_users|selectattr('role', 'equalto', 'ADMIN')|list|length }} Admin requests</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3 mb-md-0">
+            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0 border-start border-4 border-success">
+                <div class="bg-success-subtle text-success p-3 rounded-circle fs-3 d-flex align-items-center justify-content-center"
+                    style="width: 60px; height: 60px;">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem;">Active Users</h6>
+                    <h3 class="fw-bold mb-0 text-dark">{{ approved_users|length }}</h3>
+                    <div class="small text-muted">{{ approved_users|selectattr('role', 'equalto', 'ADMIN')|list|length }} Administrators</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3 mb-md-0">
+            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0 border-start border-4 border-danger">
+                <div class="bg-danger-subtle text-danger p-3 rounded-circle fs-3 d-flex align-items-center justify-content-center"
+                    style="width: 60px; height: 60px;">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem;">Rejected Users</h6>
+                    <h3 class="fw-bold mb-0 text-dark">{{ rejected_users|length }}</h3>
+                    <div class="small text-muted">{{ (rejected_users|length / (pending_users|length + approved_users|length + rejected_users|length) * 100)|round(1) if (pending_users|length + approved_users|length + rejected_users|length) > 0 else 0 }}% rejection rate</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="glass-card d-flex align-items-center gap-3 h-100 mb-0 border-start border-4 border-info">
+                <div class="bg-info-subtle text-info p-3 rounded-circle fs-3 d-flex align-items-center justify-content-center"
+                    style="width: 60px; height: 60px;">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <div>
+                    <h6 class="text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem;">Total Users</h6>
+                    <h3 class="fw-bold mb-0 text-dark">{{ pending_users|length + approved_users|length + rejected_users|length }}</h3>
+                    <div class="small text-muted">All registered users</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Filter Bar -->
+    <div class="glass-card p-3 mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-uppercase small text-muted">Status Filter</label>
+                <select class="form-select" id="statusFilter" onchange="filterUsers()">
+                    <option value="">All Users</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-uppercase small text-muted">Role Filter</label>
+                <select class="form-select" id="roleFilter" onchange="filterUsers()">
+                    <option value="">All Roles</option>
+                    <option value="ADMIN">Administrator</option>
+                    <option value="HOST">Host</option>
+                    <option value="SECURITY">Security</option>
+                    <option value="RECEPTION">Reception</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-uppercase small text-muted">Unit Filter</label>
+                <select class="form-select" id="unitFilter" onchange="filterUsers()">
+                    <option value="">All Units</option>
+                    <option value="Engineering">Engineering</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Security">Security</option>
+                    <option value="Front Desk">Front Desk</option>
+                    <option value="Operations">Operations</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-uppercase small text-muted">Search</label>
+                <input type="text" class="form-control" id="searchFilter" placeholder="Search users..." oninput="filterUsers()">
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-12 d-flex justify-content-between align-items-center">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+                        <i class="bi bi-x-circle me-1"></i>Clear Filters
+                    </button>
+                    <button class="btn btn-sm btn-primary" onclick="applyFilters()">
+                        <i class="bi bi-funnel me-1"></i>Apply Filters
+                    </button>
+                </div>
+                <div class="text-muted small">
+                    <span id="filteredCount">Showing all users</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="glass-card p-3 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary" onclick="selectAllUsers()">
+                    <i class="bi bi-check2-square me-1"></i>Select All
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="bulkApproveSelected()">
+                    <i class="bi bi-check-circle me-1"></i>Bulk Approve
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="bulkRejectSelected()">
+                    <i class="bi bi-x-circle me-1"></i>Bulk Reject
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" onclick="bulkDeactivateSelected()">
+                    <i class="bi bi-person-x me-1"></i>Bulk Deactivate
+                </button>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-info" onclick="refreshUsers()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="glass-card p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="40">
+                            <input type="checkbox" class="form-check-input" id="selectAllUsersCheckbox" onchange="toggleSelectAll()">
+                        </th>
+                        <th>User Info</th>
+                        <th>Role</th>
+                        <th>Unit</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Last Login</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    {% for user in all_users %}
+                    <tr class="user-row" data-status="{{ user.status }}" data-role="{{ user.role }}" data-unit="{{ user.unit or '' }}">
+                        <td>
+                            <input type="checkbox" class="form-check-input user-checkbox" value="{{ user.id }}">
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="user-avatar me-2">{{ user.full_name[0].upper() }}</div>
+                                <div>
+                                    <div class="fw-bold">{{ user.full_name }}</div>
+                                    <div class="small text-muted">{{ user.email }}</div>
+                                    <div class="small text-muted">{{ user.phone or 'No phone' }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if user.role == 'ADMIN' %}danger{% elif user.role == 'SECURITY' %}warning{% else %}info{% endif %} rounded-pill">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark rounded-pill">{{ user.unit or 'No Unit' }}</span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if user.status == 'APPROVED' %}success{% elif user.status == 'REJECTED' %}danger{% else %}warning{% endif %} rounded-pill">
+                                {{ user.status }}
+                            </span>
+                        </td>
+                        <td><small class="text-muted">{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else '-' }}</small></td>
+                        <td><small class="text-muted">{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</small></td>
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                {% if user.status == 'PENDING' %}
+                                <button class="btn btn-sm btn-success" onclick="approveUser({{ user.id }})">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="rejectUser({{ user.id }})">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                                {% else %}
+                                <button class="btn btn-sm btn-outline-primary" onclick="editUser({{ user.id }})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning" onclick="deactivateUser({{ user.id }})">
+                                    <i class="bi bi-person-x"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox fs-1 opacity-25"></i>
+                                <p class="mb-0">No users found matching your criteria.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit User Modal -->
+<div class="modal fade" id="userModal" tabindex="-1" aria-labelledby="userModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userModalLabel">Add New User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="userForm">
+                    <input type="hidden" id="userId" value="">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="fullName" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="fullName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="role" class="form-label">Role</label>
+                            <select class="form-select" id="role" required>
+                                <option value="">Select Role</option>
+                                <option value="ADMIN">Administrator</option>
+                                <option value="HOST">Host</option>
+                                <option value="SECURITY">Security</option>
+                                <option value="RECEPTION">Reception</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="unit" class="form-label">Unit/Department</label>
+                            <input type="text" class="form-control" id="unit" placeholder="e.g., Engineering">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" rows="3" placeholder="Additional notes about this user..."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveUser()">Save User</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Modal -->
+<div class="modal fade" id="analyticsModal" tabindex="-1" aria-labelledby="analyticsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="analyticsModalLabel">User Analytics Dashboard</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>User Registration Trends</h6>
+                        <canvas id="registrationTrendsChart"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Role Distribution</h6>
+                        <canvas id="roleDistributionChart"></canvas>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h6>User Activity Metrics</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Total Users</td>
+                                        <td>{{ all_users|length }}</td>
+                                        <td>100%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Active Users</td>
+                                        <td>{{ approved_users|length }}</td>
+                                        <td>{{ (approved_users|length / all_users|length * 100)|round(1) if all_users else 0 }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Pending Approval</td>
+                                        <td>{{ pending_users|length }}</td>
+                                        <td>{{ (pending_users|length / all_users|length * 100)|round(1) if all_users else 0 }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Rejected Users</td>
+                                        <td>{{ rejected_users|length }}</td>
+                                        <td>{{ (rejected_users|length / all_users|length * 100)|round(1) if all_users else 0 }}%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1rem;
+    }
+
+    .user-avatar-sm {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.875rem;
+    }
+
+    .user-row:hover {
+        background-color: #f8f9fa;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .data-table {
+        margin-bottom: 0;
+    }
+
+    .data-table th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        color: #6b7280;
+        border-bottom: 2px solid #e5e7eb;
+        background: #f8f9fa;
+    }
+
+    .data-table td {
+        vertical-align: middle;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .btn-group .btn {
+        border-radius: 0;
+        border-left: 1px solid #dee2e6;
+    }
+
+    .btn-group .btn:first-child {
+        border-left: 1px solid #dee2e6;
+        border-radius: 0.375rem 0 0.375rem;
+    }
+
+    .btn-group .btn:last-child {
+        border-radius: 0 0.375rem 0.375rem;
+    }
+
+    .modal-content {
+        border-radius: 15px;
+        border: none;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #e5e7eb;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px 15px 0 0;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #e5e7eb;
+        background: #f8f9fa;
+        border-radius: 0 0 15px 15px;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Global variables
+    let allUsers = {{ all_users|tojson }};
+    let filteredUsers = [...allUsers];
+    let selectedUsers = new Set();
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        updateFilteredCount();
+        setupCheckboxHandlers();
+        initializeCharts();
+    });
+
+    function filterUsers() {
+        const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+        const roleFilter = document.getElementById('roleFilter').value.toUpperCase();
+        const unitFilter = document.getElementById('unitFilter').value.toLowerCase();
+        const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+        filteredUsers = allUsers.filter(user => {
+            const statusMatch = !statusFilter || user.status.toLowerCase() === statusFilter;
+            const roleMatch = !roleFilter || user.role === roleFilter;
+            const unitMatch = !unitFilter || (user.unit && user.unit.toLowerCase().includes(unitFilter));
+            const searchMatch = !searchFilter || 
+                user.full_name.toLowerCase().includes(searchFilter) ||
+                user.email.toLowerCase().includes(searchFilter) ||
+                user.username.toLowerCase().includes(searchFilter);
+
+            return statusMatch && roleMatch && unitMatch && searchMatch;
+        });
+
+        renderUsersTable();
+        updateFilteredCount();
+    }
+
+    function renderUsersTable() {
+        const tbody = document.getElementById('usersTableBody');
+        tbody.innerHTML = '';
+
+        filteredUsers.forEach(user => {
+            const row = document.createElement('tr');
+            row.className = 'user-row';
+            row.dataset.status = user.status;
+            row.dataset.role = user.role;
+            row.dataset.unit = user.unit || '';
+            
+            row.innerHTML = `
+                <td>
+                    <input type="checkbox" class="form-check-input user-checkbox" value="${user.id}">
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="user-avatar me-2">${user.full_name[0].upper()}</div>
+                        <div>
+                            <div class="fw-bold">${user.full_name}</div>
+                            <div class="small text-muted">${user.email}</div>
+                            <div class="small text-muted">${user.phone || 'No phone'}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge bg-${user.role === 'ADMIN' ? 'danger' : user.role === 'SECURITY' ? 'warning' : 'info'} rounded-pill">
+                        ${user.role}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge bg-light text-dark rounded-pill">${user.unit || 'No Unit'}</span>
+                </td>
+                <td>
+                    <span class="badge bg-${user.status === 'APPROVED' ? 'success' : user.status === 'REJECTED' ? 'danger' : 'warning'} rounded-pill">
+                        ${user.status}
+                    </span>
+                </td>
+                <td><small class="text-muted">${user.created_at ? new Date(user.created_at).toLocaleDateString() : '-'}</small></td>
+                <td><small class="text-muted">${user.last_login ? new Date(user.last_login).toLocaleString() : 'Never'}</small></td>
+                <td class="text-center">
+                    <div class="btn-group" role="group">
+                        ${user.status === 'PENDING' ? `
+                            <button class="btn btn-sm btn-success" onclick="approveUser(${user.id})" title="Approve">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectUser(${user.id})" title="Reject">
+                                <i class="bi bi-x-circle"></i>
+                            </button>
+                        ` : `
+                            <button class="btn btn-sm btn-outline-primary" onclick="editUser(${user.id})" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-warning" onclick="deactivateUser(${user.id})" title="Deactivate">
+                                <i class="bi bi-person-x"></i>
+                            </button>
+                        `}
+                    </div>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+    }
+
+    function updateFilteredCount() {
+        const countElement = document.getElementById('filteredCount');
+        countElement.textContent = `Showing ${filteredUsers.length} of ${allUsers.length} users`;
+    }
+
+    function clearFilters() {
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('roleFilter').value = '';
+        document.getElementById('unitFilter').value = '';
+        document.getElementById('searchFilter').value = '';
+        filterUsers();
+    }
+
+    function applyFilters() {
+        filterUsers();
+        showNotification('Filters applied successfully', 'success');
+    }
+
+    function toggleSelectAll() {
+        const selectAllCheckbox = document.getElementById('selectAllUsersCheckbox');
+        const userCheckboxes = document.querySelectorAll('.user-checkbox');
+        
+        const allChecked = Array.from(userCheckboxes).every(cb => cb.checked);
+        
+        userCheckboxes.forEach(checkbox => {
+            checkbox.checked = !allChecked;
+            const row = checkbox.closest('.user-row');
+            if (checkbox.checked) {
+                selectedUsers.add(parseInt(checkbox.value));
+            } else {
+                selectedUsers.delete(parseInt(checkbox.value));
+            }
+        });
+        
+        selectAllCheckbox.checked = !allChecked;
+        updateSelectedCount();
+    }
+
+    function setupCheckboxHandlers() {
+        document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const userId = parseInt(this.value);
+                if (this.checked) {
+                    selectedUsers.add(userId);
+                } else {
+                    selectedUsers.delete(userId);
+                }
+                updateSelectedCount();
+            });
+        });
+    }
+
+    function updateSelectedCount() {
+        const countElement = document.getElementById('selectedCount');
+        if (countElement) {
+            countElement.textContent = `${selectedUsers.size} user${selectedUsers.size !== 1 ? 's' : ''} selected`;
+        }
+    }
+
+    function openAddUserModal() {
+        document.getElementById('userModalLabel').textContent = 'Add New User';
+        document.getElementById('userForm').reset();
+        document.getElementById('userId').value = '';
+        const modal = new bootstrap.Modal(document.getElementById('userModal'));
+        modal.show();
+    }
+
+    function editUser(userId) {
+        const user = allUsers.find(u => u.id === userId);
+        if (!user) return;
+        
+        document.getElementById('userModalLabel').textContent = 'Edit User';
+        document.getElementById('userId').value = user.id;
+        document.getElementById('fullName').value = user.full_name;
+        document.getElementById('username').value = user.username;
+        document.getElementById('email').value = user.email;
+        document.getElementById('phone').value = user.phone || '';
+        document.getElementById('role').value = user.role;
+        document.getElementById('unit').value = user.unit || '';
+        
+        const modal = new bootstrap.Modal(document.getElementById('userModal'));
+        modal.show();
+    }
+
+    function saveUser() {
+        const userId = document.getElementById('userId').value;
+        const fullName = document.getElementById('fullName').value;
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
+        const role = document.getElementById('role').value;
+        const unit = document.getElementById('unit').value;
+        const notes = document.getElementById('notes').value;
+
+        if (!fullName || !username || !email || !role) {
+            showNotification('Please fill in all required fields', 'warning');
+            return;
+        }
+
+        // Here you would normally make an API call to save the user
+        showNotification(userId ? 'User updated successfully' : 'User created successfully', 'success');
+        
+        const modal = bootstrap.Modal.getInstance(document.getElementById('userModal'));
+        modal.hide();
+        
+        // Refresh data
+        refreshUsers();
+    }
+
+    function approveUser(userId) {
+        if (confirm('Are you sure you want to approve this user?')) {
+            // Here you would normally make an API call to approve the user
+            showNotification('User approved successfully', 'success');
+            refreshUsers();
+        }
+    }
+
+    function rejectUser(userId) {
+        if (confirm('Are you sure you want to reject this user?')) {
+            // Here you would normally make an API call to reject the user
+            showNotification('User rejected successfully', 'warning');
+            refreshUsers();
+        }
+    }
+
+    function deactivateUser(userId) {
+        if (confirm('Are you sure you want to deactivate this user?')) {
+            // Here you would normally make an API call to deactivate the user
+            showNotification('User deactivated successfully', 'warning');
+            refreshUsers();
+        }
+    }
+
+    function bulkApproveSelected() {
+        if (selectedUsers.size === 0) {
+            showNotification('Please select users to approve', 'warning');
+            return;
+        }
+
+        if (confirm(`Approve ${selectedUsers.size} selected user${selectedUsers.size !== 1 ? 's' : ''}?`)) {
+            // Here you would normally make an API call to bulk approve users
+            showNotification(`Approving ${selectedUsers.size} users...`, 'info');
+            setTimeout(() => {
+                showNotification(`Successfully approved ${selectedUsers.size} users`, 'success');
+                refreshUsers();
+            }, 2000);
+        }
+    }
+
+    function bulkRejectSelected() {
+        if (selectedUsers.size === 0) {
+            showNotification('Please select users to reject', 'warning');
+            return;
+        }
+
+        if (confirm(`Reject ${selectedUsers.size} selected user${selectedUsers.size !== 1 ? 's' : ''}?`)) {
+            // Here you would normally make an API call to bulk reject users
+            showNotification(`Rejecting ${selectedUsers.size} users...`, 'info');
+            setTimeout(() => {
+                showNotification(`Successfully rejected ${selectedUsers.size} users`, 'warning');
+                refreshUsers();
+            }, 2000);
+        }
+    }
+
+    function bulkDeactivateSelected() {
+        if (selectedUsers.size === 0) {
+            showNotification('Please select users to deactivate', 'warning');
+            return;
+        }
+
+        if (confirm(`Deactivate ${selectedUsers.size} selected user${selectedUsers.size !== 1 ? 's' : ''}?`)) {
+            // Here you would normally make an API call to bulk deactivate users
+            showNotification(`Deactivating ${selectedUsers.size} users...`, 'info');
+            setTimeout(() => {
+                showNotification(`Successfully deactivated ${selectedUsers.size} users`, 'warning');
+                refreshUsers();
+            }, 2000);
+        }
+    }
+
+    function refreshUsers() {
+        // Here you would normally make an API call to refresh the user data
+        showNotification('Refreshing user data...', 'info');
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    }
+
+    function exportUsers() {
+        const csvContent = [
+            ['Full Name', 'Email', 'Username', 'Role', 'Unit', 'Phone', 'Status', 'Created At', 'Last Login'],
+            ...filteredUsers.map(user => [
+                user.full_name,
+                user.email,
+                user.username,
+                user.role,
+                user.unit || 'N/A',
+                user.phone || 'N/A',
+                user.status,
+                user.created_at ? new Date(user.created_at).toISOString() : 'N/A',
+                user.last_login ? new Date(user.last_login).toISOString() : 'N/A'
+            ])
+        ].map(row => row.join(',')).join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+
+        showNotification(`Exported ${filteredUsers.length} users to CSV`, 'success');
+    }
+
+    function toggleAnalytics() {
+        const modal = new bootstrap.Modal(document.getElementById('analyticsModal'));
+        modal.show();
+        setTimeout(() => initializeCharts(), 100);
+    }
+
+    function initializeCharts() {
+        // Registration Trends Chart
+        const trendsCtx = document.getElementById('registrationTrendsChart');
+        if (trendsCtx) {
+            const monthlyData = {};
+            allUsers.forEach(user => {
+                const month = user.created_at ? new Date(user.created_at).toLocaleString('en-US', { month: 'short' }) : 'Unknown';
+                monthlyData[month] = (monthlyData[month] || 0) + 1;
+            });
+
+            const labels = Object.keys(monthlyData).sort();
+            const data = labels.map(month => monthlyData[month]);
+
+            new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'User Registrations',
+                        data: data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Role Distribution Chart
+        const roleCtx = document.getElementById('roleDistributionChart');
+        if (roleCtx) {
+            const roleData = {};
+            allUsers.forEach(user => {
+                roleData[user.role] = (roleData[user.role] || 0) + 1;
+            });
+
+            new Chart(roleCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(roleData),
+                    datasets: [{
+                        data: Object.values(roleData),
+                        backgroundColor: [
+                            '#dc3545', '#ef4444', '#10b981', '#f59e0b', '#6b7280'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+    }
+
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+        notification.style.zIndex = '9999';
+        notification.style.minWidth = '300px';
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+</script>
+{% endblock %}
