@@ -3601,23 +3601,44 @@ def inbox_archive():
 @bp.route('/api/inbox/delete', methods=['POST'])
 @login_required
 def inbox_delete():
+    """
+    Archive/Remove inbox items - DO NOT DELETE ACTUAL VISITOR DATA
+    This should only archive approval requests, not delete visitor records
+    """
     data = request.json
     ids_by_type = data.get('items', {})
     
     conn = get_db()
     cursor = conn.cursor()
+    
     for item_type, ids in ids_by_type.items():
         if not ids: continue
-        table = 'visitors'
-        if item_type == 'FLEET_APPROVAL': table = 'fleet_bookings'
-        elif item_type == 'SECURITY_ALERT': table = 'security_alerts'
         
-        id_list = ",".join([str(i) for i in ids])
-        cursor.execute(f"DELETE FROM {table} WHERE id IN ({id_list})")
+        if item_type == 'VISITOR_APPROVAL':
+            # For visitor approvals, we should NOT delete the visitor record
+            # Instead, we should mark as processed/archived or remove from inbox view
+            # This is a critical fix - DO NOT DELETE VISITOR DATA
+            
+            # Option 1: Mark as processed (recommended)
+            id_list = ",".join([str(i) for i in ids])
+            cursor.execute(f"UPDATE visitors SET inbox_processed = 1 WHERE id IN ({id_list})")
+            
+            # Option 2: Create an archive table (better approach)
+            # cursor.execute(f"INSERT INTO inbox_archive (visitor_id, item_type, archived_at, archived_by) VALUES ({id_list}, 'VISITOR_APPROVAL', NOW(), %s)", (session.get('user_id')))
+            
+        elif item_type == 'FLEET_APPROVAL':
+            # For fleet approvals, mark as processed instead of deleting
+            id_list = ",".join([str(i) for i in ids])
+            cursor.execute(f"UPDATE fleet_bookings SET inbox_processed = 1 WHERE id IN ({id_list})")
+            
+        elif item_type == 'SECURITY_ALERT':
+            # For security alerts, mark as resolved instead of deleting
+            id_list = ",".join([str(i) for i in ids])
+            cursor.execute(f"UPDATE security_alerts SET status = 'RESOLVED', inbox_processed = 1 WHERE id IN ({id_list})")
     
     conn.commit()
     cursor.close()
-    return jsonify({"success": True})
+    return jsonify({"success": True, "message": "Items archived from inbox successfully"})
 
 @bp.route('/host-approvals', methods=['GET'])
 @login_required
