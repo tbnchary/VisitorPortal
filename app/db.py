@@ -39,6 +39,7 @@ def init_app(app):
     app.teardown_appcontext(close_db)
     with app.app_context():
         try:
+            ensure_users_table()
             ensure_fleet_tables()
             ensure_logistics_tables()
             ensure_sidebar_menu()
@@ -53,6 +54,25 @@ def init_app(app):
             ensure_inbox_columns()
         except Exception as e:
             print(f"Warning: Could not initialize database tables at startup: {e}")
+
+def ensure_users_table():
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            full_name VARCHAR(100) NOT NULL,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            email VARCHAR(255) UNIQUE,
+            phone VARCHAR(20),
+            password VARCHAR(255) NOT NULL,
+            role ENUM('ADMIN', 'RECEPTION', 'SECURITY', 'HOST') DEFAULT 'RECEPTION',
+            status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+            unit VARCHAR(255)
+        )
+    ''')
+    conn.commit()
+    cursor.close()
 
 def ensure_inbox_columns():
     conn = get_db()
