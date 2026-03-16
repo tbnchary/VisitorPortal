@@ -7,7 +7,8 @@ def get_db():
             'host': current_app.config['MYSQL_HOST'],
             'user': current_app.config['MYSQL_USER'],
             'password': current_app.config['MYSQL_PASSWORD'],
-            'database': current_app.config['MYSQL_DB']
+            'database': current_app.config['MYSQL_DB'],
+            'connection_timeout': 3  # Ensure Vercel doesn't kill the function before timeout
         }
         
         # TiDB Cloud requires SSL to be enabled
@@ -15,6 +16,11 @@ def get_db():
             connect_args['ssl_disabled'] = False
             connect_args['ssl_verify_cert'] = False
             connect_args['ssl_verify_identity'] = False
+
+        # If on Vercel and host is localhost, fail fast
+        import os
+        if os.environ.get('VERCEL') == '1' and connect_args['host'] in ['localhost', '127.0.0.1']:
+            raise Exception("Vercel cannot connect to a localhost database. Please configure a remote MySQL database in Vercel Environment Variables.")
 
         g.db = mysql.connector.connect(**connect_args)
     return g.db
