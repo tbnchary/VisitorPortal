@@ -28,18 +28,21 @@ def close_db(e=None):
 def init_app(app):
     app.teardown_appcontext(close_db)
     with app.app_context():
-        ensure_fleet_tables()
-        ensure_logistics_tables()
-        ensure_sidebar_menu()
-        ensure_user_columns()
-        ensure_visitor_columns()
-        ensure_menu_items_for_projects()
-        ensure_department_approvals_menu()
-        ensure_host_approvals_menu()
-        ensure_security_alerts_table()
-        ensure_email_alert_settings()
-        ensure_inbox_menu()
-        ensure_inbox_columns()
+        try:
+            ensure_fleet_tables()
+            ensure_logistics_tables()
+            ensure_sidebar_menu()
+            ensure_user_columns()
+            ensure_visitor_columns()
+            ensure_menu_items_for_projects()
+            ensure_department_approvals_menu()
+            ensure_host_approvals_menu()
+            ensure_security_alerts_table()
+            ensure_email_alert_settings()
+            ensure_inbox_menu()
+            ensure_inbox_columns()
+        except Exception as e:
+            print(f"Warning: Could not initialize database tables at startup: {e}")
 
 def ensure_inbox_columns():
     conn = get_db()
