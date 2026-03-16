@@ -11,6 +11,10 @@ def get_db():
             'connection_timeout': 3  # Ensure Vercel doesn't kill the function before timeout
         }
         
+        # Add port if it exists in config
+        if current_app.config.get('MYSQL_PORT'):
+            connect_args['port'] = int(current_app.config['MYSQL_PORT'])
+        
         # TiDB Cloud requires SSL to be enabled
         if 'gateway' in connect_args['host'] or 'tidb' in connect_args['host']:
             connect_args['ssl_disabled'] = False
