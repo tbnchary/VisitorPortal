@@ -748,12 +748,31 @@
         </script>
 
         {% if session.get('user_id') %}
-        <!-- Dynamic Sidebar -->
+        <!-- Dynamic Sidebar (Desktop) -->
         {% include "sidebar.html" %}
+
+        <!-- NATIVE PRO MOBILE HEADER (SSR to prevent layout shifts) -->
+        <header class="app-header d-lg-none">
+            <div class="app-brand">
+                <i class="bi bi-grid-fill"></i>
+                <span id="mobilePageTitle">Visitor Portal</span>
+            </div>
+            <div class="app-actions">
+                <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="applyMobileZoom(-0.1)" title="Zoom Out"><i
+                            class="bi bi-dash-circle"></i></button>
+                    <button class="zoom-btn" onclick="applyMobileZoom(0.1)" title="Zoom In"><i
+                            class="bi bi-plus-circle"></i></button>
+                    <div class="zoom-divider"></div>
+                </div>
+                <div class="header-avatar" onclick="window.location.href='/profile'">{{ session.get('username',
+                    'A')[0].upper() }}</div>
+            </div>
+        </header>
         {% endif %}
 
         <!-- Main Content -->
-        <main class="main-content">
+        <main class="main-content" id="mainContentArea">
             <!-- Breadcrumb Navigation -->
             {% if session.get('user_id') %}
             <nav class="breadcrumb-nav mb-4 d-none d-md-flex align-items-center justify-content-between">
@@ -864,7 +883,102 @@
             {% block content %}{% endblock %}
         </main>
 
-        <!-- Mobile Bottom Nav V2 is injected via JS -->
+        {% if session.get('user_id') %}
+        <!-- NATIVE PRO BOTTOM NAV (SSR) -->
+        <nav class="app-bottom-nav d-lg-none">
+            <a href="/" class="nav-tab {% if request.path == '/' or request.path == '/dashboard' %}active{% endif %}">
+                <i class="bi bi-grid-fill"></i>
+                <span>Dash</span>
+            </a>
+
+            <a href="/groups" class="nav-tab {% if '/groups' in request.path %}active{% endif %}">
+                <i class="bi bi-people-fill"></i>
+                <span>Users</span>
+            </a>
+
+            <div class="nav-tab center-fab">
+                <div class="fab-button shadow-lg" onclick="window.toggleAppMenuOverlay(event)"><i
+                        class="bi bi-grid-3x3-gap-fill"></i></div>
+            </div>
+
+            <a href="/logs" class="nav-tab {% if '/logs' in request.path %}active{% endif %}">
+                <i class="bi bi-clock-history"></i>
+                <span>Logs</span>
+            </a>
+
+            <a href="/logout" class="nav-tab exit-tab">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Exit</span>
+            </a>
+        </nav>
+
+        <!-- NATIVE PRO MENU OVERLAY (SSR) -->
+        <div class="menu-backdrop d-lg-none" onclick="window.toggleAppMenuOverlay(event)"></div>
+        <div class="menu-overlay d-lg-none" id="appMenuOverlay">
+            <div
+                style="display:flex; align-items:center; gap:8px; padding-bottom:24px; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:20px;">
+                <div
+                    style="width:32px; height:32px; background:#4f46e5; border-radius:8px; display:flex; align-items:center; justify-content:center; color:white;">
+                    <i class="bi bi-building"></i></div>
+                <h3 style="margin:0; font-size:16px; font-weight:700; color:white;">Visitor Portal</h3>
+            </div>
+
+            <div class="menu-search">
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="Quick search..."
+                    onkeyup="if(event.key === 'Enter') window.location.href='/logs?search='+this.value">
+            </div>
+
+            <div class="menu-list">
+                <a href="/"
+                    class="menu-item {% if request.path == '/' or request.path == '/dashboard' %}active{% endif %}">
+                    <i class="bi bi-grid-1x2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="/logs" class="menu-item {% if '/logs' in request.path %}active{% endif %}">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Visitor Logs</span>
+                </a>
+                <a href="/groups" class="menu-item {% if '/groups' in request.path %}active{% endif %}">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Visitor Groups</span>
+                </a>
+                <a href="/add" class="menu-item {% if '/add' in request.path %}active{% endif %}">
+                    <i class="bi bi-person-plus"></i>
+                    <span>Add Visitor</span>
+                </a>
+                <a href="/export" class="menu-item">
+                    <i class="bi bi-download"></i>
+                    <span>Export Data</span>
+                </a>
+                <a href="/settings" class="menu-item {% if '/settings' in request.path %}active{% endif %}">
+                    <i class="bi bi-envelope-gear"></i>
+                    <span>System Config</span>
+                </a>
+                <a href="/users" class="menu-item {% if '/users' in request.path %}active{% endif %}">
+                    <i class="bi bi-people"></i>
+                    <span>User Management</span>
+                </a>
+            </div>
+
+            <div class="menu-footer">
+                <div class="menu-profile" onclick="window.location.href='/profile'">
+                    <div class="menu-avatar">{{ session.get('username', 'A')[0].upper() }}</div>
+                    <div class="menu-user-info">
+                        <div>{{ session.get('username', 'Admin')|title }}</div>
+                        <div>My Profile</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PULL TO REFRESH INDICATOR -->
+        <div id="pullToRefreshIndicator" class="d-lg-none"
+            style="display:none; align-items:center; justify-content:center; padding:15px; background:var(--surface-1); box-shadow:0 4px 15px rgba(0,0,0,0.1); border-radius:30px; position:fixed; top:-60px; left:50%; transform:translateX(-50%); z-index:9000; transition:top 0.2s;">
+            <div class="spinner-border spinner-border-sm text-primary me-2" role="status"></div>
+            <span class="text-primary fw-bold" style="font-size:0.8rem;">Refreshing...</span>
+        </div>
+        {% endif %}
 
         <!-- Global Side Drawer -->
         <div class="drawer-backdrop" id="globalDrawerBackdrop"></div>
