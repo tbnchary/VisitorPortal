@@ -531,13 +531,60 @@
         /* Give slightly more room */
     }
 
-    /* Table Responsive Scroll */
-    .table-container,
-    .table-card>div {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        width: 100% !important;
+    /* === NATIVE DATATABLE CARDS (ADVANCED MOBILE UI) === */
+    .table-container { 
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .data-table, .data-table tbody {
         display: block !important;
+        width: 100% !important;
+    }
+    .data-table thead {
+        display: none !important; /* Hide generic headers on mobile */
+    }
+    .data-table tr {
+        display: flex !important;
+        flex-direction: column !important;
+        background: white !important;
+        border-radius: 20px !important;
+        margin-bottom: 16px !important;
+        box-shadow: 0 8px 20px -6px rgba(0,0,0,0.05) !important;
+        padding: 16px !important;
+        padding-bottom: 24px !important;
+        border: 1px solid rgba(0,0,0,0.04) !important;
+        position: relative !important;
+        transition: transform 0.2s;
+    }
+    .data-table tr:active {
+        transform: scale(0.98);
+        background: #f8fafc !important;
+    }
+    .data-table td {
+        display: flex !important;
+        align-items: center !important;
+        padding: 6px 0 !important;
+        border: none !important;
+        justify-content: flex-start !important;
+        width: 100% !important;
+    }
+    
+    /* Make the Action Buttons Absolute to the Bottom Right of Card */
+    .data-table td:last-child {
+        position: absolute !important;
+        bottom: 16px !important;
+        right: 16px !important;
+        width: auto !important;
+        padding: 0 !important;
+        justify-content: flex-end !important;
+    }
+    
+    /* Hide explicit IDs and raw checkboxes on minimal cards */
+    .data-table td .form-check {
+        display: none !important;
     }
 
     /* Hide some less critical toggles if space is tight */

@@ -9,6 +9,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/images/logo.png">
     <title>{% block title %}Visitor Portal{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}Premium Visitor Management System{% endblock %}">
     <!-- Professional Fonts -->
@@ -606,7 +608,38 @@
         @media (max-width: 576px) {
             .universal-drawer {
                 width: 100%;
-                right: -100%;
+                height: auto;
+                max-height: 85vh;
+                top: auto;
+                bottom: -100%;
+                right: 0 !important;
+                border-radius: 24px 24px 0 0;
+                border-left: none;
+                transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+            .universal-drawer.open {
+                bottom: 0;
+                right: 0 !important;
+            }
+
+            /* Add a Native swipe indicator handle for bottom sheet */
+            .drawer-header::before {
+                content: '';
+                display: block;
+                width: 40px;
+                height: 5px;
+                background: #e2e8f0;
+                border-radius: 10px;
+                position: absolute;
+                top: 8px;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .drawer-header {
+                padding-top: 2rem;
+                border-radius: 24px 24px 0 0;
             }
         }
 
@@ -919,7 +952,8 @@
                 style="display:flex; align-items:center; gap:8px; padding-bottom:24px; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:20px;">
                 <div
                     style="width:32px; height:32px; background:#4f46e5; border-radius:8px; display:flex; align-items:center; justify-content:center; color:white;">
-                    <i class="bi bi-building"></i></div>
+                    <i class="bi bi-building"></i>
+                </div>
                 <h3 style="margin:0; font-size:16px; font-weight:700; color:white;">Visitor Portal</h3>
             </div>
 
@@ -1262,6 +1296,16 @@
         });
     </script>
 
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then((reg) => console.log('PWA SW Registered', reg))
+                    .catch((err) => console.log('PWA SW failed', err));
+            });
+        }
+    </script>
     <style>
         /* MOBILE OVERRIDES & ADJUSTMENTS */
         @media (max-width: 992px) {
@@ -1277,22 +1321,13 @@
             .main-content {
                 padding: 1rem !important;
             }
-
-            .mobile-bottom-nav {
-                display: flex !important;
-                position: fixed;
-                bottom: 0;
-                width: 100%;
-                background: white;
-                z-index: 1001;
-            }
         }
 
         @media print {
 
             .sidebar,
             .topbar,
-            .mobile-bottom-nav,
+            .app-bottom-nav,
             .fab-container,
             .btn-print,
             .no-print {
