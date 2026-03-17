@@ -3081,16 +3081,22 @@ def dmt_template(datatype):
 def menu_maintenance():
     return render_template('menu_maintenance.html')
 
+# Cache for sidebar menu to prevent DB hits on every single page render
+SIDEBAR_MENU_CACHE = None
+
 @bp.context_processor
 def inject_sidebar_menu():
     """Inject menu items into templates."""
+    global SIDEBAR_MENU_CACHE
     try:
-        # Avoid connecting if it's not a successful request to save database time, though context gets passed anyway
-        conn = get_db()
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM sidebar_menu ORDER BY ordering")
-        all_items = cursor.fetchall()
-        cursor.close()
+        # Avoid connecting to DB on every request if we already have the menu cached
+        if SIDEBAR_MENU_CACHE is None:
+            conn = get_db()
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM sidebar_menu ORDER BY ordering")
+            SIDEBAR_MENU_CACHE = cursor.fetchall()
+        
+        all_items = SIDEBAR_MENU_CACHE
         
         # Restrict menus for Security role
         role = session.get('role', '')
