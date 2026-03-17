@@ -3083,13 +3083,10 @@ def menu_maintenance():
 
 @bp.context_processor
 def inject_sidebar_menu():
-    """Ensure sidebar_menu table exists and inject menu items into templates."""
-    conn = get_db()
-    # Ensure table and seed defaults
+    """Inject menu items into templates."""
     try:
-        ensure_sidebar_menu()
-        from app.db import ensure_logistics_tables
-        ensure_logistics_tables()
+        # Avoid connecting if it's not a successful request to save database time, though context gets passed anyway
+        conn = get_db()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM sidebar_menu ORDER BY ordering")
         all_items = cursor.fetchall()
