@@ -20,8 +20,8 @@ def get_db():
         if current_app.config.get('MYSQL_PORT'):
             connect_args['port'] = int(current_app.config['MYSQL_PORT'])
         
-        # TiDB Cloud requires SSL to be enabled
-        if 'gateway' in connect_args['host'] or 'tidb' in connect_args['host']:
+        # Aiven and TiDB Cloud require SSL but we can skip strict cert verification to save ~500ms of latency per connection
+        if any(x in connect_args['host'] for x in ['gateway', 'tidb', 'aiven']):
             connect_args['ssl_disabled'] = False
             connect_args['ssl_verify_cert'] = False
             connect_args['ssl_verify_identity'] = False

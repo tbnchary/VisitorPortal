@@ -344,16 +344,28 @@ def forgot_password():
     
     return render_template("forgot_password.html")
 
+import time
+DASHBOARD_CACHE = {'timestamp': 0, 'data': None}
+
 @bp.route("/")
 @bp.route("/dashboard")
 @login_required
 def index():
+    global DASHBOARD_CACHE
+    import time
+    
+    # 15 second memory cache to avoid running 8 slow DB queries back to back over a latency-heavy cloud connection
+    if time.time() - DASHBOARD_CACHE['timestamp'] < 15 and DASHBOARD_CACHE['data']:
+        cached = DASHBOARD_CACHE['data']
+        # Refresh the current date dynamically, use everything else from cache
+        cached['date'] = datetime.now().strftime("%B %d, %Y")
+        return render_template("dashboard_perfect.html", **cached)
+        
     try:
         conn = get_db()
         cursor = conn.cursor(dictionary=True)
         
         # 1. Fetch Recent Visitors (Prioritize Active) - Optimized for Mobile Performance
-        # Reduced limit from 200 to 50 for faster initial render
         cursor.execute("SELECT * FROM visitors ORDER BY field(status, 'IN', 'OUT'), check_in DESC LIMIT 50")
         visitors = cursor.fetchall()
         
@@ -411,19 +423,23 @@ def index():
         
         cursor.close()
         
-        return render_template("dashboard_perfect.html", 
-                               visitors=visitors, 
-                               stats=stats,
-                               purpose_data=purpose_data,
-                               hourly_data=hourly_data,
-                               chart_dates=[r['date'] for r in trend_rows],
-                               chart_counts=initial_counts,
-                               chart_avg=initial_avg,
-                               chart_peak=initial_peak,
-                               groups=dashboard_groups,
-                               top_companies=top_companies,
-                               avg_duration_global=avg_duration_global,
-                               date=datetime.now().strftime("%B %d, %Y"))
+        DASHBOARD_CACHE['data'] = {
+            'visitors': visitors,
+            'stats': stats,
+            'purpose_data': purpose_data,
+            'hourly_data': hourly_data,
+            'chart_dates': [r['date'] for r in trend_rows],
+            'chart_counts': initial_counts,
+            'chart_avg': initial_avg,
+            'chart_peak': initial_peak,
+            'groups': dashboard_groups,
+            'top_companies': top_companies,
+            'avg_duration_global': avg_duration_global,
+            'date': datetime.now().strftime("%B %d, %Y")
+        }
+        DASHBOARD_CACHE['timestamp'] = time.time()
+        
+        return render_template("dashboard_perfect.html", **DASHBOARD_CACHE['data'])
     except Exception as e:
         import traceback
         logging_file = "dashboard_error.log"
