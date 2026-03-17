@@ -1,7 +1,12 @@
 import mysql.connector
+from mysql.connector import pooling
 from flask import current_app, g
+import os
+
+db_pool = None
 
 def get_db():
+    global db_pool
     if 'db' not in g:
         connect_args = {
             'host': current_app.config['MYSQL_HOST'],
@@ -22,21 +27,33 @@ def get_db():
             connect_args['ssl_verify_identity'] = False
 
         # If on Vercel and host is localhost, fail fast
-        import os
         if os.environ.get('VERCEL') == '1' and connect_args['host'] in ['localhost', '127.0.0.1']:
             raise Exception("Vercel cannot connect to a localhost database. Please configure a remote MySQL database in Vercel Environment Variables.")
 
-        g.db = mysql.connector.connect(**connect_args)
+        # Initialize connection pool if not already initialized to speed up page loads
+        if db_pool is None:
+            connect_args['pool_name'] = "vercel_pool"
+            connect_args['pool_size'] = 5
+            connect_args['pool_reset_session'] = True
+            db_pool = mysql.connector.pooling.MySQLConnectionPool(**connect_args)
+
+        g.db = db_pool.get_connection()
     return g.db
 
 def close_db(e=None):
     db = g.pop('db', None)
 
     if db is not None:
-        db.close()
+        db.close() # For pooled connections, this returns it to the pool instead of closing!
 
 def init_app(app):
     app.teardown_appcontext(close_db)
+    
+    # Skip automatic table initialization on Vercel to dramatically speed up cold starts!
+    if os.environ.get('VERCEL') == '1':
+        print("Skipping automatic database initialization for Vercel deployment.")
+        return
+        
     with app.app_context():
         try:
             ensure_users_table()
